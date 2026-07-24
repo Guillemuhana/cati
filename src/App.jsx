@@ -9,6 +9,8 @@ import PresupuestoDetail from './pages/PresupuestoDetail'
 import Clientes from './pages/Clientes'
 import Productos from './pages/Productos'
 import Reportes from './pages/Reportes'
+import Facturas from './pages/Facturas'
+import FacturaDetail from './pages/FacturaDetail'
 import Premium from './pages/Premium'
 import PublicBudget from './pages/PublicBudget'
 import Perfil from './pages/Perfil'
@@ -99,6 +101,26 @@ export default function App() {
           <ProtectedRoute>
             <Layout>
               <Reportes />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/facturas"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Facturas />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/facturas/:id"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <FacturaDetail />
             </Layout>
           </ProtectedRoute>
         }

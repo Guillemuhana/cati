@@ -106,10 +106,10 @@ function PayCol({ title, text }) {
   )
 }
 
-function PresupuestoPDF({ budget, items, client, profile }) {
-  const statusLabel = (STATUS[budget.status] || STATUS.borrador).label
+function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuesto', numberPrefix, statusText }) {
+  const statusLabel = statusText || (STATUS[budget.status] || STATUS.borrador).label
   const accent = profile?.brand_color || '#1B2A66'
-  const numero = formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)
+  const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)
 
   return (
     <Document title={`${numero} - ${budget.title || client?.name || ''}`}>
@@ -124,7 +124,7 @@ function PresupuestoPDF({ budget, items, client, profile }) {
             {profile?.address && <Text style={styles.small}>{profile.address}</Text>}
           </View>
           <View>
-            <Text style={[styles.docTitle, { color: accent }]}>Presupuesto</Text>
+            <Text style={[styles.docTitle, { color: accent }]}>{docLabel}</Text>
             <Text style={styles.docNumber}>{numero}</Text>
             {!!budget.reference && <Text style={styles.docNumber}>Ref: {budget.reference}</Text>}
             <Text style={[styles.statusBadge, { borderColor: accent, color: accent }]}>{statusLabel}</Text>
@@ -264,10 +264,106 @@ export async function generateBudgetPdfBlob({ budget, items, client, profile }) 
 
 export async function downloadBudgetPdf({ budget, items, client, profile }) {
   const blob = await generateBudgetPdfBlob({ budget, items, client, profile })
+  triggerDownload(blob, `${formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)}.pdf`)
+}
+
+// ── Factura / comprobante (no fiscal) ──────────────────────────
+const INVOICE_STATUS = { emitida: 'Emitida', pagada: 'Pagada', anulada: 'Anulada' }
+
+export async function generateInvoicePdfBlob({ invoice, client, profile }) {
+  const doc = (
+    <PresupuestoPDF
+      budget={invoice}
+      items={invoice.items || []}
+      client={client}
+      profile={profile}
+      docLabel="Comprobante"
+      numberPrefix="FAC"
+      statusText={INVOICE_STATUS[invoice.status] || 'Emitida'}
+    />
+  )
+  return pdf(doc).toBlob()
+}
+
+export async function downloadInvoicePdf({ invoice, client, profile }) {
+  const blob = await generateInvoicePdfBlob({ invoice, client, profile })
+  triggerDownload(blob, `${formatNumero(invoice.numero, invoice.issue_date, 'FAC')}.pdf`)
+}
+
+// ── Recibo de pago / seña ──────────────────────────────────────
+function ReciboPDF({ receipt, client, profile }) {
+  const accent = profile?.brand_color || '#1B2A66'
+  const numero = formatNumero(receipt.numero, receipt.receipt_date, 'REC')
+  return (
+    <Document title={numero}>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.headerRow}>
+          <View>
+            {profile?.logo_url && <Image src={profile.logo_url} style={styles.logo} />}
+            <Text style={styles.businessName}>{profile?.business_name || 'Tu negocio'}</Text>
+            {profile?.tax_id && <Text style={styles.small}>{profile.tax_id}</Text>}
+            {profile?.email && <Text style={styles.small}>{profile.email}</Text>}
+            {profile?.phone && <Text style={styles.small}>{profile.phone}</Text>}
+          </View>
+          <View>
+            <Text style={[styles.docTitle, { color: accent }]}>Recibo</Text>
+            <Text style={styles.docNumber}>{numero}</Text>
+            <Text style={styles.docNumber}>{formatDate(receipt.receipt_date)}</Text>
+          </View>
+        </View>
+
+        <View style={styles.metaRow}>
+          <View style={styles.metaBlock}>
+            <Text style={styles.metaLabel}>Recibimos de</Text>
+            <Text style={styles.metaValue}>{client?.name || 'Cliente'}</Text>
+            {client?.tax_id && <Text style={styles.small}>{client.tax_id}</Text>}
+          </View>
+        </View>
+
+        <View style={{ marginTop: 12, padding: 16, borderWidth: 1, borderColor: '#E4E1D9', borderRadius: 6 }}>
+          <Text style={styles.metaLabel}>La suma de</Text>
+          <Text style={[styles.grandTotalValue, { color: accent, fontSize: 20, marginTop: 2 }]}>
+            {formatMoney(receipt.amount, receipt.currency)}
+          </Text>
+          {!!receipt.concept && (
+            <>
+              <Text style={[styles.metaLabel, { marginTop: 12 }]}>En concepto de</Text>
+              <Text style={styles.notesText}>{receipt.concept}</Text>
+            </>
+          )}
+          {!!receipt.method && (
+            <>
+              <Text style={[styles.metaLabel, { marginTop: 12 }]}>Forma de pago</Text>
+              <Text style={styles.notesText}>{receipt.method}</Text>
+            </>
+          )}
+        </View>
+
+        <View style={styles.signRow} wrap={false}>
+          <View style={styles.signBox}>
+            <View style={styles.signLine} />
+            <Text style={styles.signLabel}>Firma y aclaración</Text>
+          </View>
+        </View>
+
+        <Text style={styles.footer} fixed>
+          {profile?.business_name || ''}{profile?.hide_branding ? '' : ' · Generado con Cati'}
+        </Text>
+      </Page>
+    </Document>
+  )
+}
+
+export async function downloadReceiptPdf({ receipt, client, profile }) {
+  const blob = await pdf(<ReciboPDF receipt={receipt} client={client} profile={profile} />).toBlob()
+  triggerDownload(blob, `${formatNumero(receipt.numero, receipt.receipt_date, 'REC')}.pdf`)
+}
+
+function triggerDownload(blob, filename) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${formatNumero(budget.numero, budget.issue_date)}.pdf`
+  a.download = filename
   document.body.appendChild(a)
   a.click()
   a.remove()

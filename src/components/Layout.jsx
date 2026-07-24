@@ -7,6 +7,7 @@ import { classNames } from '../lib/utils'
 const NAV_ITEMS = [
   { to: '/panel', label: 'Panel', icon: IconGrid },
   { to: '/presupuestos', label: 'Presupuestos', icon: IconDoc },
+  { to: '/facturas', label: 'Facturas', icon: IconReceipt },
   { to: '/catalogo', label: 'Catálogo', icon: IconTag },
   { to: '/clientes', label: 'Clientes', icon: IconUsers },
   { to: '/reportes', label: 'Reportes', icon: IconChart },
@@ -228,6 +229,14 @@ function IconChart(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
       <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" strokeLinecap="round" />
+    </svg>
+  )
+}
+function IconReceipt(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path d="M5 3v18l2-1.3L9 21l2-1.3L13 21l2-1.3L17 21l2-1.3V3l-2 1.3L15 2l-2 1.3L11 2 9 3.3 7 2 5 3.3z" />
+      <path d="M8 8h8M8 12h8" strokeLinecap="round" />
     </svg>
   )
 }

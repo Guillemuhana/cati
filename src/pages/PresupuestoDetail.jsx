@@ -23,6 +23,70 @@ export default function PresupuestoDetail() {
   const [copied, setCopied] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
   const [qr, setQr] = useState('')
+  const [invoiceId, setInvoiceId] = useState(null)
+
+  useEffect(() => {
+    if (!user || !id) return
+    supabase
+      .from('invoices')
+      .select('id')
+      .eq('budget_id', id)
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setInvoiceId(data?.id || null))
+  }, [id, user])
+
+  const handleConvertInvoice = async () => {
+    if (invoiceId) {
+      navigate(`/facturas/${invoiceId}`)
+      return
+    }
+    setBusy(true)
+    try {
+      const { count } = await supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
+      const numero = (count || 0) + 1
+      const itemsSnap = items.map((it) => ({
+        description: it.description,
+        quantity: Number(it.quantity) || 0,
+        unit_price: Number(it.unit_price) || 0,
+        discount: Number(it.discount) || 0
+      }))
+      const { data, error } = await supabase
+        .from('invoices')
+        .insert({
+          user_id: user.id,
+          budget_id: budget.id,
+          client_id: budget.client_id,
+          numero,
+          issue_date: new Date().toISOString().slice(0, 10),
+          currency: budget.currency,
+          reference: budget.reference || '',
+          discount_type: budget.discount_type,
+          discount_value: budget.discount_value,
+          tax_rate: budget.tax_rate,
+          deposit: budget.deposit || 0,
+          subtotal: budget.subtotal,
+          discount_amount: budget.discount_amount,
+          tax_amount: budget.tax_amount,
+          total: budget.total,
+          notes: budget.notes,
+          terms: budget.terms,
+          payment_terms: budget.payment_terms,
+          payment_methods: budget.payment_methods,
+          delivery_time: budget.delivery_time,
+          items: itemsSnap,
+          status: 'emitida'
+        })
+        .select()
+        .single()
+      if (error) throw error
+      navigate(`/facturas/${data.id}`)
+    } catch (err) {
+      window.alert(err.message || 'No se pudo crear el comprobante. ¿Ejecutaste la migración 06?')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const publicUrl = budget?.public_token ? `${window.location.origin}/p/${budget.public_token}` : ''
 
@@ -198,6 +262,15 @@ export default function PresupuestoDetail() {
           >
             Descargar PDF
           </button>
+          {isPremium && (
+            <button
+              onClick={handleConvertInvoice}
+              disabled={busy}
+              className="rounded-md border border-line px-3.5 py-2 text-sm font-medium text-ink transition hover:border-ink-faint disabled:opacity-60"
+            >
+              {invoiceId ? 'Ver factura' : 'Convertir en factura'}
+            </button>
+          )}
           <button
             onClick={handleShare}
             disabled={busy}

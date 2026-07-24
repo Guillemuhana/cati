@@ -7,9 +7,9 @@ export const PREMIUM_PRICE = 'USD 2'
 export const PREMIUM_PERIOD = 'por mes' // suscripción mensual
 export const PREMIUM_PRICE_FULL = `${PREMIUM_PRICE}/mes`
 
-// Pegá acá tu link de SUSCRIPCIÓN mensual (Mercado Pago Suscripciones /
-// Lemon Squeezy / Stripe...). Ejemplo Mercado Pago: 'https://mpago.la/xxxxx'
-// Si queda vacío, el botón muestra "Próximamente".
+// Link de SUSCRIPCIÓN mensual de Stripe (Payment Link con precio recurrente).
+// Se crea en: Stripe Dashboard → Payment Links → New → precio "recurrente / mensual" USD 2.
+// Queda como 'https://buy.stripe.com/xxxxxxxx'. Si está vacío, el botón muestra "Próximamente".
 export const PAYMENT_URL = ''
 
 // Lista de beneficios premium (se muestran en el paywall / página /premium).

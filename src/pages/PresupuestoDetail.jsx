@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import QRCode from 'qrcode'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import StatusBadge from '../components/StatusBadge'
@@ -18,6 +19,31 @@ export default function PresupuestoDetail() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [qr, setQr] = useState('')
+
+  const publicUrl = budget?.public_token ? `${window.location.origin}/p/${budget.public_token}` : ''
+
+  useEffect(() => {
+    if (!publicUrl) return
+    QRCode.toDataURL(publicUrl, { width: 220, margin: 1, color: { dark: '#1B2A66', light: '#ffffff' } })
+      .then(setQr)
+      .catch(() => setQr(''))
+  }, [publicUrl])
+
+  const copyPublicLink = async () => {
+    if (!publicUrl) return
+    await navigator.clipboard.writeText(publicUrl)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 1800)
+  }
+
+  const waLink = publicUrl
+    ? `https://wa.me/?text=${encodeURIComponent(`Hola${client?.name ? ' ' + client.name : ''}, te comparto el presupuesto: ${publicUrl}`)}`
+    : ''
+  const mailLink = publicUrl
+    ? `mailto:${client?.email || ''}?subject=${encodeURIComponent('Presupuesto ' + formatNumero(budget.numero, budget.issue_date, profile?.number_prefix))}&body=${encodeURIComponent(`Hola${client?.name ? ' ' + client.name : ''}, te comparto el presupuesto: ${publicUrl}`)}`
+    : ''
 
   useEffect(() => {
     if (!user) return
@@ -53,11 +79,11 @@ export default function PresupuestoDetail() {
     setBusy(true)
     try {
       const blob = await generateBudgetPdfBlob({ budget, items, client, profile })
-      const file = new File([blob], `${formatNumero(budget.numero, budget.issue_date)}.pdf`, { type: 'application/pdf' })
+      const file = new File([blob], `${formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)}.pdf`, { type: 'application/pdf' })
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: `Presupuesto ${formatNumero(budget.numero, budget.issue_date)}`,
+          title: `Presupuesto ${formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)}`,
           text: `Presupuesto de ${profile?.business_name || ''} para ${client?.name || ''}`
         })
       } else {
@@ -84,7 +110,18 @@ export default function PresupuestoDetail() {
         .from('budgets')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
-      const { id: _oldId, created_at, updated_at, numero, ...rest } = budget
+      const {
+        id: _oldId,
+        created_at,
+        updated_at,
+        numero,
+        public_token,
+        viewed_at,
+        accepted_at,
+        rejected_at,
+        clients: _clients,
+        ...rest
+      } = budget
       const { data: newBudget, error } = await supabase
         .from('budgets')
         .insert({ ...rest, status: 'borrador', numero: (count || 0) + 1 })
@@ -137,12 +174,12 @@ export default function PresupuestoDetail() {
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="font-display text-3xl font-medium text-ink">
-              {budget.title || client?.name || formatNumero(budget.numero, budget.issue_date)}
+              {budget.title || client?.name || formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)}
             </h1>
             <StatusBadge status={budget.status} />
           </div>
           <p className="mt-1 text-sm text-ink-soft">
-            {formatNumero(budget.numero, budget.issue_date)} · {client?.name || 'Sin cliente'} · Emitido el {formatDate(budget.issue_date)}
+            {formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)} · {client?.name || 'Sin cliente'} · Emitido el {formatDate(budget.issue_date)}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -230,8 +267,60 @@ export default function PresupuestoDetail() {
                 <span className="font-sans text-sm font-semibold text-ink">Total</span>
                 <span className="text-base font-semibold text-brand-600">{formatMoney(budget.total, budget.currency)}</span>
               </div>
+              {Number(budget.deposit) > 0 && (
+                <>
+                  <Row label="Anticipo / seña" value={`-${formatMoney(budget.deposit, budget.currency)}`} />
+                  <div className="flex items-center justify-between border-t border-line pt-2">
+                    <span className="font-sans text-sm font-semibold text-ink">Saldo</span>
+                    <span className="font-semibold text-ink">
+                      {formatMoney((Number(budget.total) || 0) - (Number(budget.deposit) || 0), budget.currency)}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
+
+          {publicUrl && (
+            <div className="rounded-xl2 border border-line bg-surface p-5">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Compartir con el cliente</p>
+              <div className="flex items-center gap-3">
+                {qr && <img src={qr} alt="QR del presupuesto" className="h-24 w-24 rounded-md border border-line" />}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-ink-soft">Enlace público para que el cliente lo vea y acepte:</p>
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <input
+                      readOnly
+                      value={publicUrl}
+                      onFocus={(e) => e.target.select()}
+                      className="min-w-0 flex-1 rounded-md border border-line bg-paper px-2 py-1.5 font-mono text-[11px] text-ink-soft focus:outline-none"
+                    />
+                    <button onClick={copyPublicLink} className="shrink-0 rounded-md border border-line px-2.5 py-1.5 text-xs font-medium text-ink-soft hover:border-ink-faint">
+                      {linkCopied ? '✓' : 'Copiar'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <a href={waLink} target="_blank" rel="noreferrer" className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-teal-500 hover:text-teal-600">
+                  WhatsApp
+                </a>
+                <a href={mailLink} className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-brand-500 hover:text-brand-600">
+                  Email
+                </a>
+                <a href={publicUrl} target="_blank" rel="noreferrer" className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-ink-faint hover:text-ink">
+                  Abrir enlace
+                </a>
+              </div>
+              {(budget.viewed_at || budget.accepted_at || budget.rejected_at) && (
+                <div className="mt-3 space-y-0.5 border-t border-line pt-2 text-xs text-ink-faint">
+                  {budget.viewed_at && <p>👁 Visto el {formatDate(budget.viewed_at.slice(0, 10))}</p>}
+                  {budget.accepted_at && <p className="text-teal-600">✓ Aceptado el {formatDate(budget.accepted_at.slice(0, 10))}</p>}
+                  {budget.rejected_at && <p className="text-rust-500">✗ Rechazado el {formatDate(budget.rejected_at.slice(0, 10))}</p>}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="rounded-xl2 border border-line bg-surface p-5">
             <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Cambiar estado</p>

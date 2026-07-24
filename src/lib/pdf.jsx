@@ -108,9 +108,11 @@ function PayCol({ title, text }) {
 
 function PresupuestoPDF({ budget, items, client, profile }) {
   const statusLabel = (STATUS[budget.status] || STATUS.borrador).label
+  const accent = profile?.brand_color || '#1B2A66'
+  const numero = formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)
 
   return (
-    <Document title={`${formatNumero(budget.numero, budget.issue_date)} - ${budget.title || client?.name || ''}`}>
+    <Document title={`${numero} - ${budget.title || client?.name || ''}`}>
       <Page size="A4" style={styles.page}>
         <View style={styles.headerRow}>
           <View>
@@ -122,10 +124,10 @@ function PresupuestoPDF({ budget, items, client, profile }) {
             {profile?.address && <Text style={styles.small}>{profile.address}</Text>}
           </View>
           <View>
-            <Text style={styles.docTitle}>Presupuesto</Text>
-            <Text style={styles.docNumber}>{formatNumero(budget.numero, budget.issue_date)}</Text>
+            <Text style={[styles.docTitle, { color: accent }]}>Presupuesto</Text>
+            <Text style={styles.docNumber}>{numero}</Text>
             {!!budget.reference && <Text style={styles.docNumber}>Ref: {budget.reference}</Text>}
-            <Text style={styles.statusBadge}>{statusLabel}</Text>
+            <Text style={[styles.statusBadge, { borderColor: accent, color: accent }]}>{statusLabel}</Text>
           </View>
         </View>
 
@@ -191,7 +193,7 @@ function PresupuestoPDF({ budget, items, client, profile }) {
           )}
           <View style={styles.grandTotalRow}>
             <Text style={styles.grandTotalLabel}>Total</Text>
-            <Text style={styles.grandTotalValue}>{formatMoney(budget.total, budget.currency)}</Text>
+            <Text style={[styles.grandTotalValue, { color: accent }]}>{formatMoney(budget.total, budget.currency)}</Text>
           </View>
           {Number(budget.deposit) > 0 && (
             <>
@@ -247,7 +249,7 @@ function PresupuestoPDF({ budget, items, client, profile }) {
         </View>
 
         <Text style={styles.footer} fixed>
-          {profile?.business_name || ''} · Generado con Cati
+          {profile?.business_name || ''}{profile?.hide_branding ? '' : ' · Generado con Cati'}
         </Text>
       </Page>
     </Document>

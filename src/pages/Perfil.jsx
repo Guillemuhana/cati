@@ -15,7 +15,10 @@ export default function Perfil() {
     default_terms: profile?.default_terms || '',
     default_payment_terms: profile?.default_payment_terms || '',
     default_payment_methods: profile?.default_payment_methods || '',
-    bank_alias: profile?.bank_alias || ''
+    bank_alias: profile?.bank_alias || '',
+    brand_color: profile?.brand_color || '#2F6BFF',
+    number_prefix: profile?.number_prefix || 'PRES',
+    hide_branding: profile?.hide_branding || false
   })
   const [logoFile, setLogoFile] = useState(null)
   const [preview, setPreview] = useState(profile?.logo_url || '')
@@ -182,6 +185,53 @@ export default function Perfil() {
             className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           />
         </Field>
+
+        <div className="rounded-xl2 border border-line bg-paper/50 p-4">
+          <p className="mb-3 text-sm font-semibold text-ink">Marca y numeración</p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Color de marca (PDF)">
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={form.brand_color}
+                  onChange={(e) => setForm({ ...form, brand_color: e.target.value })}
+                  className="h-9 w-12 cursor-pointer rounded border border-line bg-white"
+                  aria-label="Color de marca"
+                />
+                <input
+                  type="text"
+                  value={form.brand_color}
+                  onChange={(e) => setForm({ ...form, brand_color: e.target.value })}
+                  className="w-full rounded-md border border-line px-3 py-2 font-mono text-sm focus:border-brand-500 focus:outline-none"
+                />
+              </div>
+            </Field>
+            <Field label="Prefijo de numeración">
+              <input
+                type="text"
+                value={form.number_prefix}
+                onChange={(e) => setForm({ ...form, number_prefix: e.target.value.toUpperCase() })}
+                placeholder="PRES"
+                maxLength={8}
+                className="w-full rounded-md border border-line px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none"
+              />
+            </Field>
+            <Field label="Marca de Cati en el PDF">
+              <label className="flex items-center gap-2 py-2 text-sm text-ink-soft">
+                <input
+                  type="checkbox"
+                  checked={form.hide_branding}
+                  onChange={(e) => setForm({ ...form, hide_branding: e.target.checked })}
+                  className="h-4 w-4 rounded border-line text-brand-500 focus:ring-brand-500"
+                />
+                Ocultar «Generado con Cati»
+              </label>
+            </Field>
+          </div>
+          <p className="mt-2 text-xs text-ink-faint">
+            Ejemplo de número: <span className="font-mono text-ink-soft">{(form.number_prefix || 'PRES')}-2026-0001</span>
+          </p>
+        </div>
 
         {error && <p className="text-sm text-rust-500">{error}</p>}
 

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import ItemsTable, { newItem } from '../components/ItemsTable'
 import ClientPicker from '../components/ClientPicker'
+import ProductPicker from '../components/ProductPicker'
 import Card from '../components/Card'
 import PreviewModal from '../components/PreviewModal'
 import Spinner from '../components/Spinner'
@@ -47,6 +48,8 @@ export default function PresupuestoForm() {
   const { user, profile } = useAuth()
 
   const [clients, setClients] = useState([])
+  const [products, setProducts] = useState([])
+  const [templates, setTemplates] = useState([])
   const [budget, setBudget] = useState(emptyBudget)
   const [items, setItems] = useState([newItem()])
   const [loading, setLoading] = useState(isEdit)
@@ -72,15 +75,85 @@ export default function PresupuestoForm() {
     markDirty()
   }
 
-  // Cargar clientes
+  // Cargar clientes, catálogo y plantillas
+  const loadTemplates = () =>
+    supabase
+      .from('budget_templates')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setTemplates(data || []))
+
   useEffect(() => {
     if (!user) return
-    supabase
-      .from('clients')
-      .select('*')
-      .order('name')
-      .then(({ data }) => setClients(data || []))
+    supabase.from('clients').select('*').order('name').then(({ data }) => setClients(data || []))
+    supabase.from('products').select('*').order('name').then(({ data }) => setProducts(data || []))
+    loadTemplates()
   }, [user])
+
+  // Insertar un ítem desde el catálogo
+  const pickProduct = (p) => {
+    const item = { ...newItem(), description: p.name, unit_price: Number(p.unit_price) || 0, quantity: 1 }
+    setItems((prev) => {
+      const firstEmpty =
+        prev.length === 1 && !(prev[0].description || '').trim() && !Number(prev[0].unit_price)
+      return firstEmpty ? [item] : [...prev, item]
+    })
+    markDirty()
+  }
+
+  // Guardar el presupuesto actual como plantilla reutilizable
+  const saveTemplate = async () => {
+    const name = window.prompt('Nombre de la plantilla:')
+    if (!name || !name.trim()) return
+    const data = {
+      budget: {
+        title: budget.title,
+        currency: budget.currency,
+        discount_type: budget.discount_type,
+        discount_value: budget.discount_value,
+        tax_rate: budget.tax_rate,
+        deposit: budget.deposit,
+        notes: budget.notes,
+        terms: budget.terms,
+        payment_terms: budget.payment_terms,
+        payment_methods: budget.payment_methods,
+        delivery_time: budget.delivery_time
+      },
+      items: items.map((it) => ({
+        description: it.description,
+        quantity: it.quantity,
+        unit_price: it.unit_price,
+        discount: it.discount
+      }))
+    }
+    const { error: err } = await supabase.from('budget_templates').insert({ user_id: user.id, name: name.trim(), data })
+    if (err) {
+      setError(isMissingColumn(err) ? 'Ejecutá la migración 03 en Supabase para usar plantillas.' : err.message)
+      return
+    }
+    setSavedMsg('Plantilla guardada')
+    loadTemplates()
+  }
+
+  // Aplicar una plantilla (no pisa cliente ni fechas actuales)
+  const applyTemplate = (tplId) => {
+    const tpl = templates.find((t) => t.id === tplId)
+    if (!tpl) return
+    const d = tpl.data || {}
+    if (d.budget) setBudget((b) => ({ ...b, ...d.budget }))
+    if (Array.isArray(d.items) && d.items.length) {
+      setItems(
+        d.items.map((it, i) => ({
+          _key: `tpl-${tplId}-${i}`,
+          description: it.description || '',
+          quantity: it.quantity ?? 1,
+          unit_price: it.unit_price ?? 0,
+          discount: it.discount ?? 0
+        }))
+      )
+    }
+    markDirty()
+  }
 
   // Cargar presupuesto en edición
   useEffect(() => {
@@ -287,9 +360,36 @@ export default function PresupuestoForm() {
             {isEdit ? 'Editar presupuesto' : 'Nuevo presupuesto'}
           </h1>
         </div>
-        <p className="font-mono text-sm text-ink-soft">
-          {formatNumero(budget.numero || (isEdit ? 0 : undefined), budget.issue_date)}
-        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="mr-1 font-mono text-sm text-ink-soft">
+            {formatNumero(budget.numero || (isEdit ? 0 : undefined), budget.issue_date, profile?.number_prefix)}
+          </p>
+          {templates.length > 0 && (
+            <select
+              onChange={(e) => {
+                if (e.target.value) applyTemplate(e.target.value)
+                e.target.value = ''
+              }}
+              defaultValue=""
+              className="rounded-md border border-line px-2.5 py-1.5 text-xs text-ink-soft focus:border-brand-500 focus:outline-none"
+              aria-label="Usar plantilla"
+            >
+              <option value="">Usar plantilla…</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            type="button"
+            onClick={saveTemplate}
+            className="rounded-md border border-line px-2.5 py-1.5 text-xs font-medium text-ink-soft transition hover:border-ink-faint hover:text-ink"
+          >
+            Guardar como plantilla
+          </button>
+        </div>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -377,10 +477,10 @@ export default function PresupuestoForm() {
             {errors.client_id && <FieldError>{errors.client_id}</FieldError>}
           </Card>
 
-          <Card title="Productos o servicios">
-            <span className="mb-2 block text-sm font-medium text-ink">
-              Ítems <span className="text-rust-500">*</span>
-            </span>
+          <Card
+            title="Productos o servicios"
+            action={<ProductPicker products={products} currency={budget.currency} onPick={pickProduct} />}
+          >
             <ItemsTable items={items} onChange={handleItems} currency={budget.currency} />
             {errors.items && <FieldError>{errors.items}</FieldError>}
           </Card>

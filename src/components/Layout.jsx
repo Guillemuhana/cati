@@ -6,8 +6,18 @@ import { classNames } from '../lib/utils'
 const NAV_ITEMS = [
   { to: '/panel', label: 'Panel', icon: IconGrid },
   { to: '/presupuestos', label: 'Presupuestos', icon: IconDoc },
+  { to: '/catalogo', label: 'Catálogo', icon: IconTag },
   { to: '/clientes', label: 'Clientes', icon: IconUsers },
+  { to: '/reportes', label: 'Reportes', icon: IconChart },
   { to: '/perfil', label: 'Mi negocio', icon: IconBuilding }
+]
+
+// Accesos rápidos en la barra inferior de celular (el resto está en el menú).
+const MOBILE_ITEMS = [
+  { to: '/panel', label: 'Panel', icon: IconGrid },
+  { to: '/presupuestos', label: 'Presup.', icon: IconDoc },
+  { to: '/catalogo', label: 'Catálogo', icon: IconTag },
+  { to: '/clientes', label: 'Clientes', icon: IconUsers }
 ]
 
 export default function Layout({ children }) {
@@ -87,7 +97,7 @@ export default function Layout({ children }) {
 
       {/* Barra inferior mobile */}
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface/95 backdrop-blur lg:hidden">
-        {NAV_ITEMS.map((item) => (
+        {MOBILE_ITEMS.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -170,6 +180,21 @@ function IconBuilding(props) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
       <rect x="4" y="3" width="12" height="18" rx="1" />
       <path d="M8 7h1M8 11h1M8 15h1M12 7h1M12 11h1M12 15h1M16 11h4v10h-4z" />
+    </svg>
+  )
+}
+function IconTag(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path d="M3 12V4a1 1 0 0 1 1-1h8l8 8-9 9z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </svg>
+  )
+}
+function IconChart(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" strokeLinecap="round" />
     </svg>
   )
 }

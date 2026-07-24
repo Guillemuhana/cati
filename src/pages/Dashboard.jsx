@@ -88,10 +88,10 @@ export default function Dashboard() {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-ink">
-                      {b.title || b.clients?.name || formatNumero(b.numero, b.issue_date)}
+                      {b.title || b.clients?.name || formatNumero(b.numero, b.issue_date, profile?.number_prefix)}
                     </p>
                     <p className="mt-0.5 text-xs text-ink-soft">
-                      {formatNumero(b.numero, b.issue_date)} · {b.clients?.name || 'Sin cliente'} · {formatDate(b.issue_date)}
+                      {formatNumero(b.numero, b.issue_date, profile?.number_prefix)} · {b.clients?.name || 'Sin cliente'} · {formatDate(b.issue_date)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">

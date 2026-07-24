@@ -35,13 +35,14 @@ export function formatDate(value) {
  * @param {number} n  correlativo del presupuesto
  * @param {string} [date]  fecha (issue_date) para derivar el año; opcional
  */
-export function formatNumero(n, date) {
+export function formatNumero(n, date, prefix = 'PRES') {
+  const p = (prefix || 'PRES').trim() || 'PRES'
   const seq = String(n ?? 0).padStart(4, '0')
   if (date) {
     const year = new Date(date + 'T00:00:00').getFullYear()
-    if (!Number.isNaN(year)) return `PRES-${year}-${seq}`
+    if (!Number.isNaN(year)) return `${p}-${year}-${seq}`
   }
-  return `PRES-${seq}`
+  return `${p}-${seq}`
 }
 
 // Suma días a una fecha 'YYYY-MM-DD' y devuelve el mismo formato.

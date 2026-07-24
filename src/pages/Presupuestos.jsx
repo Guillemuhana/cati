@@ -17,7 +17,7 @@ const FILTERS = [
 ]
 
 export default function Presupuestos() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('todos')
@@ -51,7 +51,7 @@ export default function Presupuestos() {
         !q ||
         b.title?.toLowerCase().includes(q) ||
         b.clients?.name?.toLowerCase().includes(q) ||
-        formatNumero(b.numero, b.issue_date).toLowerCase().includes(q)
+        formatNumero(b.numero, b.issue_date, profile?.number_prefix).toLowerCase().includes(q)
       return matchesFilter && matchesQuery
     })
   }, [budgets, filter, query])
@@ -114,10 +114,10 @@ export default function Presupuestos() {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-ink">
-                      {b.title || b.clients?.name || formatNumero(b.numero, b.issue_date)}
+                      {b.title || b.clients?.name || formatNumero(b.numero, b.issue_date, profile?.number_prefix)}
                     </p>
                     <p className="mt-0.5 text-xs text-ink-soft">
-                      {formatNumero(b.numero, b.issue_date)} · {b.clients?.name || 'Sin cliente'} · {formatDate(b.issue_date)}
+                      {formatNumero(b.numero, b.issue_date, profile?.number_prefix)} · {b.clients?.name || 'Sin cliente'} · {formatDate(b.issue_date)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">

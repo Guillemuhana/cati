@@ -7,6 +7,9 @@ import Presupuestos from './pages/Presupuestos'
 import PresupuestoForm from './pages/PresupuestoForm'
 import PresupuestoDetail from './pages/PresupuestoDetail'
 import Clientes from './pages/Clientes'
+import Productos from './pages/Productos'
+import Reportes from './pages/Reportes'
+import PublicBudget from './pages/PublicBudget'
 import Perfil from './pages/Perfil'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -17,6 +20,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/ingresar" element={<Login />} />
       <Route path="/registro" element={<Register />} />
+      <Route path="/p/:token" element={<PublicBudget />} />
 
       <Route
         path="/panel"
@@ -74,6 +78,26 @@ export default function App() {
           <ProtectedRoute>
             <Layout>
               <Clientes />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/catalogo"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Productos />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reportes"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Reportes />
             </Layout>
           </ProtectedRoute>
         }

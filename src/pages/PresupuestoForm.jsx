@@ -82,10 +82,14 @@ export default function PresupuestoForm() {
     return data
   }
 
+  // Un ítem "cuenta" si tiene descripción o un precio unitario mayor a cero.
+  const hasContent = (it) => (it.description || '').trim() !== '' || Number(it.unit_price) > 0
+
   const handleSave = async (statusOverride) => {
     setError('')
-    if (items.filter((it) => it.description.trim()).length === 0) {
-      setError('Agregá al menos un ítem con descripción.')
+    const validItems = items.filter(hasContent)
+    if (validItems.length === 0) {
+      setError('Agregá al menos un ítem: escribí una descripción o un precio unitario.')
       return
     }
     setSaving(true)
@@ -127,11 +131,10 @@ export default function PresupuestoForm() {
         budgetId = data.id
       }
 
-      const itemsPayload = items
-        .filter((it) => it.description.trim())
+      const itemsPayload = validItems
         .map((it, index) => ({
           budget_id: budgetId,
-          description: it.description,
+          description: (it.description || '').trim() || 'Ítem',
           quantity: Number(it.quantity) || 0,
           unit_price: Number(it.unit_price) || 0,
           discount: Number(it.discount) || 0,

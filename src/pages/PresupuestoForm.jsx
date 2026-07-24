@@ -325,7 +325,7 @@ export default function PresupuestoForm() {
               <button
                 onClick={() => handleSave()}
                 disabled={saving}
-                className="flex-1 rounded-md bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
+                className="btn-primary flex-1 rounded-md py-2.5 text-sm font-semibold"
               >
                 {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear presupuesto'}
               </button>
@@ -339,7 +339,7 @@ export default function PresupuestoForm() {
         <button
           onClick={() => handleSave()}
           disabled={saving}
-          className="w-full rounded-md bg-brand-500 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          className="btn-primary w-full rounded-md py-2.5 text-sm font-semibold"
         >
           {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear presupuesto'}
         </button>

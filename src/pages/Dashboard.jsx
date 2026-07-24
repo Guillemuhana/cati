@@ -47,15 +47,20 @@ export default function Dashboard() {
     <div>
       <header className="mb-8">
         <h1 className="font-display text-3xl font-medium text-ink">
-          Hola{firstName ? `, ${firstName}` : ''}
+          Hola
+          {firstName && (
+            <span className="bg-gradient-to-r from-brand-600 to-teal-500 bg-clip-text text-transparent">
+              , {firstName}
+            </span>
+          )}
         </h1>
         <p className="mt-1 text-sm text-ink-soft">Así viene tu actividad con Cati.</p>
       </header>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <StatCard label="Presupuestos" value={stats.total} />
-        <StatCard label="Enviados" value={stats.enviados} hint={formatMoney(stats.montoPendiente, profile?.currency)} />
-        <StatCard label="Aprobados" value={stats.aprobados} accent hint={formatMoney(stats.montoAprobado, profile?.currency)} />
+        <StatCard label="Presupuestos" value={stats.total} tone="navy" />
+        <StatCard label="Enviados" value={stats.enviados} tone="blue" hint={formatMoney(stats.montoPendiente, profile?.currency)} />
+        <StatCard label="Aprobados" value={stats.aprobados} tone="teal" hint={formatMoney(stats.montoAprobado, profile?.currency)} />
         <StatCard label="Moneda" value={profile?.currency || 'ARS'} />
       </div>
 

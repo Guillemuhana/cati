@@ -162,7 +162,7 @@ export default function PresupuestoDetail() {
           <button
             onClick={handleShare}
             disabled={busy}
-            className="rounded-md bg-brand-500 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
+            className="btn-primary rounded-md px-3.5 py-2 text-sm font-semibold"
           >
             Compartir PDF
           </button>

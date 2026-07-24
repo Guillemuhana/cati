@@ -62,7 +62,7 @@ function round2(n) {
 export const STATUS = {
   borrador: { label: 'Borrador', color: 'ink' },
   enviado: { label: 'Enviado', color: 'brass' },
-  aprobado: { label: 'Aprobado', color: 'brand' },
+  aprobado: { label: 'Aprobado', color: 'teal' },
   rechazado: { label: 'Rechazado', color: 'rust' },
   vencido: { label: 'Vencido', color: 'rust' }
 }

@@ -4,6 +4,7 @@ const COLOR_MAP = {
   ink: 'text-ink border-ink/30 bg-ink/[0.03]',
   brass: 'text-brass-600 border-brass-500/40 bg-brass-500/[0.08]',
   brand: 'text-brand-700 border-brand-500/40 bg-brand-500/[0.08]',
+  teal: 'text-teal-600 border-teal-500/50 bg-teal-500/[0.10]',
   rust: 'text-rust-500 border-rust-500/40 bg-rust-500/[0.08]'
 }
 

@@ -63,7 +63,7 @@ export default function Presupuestos() {
         </div>
         <Link
           to="/presupuestos/nuevo"
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600"
+          className="btn-primary inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold"
         >
           + Nuevo presupuesto
         </Link>

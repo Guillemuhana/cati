@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  /* Botón primario con gradiente navy → azul del logo */
+  .btn-primary {
+    @apply bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-soft transition hover:from-brand-700 hover:to-brand-600 disabled:opacity-60;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

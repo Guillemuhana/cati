@@ -5,9 +5,7 @@ export default function Home() {
     <div className="flex min-h-dvh flex-col bg-paper">
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 font-display text-base font-semibold text-paper">
-            C
-          </span>
+          <img src="/cati-icon.svg" alt="Cati" className="h-8 w-8" />
           <span className="font-display text-xl font-medium text-ink">Cati</span>
         </div>
         <div className="flex items-center gap-3">

@@ -128,9 +128,7 @@ function NavItem({ to, label, icon: Icon, onClick }) {
 function Brand({ compact = false }) {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 font-display text-base font-semibold text-paper">
-        C
-      </span>
+      <img src="/cati-icon.svg" alt="Cati" className="h-8 w-8" />
       {!compact && (
         <span className="font-display text-xl font-medium tracking-tight text-ink">Cati</span>
       )}

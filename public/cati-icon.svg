@@ -1,5 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#1F6F5C"/>
-  <path d="M18 16h28l6 6v26a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2V18a2 2 0 0 1 2-2z" fill="#F7F6F2"/>
-  <path d="M22 26h20M22 34h20M22 42h12" stroke="#1F6F5C" stroke-width="2" stroke-linecap="round"/>
+  <!-- Navy "C" -->
+  <path d="M52 15.5A24 24 0 1 0 52 48.5l-7-6.4A15 15 0 1 1 45 21.9z" fill="#1B2A66"/>
+  <!-- Document -->
+  <path d="M28 17h13l7 7v20a2 2 0 0 1-2 2H28a2 2 0 0 1-2-2V19a2 2 0 0 1 2-2z" fill="#FFFFFF"/>
+  <!-- Folded corner -->
+  <path d="M41 17l7 7h-7z" fill="#2F6BFF"/>
+  <!-- Blue lower band of document -->
+  <path d="M26 38h22v6a2 2 0 0 1-2 2H28a2 2 0 0 1-2-2z" fill="#2F6BFF"/>
+  <!-- Text lines -->
+  <path d="M31 24h11M31 29h11M31 34h7" stroke="#1B2A66" stroke-width="2.4" stroke-linecap="round"/>
+  <!-- Teal checkmark -->
+  <path d="M35 39.5l4.5 4.5 8.5-9" fill="none" stroke="#26D0B0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

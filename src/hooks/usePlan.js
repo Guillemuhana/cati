@@ -11,7 +11,12 @@ export function usePlan() {
   const now = Date.now()
   const trialEndsAt = profile?.trial_ends_at ? new Date(profile.trial_ends_at).getTime() : null
   const trialActive = trialEndsAt ? now < trialEndsAt : false
-  const isPaid = profile?.plan === 'premium'
+
+  // Suscripción: pago si plan es premium y la suscripción no venció.
+  // Si premium_until es null (activación manual sin fecha), se considera activa.
+  const premiumUntil = profile?.premium_until ? new Date(profile.premium_until).getTime() : null
+  const isPaid = profile?.plan === 'premium' && (premiumUntil == null || now < premiumUntil)
+
   const isPremium = isPaid || trialActive
 
   const msLeft = trialEndsAt ? Math.max(0, trialEndsAt - now) : 0
@@ -23,6 +28,7 @@ export function usePlan() {
     isPaid,
     trialActive,
     trialEndsAt,
+    premiumUntil,
     hoursLeft,
     msLeft
   }

@@ -163,7 +163,7 @@ function TrialBanner() {
       className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brass-500/40 bg-brass-500/[0.08] px-4 py-2.5 text-sm transition hover:bg-brass-500/[0.14]"
     >
       <span className="text-ink-soft">🔒 Tu prueba gratuita terminó · desbloqueá las funciones premium</span>
-      <span className="font-semibold text-brass-600">Desbloquear por USD 2 →</span>
+      <span className="font-semibold text-brass-600">Suscribirme por USD 2/mes →</span>
     </Link>
   )
 }

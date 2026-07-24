@@ -4,9 +4,11 @@
 
 export const TRIAL_HOURS = 72
 export const PREMIUM_PRICE = 'USD 2'
+export const PREMIUM_PERIOD = 'por mes' // suscripción mensual
+export const PREMIUM_PRICE_FULL = `${PREMIUM_PRICE}/mes`
 
-// Pegá acá tu link de pago (Mercado Pago / Lemon Squeezy / Stripe...).
-// Ejemplo Mercado Pago: 'https://mpago.la/xxxxx'
+// Pegá acá tu link de SUSCRIPCIÓN mensual (Mercado Pago Suscripciones /
+// Lemon Squeezy / Stripe...). Ejemplo Mercado Pago: 'https://mpago.la/xxxxx'
 // Si queda vacío, el botón muestra "Próximamente".
 export const PAYMENT_URL = ''
 

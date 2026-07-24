@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { usePlan } from '../hooks/usePlan'
-import { PREMIUM_FEATURES, PREMIUM_PRICE } from '../lib/config'
+import { PREMIUM_FEATURES, PREMIUM_PRICE_FULL } from '../lib/config'
 
 // Envuelve contenido premium: muestra los hijos si el usuario tiene acceso,
 // o el paywall si la prueba terminó y no pagó.
@@ -19,7 +19,7 @@ export default function Paywall({ title = 'Función premium' }) {
       </span>
       <h2 className="mt-3 font-display text-2xl font-medium text-ink">Desbloqueá Cati completo</h2>
       <p className="mt-2 text-sm text-ink-soft">
-        Tu prueba gratuita terminó. Activá todas las funciones premium por <b>{PREMIUM_PRICE}</b> (pago único).
+        Tu prueba gratuita terminó. Activá todas las funciones premium por <b>{PREMIUM_PRICE_FULL}</b>.
       </p>
       <ul className="mx-auto mt-5 max-w-xs space-y-2 text-left text-sm text-ink-soft">
         {PREMIUM_FEATURES.map((f) => (
@@ -30,7 +30,7 @@ export default function Paywall({ title = 'Función premium' }) {
         ))}
       </ul>
       <Link to="/premium" className="btn-primary mt-6 inline-block rounded-md px-6 py-3 text-sm font-semibold">
-        Desbloquear por {PREMIUM_PRICE}
+        Suscribirme por {PREMIUM_PRICE_FULL}
       </Link>
     </div>
   )

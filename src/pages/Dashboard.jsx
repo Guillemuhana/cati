@@ -33,7 +33,7 @@ export default function Dashboard() {
 
   const stats = useMemo(() => {
     const total = budgets.length
-    const aprobados = budgets.filter((b) => b.status === 'aprobado')
+    const aprobados = budgets.filter((b) => b.status === 'aprobado' || b.status === 'aceptado')
     const enviados = budgets.filter((b) => b.status === 'enviado')
     const montoAprobado = aprobados.reduce((acc, b) => acc + Number(b.total || 0), 0)
     const montoPendiente = enviados.reduce((acc, b) => acc + Number(b.total || 0), 0)
@@ -88,10 +88,10 @@ export default function Dashboard() {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-ink">
-                      {b.title || b.clients?.name || formatNumero(b.numero)}
+                      {b.title || b.clients?.name || formatNumero(b.numero, b.issue_date)}
                     </p>
                     <p className="mt-0.5 text-xs text-ink-soft">
-                      {formatNumero(b.numero)} · {b.clients?.name || 'Sin cliente'} · {formatDate(b.issue_date)}
+                      {formatNumero(b.numero, b.issue_date)} · {b.clients?.name || 'Sin cliente'} · {formatDate(b.issue_date)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">

@@ -10,7 +10,8 @@ const FILTERS = [
   { key: 'todos', label: 'Todos' },
   { key: 'borrador', label: 'Borrador' },
   { key: 'enviado', label: 'Enviado' },
-  { key: 'aprobado', label: 'Aprobado' },
+  { key: 'visto', label: 'Visto' },
+  { key: 'aceptado', label: 'Aceptado' },
   { key: 'rechazado', label: 'Rechazado' },
   { key: 'vencido', label: 'Vencido' }
 ]
@@ -43,13 +44,14 @@ export default function Presupuestos() {
 
   const filtered = useMemo(() => {
     return budgets.filter((b) => {
-      const matchesFilter = filter === 'todos' || b.status === filter
+      const matchesFilter =
+        filter === 'todos' || b.status === filter || (filter === 'aceptado' && b.status === 'aprobado')
       const q = query.toLowerCase()
       const matchesQuery =
         !q ||
         b.title?.toLowerCase().includes(q) ||
         b.clients?.name?.toLowerCase().includes(q) ||
-        formatNumero(b.numero).toLowerCase().includes(q)
+        formatNumero(b.numero, b.issue_date).toLowerCase().includes(q)
       return matchesFilter && matchesQuery
     })
   }, [budgets, filter, query])
@@ -112,10 +114,10 @@ export default function Presupuestos() {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-ink">
-                      {b.title || b.clients?.name || formatNumero(b.numero)}
+                      {b.title || b.clients?.name || formatNumero(b.numero, b.issue_date)}
                     </p>
                     <p className="mt-0.5 text-xs text-ink-soft">
-                      {formatNumero(b.numero)} · {b.clients?.name || 'Sin cliente'} · {formatDate(b.issue_date)}
+                      {formatNumero(b.numero, b.issue_date)} · {b.clients?.name || 'Sin cliente'} · {formatDate(b.issue_date)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">

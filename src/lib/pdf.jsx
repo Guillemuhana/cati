@@ -73,9 +73,15 @@ const styles = StyleSheet.create({
   },
   grandTotalLabel: { fontSize: 11, fontFamily: 'Helvetica-Bold' },
   grandTotalValue: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#1B2A66' },
-  notesBlock: { marginTop: 30 },
+  notesBlock: { marginTop: 24 },
   notesTitle: { fontSize: 8, textTransform: 'uppercase', letterSpacing: 1, color: '#94998F', marginBottom: 4 },
   notesText: { fontSize: 9, color: '#3A4148', lineHeight: 1.5 },
+  payGrid: { marginTop: 28, flexDirection: 'row', flexWrap: 'wrap' },
+  payCol: { width: '50%', paddingRight: 12, marginBottom: 12 },
+  signRow: { marginTop: 36, flexDirection: 'row', justifyContent: 'space-between' },
+  signBox: { width: '45%' },
+  signLine: { borderTopWidth: 0.8, borderTopColor: '#94998F', marginBottom: 4, marginTop: 24 },
+  signLabel: { fontSize: 8, color: '#94998F', textTransform: 'uppercase', letterSpacing: 0.5 },
   footer: {
     position: 'absolute',
     bottom: 30,
@@ -90,11 +96,21 @@ const styles = StyleSheet.create({
   }
 })
 
+function PayCol({ title, text }) {
+  if (!text) return null
+  return (
+    <View style={styles.payCol}>
+      <Text style={styles.notesTitle}>{title}</Text>
+      <Text style={styles.notesText}>{text}</Text>
+    </View>
+  )
+}
+
 function PresupuestoPDF({ budget, items, client, profile }) {
   const statusLabel = (STATUS[budget.status] || STATUS.borrador).label
 
   return (
-    <Document title={`${formatNumero(budget.numero)} - ${budget.title || client?.name || ''}`}>
+    <Document title={`${formatNumero(budget.numero, budget.issue_date)} - ${budget.title || client?.name || ''}`}>
       <Page size="A4" style={styles.page}>
         <View style={styles.headerRow}>
           <View>
@@ -107,7 +123,8 @@ function PresupuestoPDF({ budget, items, client, profile }) {
           </View>
           <View>
             <Text style={styles.docTitle}>Presupuesto</Text>
-            <Text style={styles.docNumber}>{formatNumero(budget.numero)}</Text>
+            <Text style={styles.docNumber}>{formatNumero(budget.numero, budget.issue_date)}</Text>
+            {!!budget.reference && <Text style={styles.docNumber}>Ref: {budget.reference}</Text>}
             <Text style={styles.statusBadge}>{statusLabel}</Text>
           </View>
         </View>
@@ -176,10 +193,33 @@ function PresupuestoPDF({ budget, items, client, profile }) {
             <Text style={styles.grandTotalLabel}>Total</Text>
             <Text style={styles.grandTotalValue}>{formatMoney(budget.total, budget.currency)}</Text>
           </View>
+          {Number(budget.deposit) > 0 && (
+            <>
+              <View style={[styles.totalsRow, { marginTop: 4 }]}>
+                <Text style={styles.totalsLabel}>Anticipo / seña</Text>
+                <Text style={styles.totalsValue}>-{formatMoney(budget.deposit, budget.currency)}</Text>
+              </View>
+              <View style={styles.totalsRow}>
+                <Text style={[styles.totalsLabel, { fontFamily: 'Helvetica-Bold', color: '#14181C' }]}>Saldo pendiente</Text>
+                <Text style={styles.totalsValue}>
+                  {formatMoney((Number(budget.total) || 0) - (Number(budget.deposit) || 0), budget.currency)}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
 
+        {(budget.payment_terms || budget.payment_methods || profile?.bank_alias || budget.delivery_time) && (
+          <View style={styles.payGrid} wrap={false}>
+            <PayCol title="Condiciones de pago" text={budget.payment_terms} />
+            <PayCol title="Formas de pago" text={budget.payment_methods} />
+            <PayCol title="Datos bancarios / alias" text={profile?.bank_alias} />
+            <PayCol title="Plazo de entrega" text={budget.delivery_time} />
+          </View>
+        )}
+
         {(budget.notes || budget.terms) && (
-          <View style={styles.notesBlock}>
+          <View style={styles.notesBlock} wrap={false}>
             {budget.notes && (
               <>
                 <Text style={styles.notesTitle}>Notas</Text>
@@ -194,6 +234,17 @@ function PresupuestoPDF({ budget, items, client, profile }) {
             )}
           </View>
         )}
+
+        <View style={styles.signRow} wrap={false}>
+          <View style={styles.signBox}>
+            <View style={styles.signLine} />
+            <Text style={styles.signLabel}>Firma y aclaración del cliente</Text>
+          </View>
+          <View style={styles.signBox}>
+            <View style={styles.signLine} />
+            <Text style={styles.signLabel}>Por {profile?.business_name || 'la empresa'}</Text>
+          </View>
+        </View>
 
         <Text style={styles.footer} fixed>
           {profile?.business_name || ''} · Generado con Cati
@@ -214,7 +265,7 @@ export async function downloadBudgetPdf({ budget, items, client, profile }) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${formatNumero(budget.numero)}.pdf`
+  a.download = `${formatNumero(budget.numero, budget.issue_date)}.pdf`
   document.body.appendChild(a)
   a.click()
   a.remove()

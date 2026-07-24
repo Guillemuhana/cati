@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import StatusBadge from '../components/StatusBadge'
 import Spinner from '../components/Spinner'
 import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
-import { formatDate, formatMoney, formatNumero } from '../lib/utils'
+import { formatDate, formatMoney, formatNumero, STATUS_OPTIONS } from '../lib/utils'
 
 export default function PresupuestoDetail() {
   const { id } = useParams()
@@ -53,11 +53,11 @@ export default function PresupuestoDetail() {
     setBusy(true)
     try {
       const blob = await generateBudgetPdfBlob({ budget, items, client, profile })
-      const file = new File([blob], `${formatNumero(budget.numero)}.pdf`, { type: 'application/pdf' })
+      const file = new File([blob], `${formatNumero(budget.numero, budget.issue_date)}.pdf`, { type: 'application/pdf' })
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: `Presupuesto ${formatNumero(budget.numero)}`,
+          title: `Presupuesto ${formatNumero(budget.numero, budget.issue_date)}`,
           text: `Presupuesto de ${profile?.business_name || ''} para ${client?.name || ''}`
         })
       } else {
@@ -137,12 +137,12 @@ export default function PresupuestoDetail() {
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="font-display text-3xl font-medium text-ink">
-              {budget.title || client?.name || formatNumero(budget.numero)}
+              {budget.title || client?.name || formatNumero(budget.numero, budget.issue_date)}
             </h1>
             <StatusBadge status={budget.status} />
           </div>
           <p className="mt-1 text-sm text-ink-soft">
-            {formatNumero(budget.numero)} · {client?.name || 'Sin cliente'} · Emitido el {formatDate(budget.issue_date)}
+            {formatNumero(budget.numero, budget.issue_date)} · {client?.name || 'Sin cliente'} · Emitido el {formatDate(budget.issue_date)}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -236,7 +236,7 @@ export default function PresupuestoDetail() {
           <div className="rounded-xl2 border border-line bg-surface p-5">
             <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Cambiar estado</p>
             <div className="flex flex-wrap gap-1.5">
-              {['borrador', 'enviado', 'aprobado', 'rechazado', 'vencido'].map((s) => (
+              {STATUS_OPTIONS.map((s) => (
                 <button
                   key={s}
                   onClick={() => handleStatusChange(s)}

@@ -1,15 +1,30 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import ItemsTable, { newItem } from '../components/ItemsTable'
 import ClientPicker from '../components/ClientPicker'
+import Card from '../components/Card'
+import PreviewModal from '../components/PreviewModal'
 import Spinner from '../components/Spinner'
-import { CURRENCIES, calculateTotals, formatMoney } from '../lib/utils'
+import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
+import {
+  CURRENCIES,
+  TAX_PRESETS,
+  VALIDITY_PRESETS,
+  STATUS_OPTIONS,
+  STATUS,
+  calculateTotals,
+  formatMoney,
+  formatNumero,
+  addDays,
+  getBudgetErrors
+} from '../lib/utils'
 
 const emptyBudget = {
   client_id: '',
   title: '',
+  reference: '',
   status: 'borrador',
   issue_date: new Date().toISOString().slice(0, 10),
   due_date: '',
@@ -17,8 +32,12 @@ const emptyBudget = {
   discount_type: 'none',
   discount_value: 0,
   tax_rate: 0,
+  deposit: 0,
   notes: '',
-  terms: 'Presupuesto válido por 15 días. Los precios no incluyen posibles ajustes por cambios de alcance.'
+  terms: 'Presupuesto válido por 15 días. Los precios no incluyen posibles ajustes por cambios de alcance.',
+  payment_terms: '',
+  payment_methods: '',
+  delivery_time: ''
 }
 
 export default function PresupuestoForm() {
@@ -29,11 +48,31 @@ export default function PresupuestoForm() {
 
   const [clients, setClients] = useState([])
   const [budget, setBudget] = useState(emptyBudget)
-  const [items, setItems] = useState([newItem(), newItem()])
+  const [items, setItems] = useState([newItem()])
   const [loading, setLoading] = useState(isEdit)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [errors, setErrors] = useState({})
+  const [savedMsg, setSavedMsg] = useState('')
+  const [showPreview, setShowPreview] = useState(false)
 
+  const dirtyRef = useRef(false)
+  const prefilledRef = useRef(false)
+
+  const markDirty = () => {
+    dirtyRef.current = true
+    setSavedMsg('')
+  }
+  const patchBudget = (patch) => {
+    setBudget((b) => ({ ...b, ...patch }))
+    markDirty()
+  }
+  const handleItems = (next) => {
+    setItems(next.length ? next : [newItem()])
+    markDirty()
+  }
+
+  // Cargar clientes
   useEffect(() => {
     if (!user) return
     supabase
@@ -43,6 +82,7 @@ export default function PresupuestoForm() {
       .then(({ data }) => setClients(data || []))
   }, [user])
 
+  // Cargar presupuesto en edición
   useEffect(() => {
     if (!isEdit || !user) return
     let active = true
@@ -52,8 +92,9 @@ export default function PresupuestoForm() {
         supabase.from('budget_items').select('*').eq('budget_id', id).order('position')
       ])
       if (!active) return
-      if (b) setBudget(b)
-      if (its && its.length) setItems(its)
+      if (b) setBudget({ ...emptyBudget, ...b })
+      setItems(its && its.length ? its : [newItem()])
+      prefilledRef.current = true
       setLoading(false)
     })()
     return () => {
@@ -61,52 +102,90 @@ export default function PresupuestoForm() {
     }
   }, [id, isEdit, user])
 
+  // Prefill de defaults del negocio (solo presupuesto nuevo, una vez)
+  useEffect(() => {
+    if (isEdit || prefilledRef.current || !profile) return
+    prefilledRef.current = true
+    setBudget((b) => ({
+      ...b,
+      currency: profile.currency || b.currency,
+      terms: profile.default_terms || b.terms,
+      payment_terms: profile.default_payment_terms || '',
+      payment_methods: profile.default_payment_methods || ''
+    }))
+  }, [profile, isEdit])
+
+  // Aviso al cerrar/recargar con cambios sin guardar
+  useEffect(() => {
+    const handler = (e) => {
+      if (dirtyRef.current) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [])
+
   const totals = calculateTotals({
     items,
     discountType: budget.discount_type,
     discountValue: budget.discount_value,
-    taxRate: budget.tax_rate
+    taxRate: budget.tax_rate,
+    deposit: budget.deposit
   })
 
   const handleCreateClient = async (clientData) => {
-    const { data, error } = await supabase
+    const { data, error: err } = await supabase
       .from('clients')
       .insert({ ...clientData, user_id: user.id })
       .select()
       .single()
-    if (error) {
-      setError(error.message)
+    if (err) {
+      setError(err.message)
       return null
     }
     setClients((prev) => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)))
     return data
   }
 
-  // Un ítem "cuenta" si tiene descripción o un precio unitario mayor a cero.
-  const hasContent = (it) => (it.description || '').trim() !== '' || Number(it.unit_price) > 0
-
-  const handleSave = async (statusOverride) => {
+  // Guardado central. mode: 'draft' | 'final'. after: 'editar' | 'detail' | 'download' | 'share'
+  const handleSave = async ({ status, mode, after }) => {
+    if (saving) return // evita doble envío
     setError('')
-    const validItems = items.filter(hasContent)
-    if (validItems.length === 0) {
-      setError('Agregá al menos un ítem: escribí una descripción o un precio unitario.')
-      return
+
+    if (mode === 'final') {
+      const errs = getBudgetErrors({ ...budget, items })
+      if (Object.keys(errs).length) {
+        setErrors(errs)
+        setError('Revisá los campos marcados en rojo.')
+        return
+      }
     }
+    setErrors({})
     setSaving(true)
+
     try {
+      const validItems = items.filter((it) => (it.description || '').trim() !== '' || Number(it.unit_price) > 0)
+
       const payload = {
         user_id: user.id,
         client_id: budget.client_id || null,
         title: budget.title,
-        status: statusOverride || budget.status,
+        reference: budget.reference || '',
+        status: status || budget.status,
         issue_date: budget.issue_date,
         due_date: budget.due_date || null,
         currency: budget.currency,
         discount_type: budget.discount_type,
         discount_value: Number(budget.discount_value) || 0,
         tax_rate: Number(budget.tax_rate) || 0,
+        deposit: Number(budget.deposit) || 0,
         notes: budget.notes,
         terms: budget.terms,
+        payment_terms: budget.payment_terms || '',
+        payment_methods: budget.payment_methods || '',
+        delivery_time: budget.delivery_time || '',
         subtotal: totals.subtotal,
         discount_amount: totals.discountAmount,
         tax_amount: totals.taxAmount,
@@ -115,40 +194,76 @@ export default function PresupuestoForm() {
       }
 
       let budgetId = id
+      let numero = budget.numero
 
       if (isEdit) {
-        const { error: updateError } = await supabase.from('budgets').update(payload).eq('id', id)
-        if (updateError) throw updateError
+        const { error: updErr } = await supabase.from('budgets').update(payload).eq('id', id)
+        if (updErr) throw updErr
         await supabase.from('budget_items').delete().eq('budget_id', id)
       } else {
         const { count } = await supabase
           .from('budgets')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id)
-        payload.numero = (count || 0) + 1
-        const { data, error: insertError } = await supabase.from('budgets').insert(payload).select().single()
-        if (insertError) throw insertError
+        numero = (count || 0) + 1
+        payload.numero = numero
+        const { data, error: insErr } = await supabase.from('budgets').insert(payload).select().single()
+        if (insErr) throw insErr
         budgetId = data.id
       }
 
-      const itemsPayload = validItems
-        .map((it, index) => ({
-          budget_id: budgetId,
-          description: (it.description || '').trim() || 'Ítem',
-          quantity: Number(it.quantity) || 0,
-          unit_price: Number(it.unit_price) || 0,
-          discount: Number(it.discount) || 0,
-          position: index
-        }))
-      const { error: itemsError } = await supabase.from('budget_items').insert(itemsPayload)
-      if (itemsError) throw itemsError
+      const itemsPayload = validItems.map((it, index) => ({
+        budget_id: budgetId,
+        description: (it.description || '').trim() || 'Ítem',
+        quantity: Math.max(0, Number(it.quantity) || 0),
+        unit_price: Math.max(0, Number(it.unit_price) || 0),
+        discount: Math.min(100, Math.max(0, Number(it.discount) || 0)),
+        position: index
+      }))
+      if (itemsPayload.length) {
+        const { error: itErr } = await supabase.from('budget_items').insert(itemsPayload)
+        if (itErr) throw itErr
+      }
 
-      navigate(`/presupuestos/${budgetId}`)
+      dirtyRef.current = false
+
+      // Acción posterior
+      if (after === 'download' || after === 'share') {
+        const pdfData = {
+          budget: { ...payload, id: budgetId, numero, subtotal: totals.subtotal, discount_amount: totals.discountAmount, tax_amount: totals.taxAmount, total: totals.total, deposit: totals.deposit, balance: totals.balance },
+          items: itemsPayload,
+          client: clients.find((c) => c.id === budget.client_id) || null,
+          profile
+        }
+        if (after === 'download') {
+          await downloadBudgetPdf(pdfData)
+        } else {
+          await shareBudget(pdfData)
+        }
+      }
+
+      if (after === 'editar' && !isEdit) {
+        navigate(`/presupuestos/${budgetId}/editar`, { replace: true })
+        setSavedMsg('Borrador guardado')
+      } else if (after === 'editar') {
+        setSavedMsg('Cambios guardados')
+      } else {
+        navigate(`/presupuestos/${budgetId}`)
+      }
     } catch (err) {
-      setError(err.message)
+      if (isMissingColumn(err)) {
+        setError('Faltan columnas nuevas en la base. Ejecutá la migración supabase/migration_02.sql en Supabase y volvé a intentar.')
+      } else {
+        setError(err.message || 'No se pudo guardar.')
+      }
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleCancel = () => {
+    if (dirtyRef.current && !window.confirm('Tenés cambios sin guardar. ¿Querés salir igualmente?')) return
+    navigate('/presupuestos')
   }
 
   if (loading) {
@@ -159,9 +274,11 @@ export default function PresupuestoForm() {
     )
   }
 
+  const previewBudget = { ...budget, numero: budget.numero }
+
   return (
     <div className="pb-28 lg:pb-8">
-      <header className="mb-6 flex items-center justify-between">
+      <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link to="/presupuestos" className="text-sm text-ink-soft hover:text-ink">
             ← Presupuestos
@@ -170,51 +287,64 @@ export default function PresupuestoForm() {
             {isEdit ? 'Editar presupuesto' : 'Nuevo presupuesto'}
           </h1>
         </div>
+        <p className="font-mono text-sm text-ink-soft">
+          {formatNumero(budget.numero || (isEdit ? 0 : undefined), budget.issue_date)}
+        </p>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-3">
+        {/* Columna principal */}
         <div className="space-y-6 lg:col-span-2">
-          <Section title="Datos generales">
+          <Card title="Datos generales">
             <div className="grid gap-4 sm:grid-cols-2">
               <Labeled label="Título (opcional)">
                 <input
                   type="text"
                   placeholder="Ej: Rediseño de sitio web"
                   value={budget.title}
-                  onChange={(e) => setBudget({ ...budget, title: e.target.value })}
-                  className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+                  onChange={(e) => patchBudget({ title: e.target.value })}
+                  className={inputCls}
                 />
               </Labeled>
-              <Labeled label="Cliente">
-                <ClientPicker
-                  clients={clients}
-                  value={budget.client_id}
-                  onChange={(clientId) => setBudget({ ...budget, client_id: clientId })}
-                  onCreateClient={handleCreateClient}
+              <Labeled label="Referencia interna (opcional)">
+                <input
+                  type="text"
+                  placeholder="Ej: OC-2026-014"
+                  value={budget.reference}
+                  onChange={(e) => patchBudget({ reference: e.target.value })}
+                  className={inputCls}
                 />
               </Labeled>
               <Labeled label="Fecha de emisión">
                 <input
                   type="date"
                   value={budget.issue_date}
-                  onChange={(e) => setBudget({ ...budget, issue_date: e.target.value })}
-                  className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+                  onChange={(e) => patchBudget({ issue_date: e.target.value })}
+                  className={inputCls}
                 />
               </Labeled>
-              <Labeled label="Válido hasta">
+              <Labeled label="Válido hasta" error={errors.due_date}>
                 <input
                   type="date"
                   value={budget.due_date}
-                  onChange={(e) => setBudget({ ...budget, due_date: e.target.value })}
-                  className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+                  min={budget.issue_date}
+                  onChange={(e) => patchBudget({ due_date: e.target.value })}
+                  className={inputCls}
                 />
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {VALIDITY_PRESETS.map((d) => (
+                    <Chip
+                      key={d}
+                      active={budget.due_date === addDays(budget.issue_date, d)}
+                      onClick={() => patchBudget({ due_date: addDays(budget.issue_date, d) })}
+                    >
+                      {d} días
+                    </Chip>
+                  ))}
+                </div>
               </Labeled>
               <Labeled label="Moneda">
-                <select
-                  value={budget.currency}
-                  onChange={(e) => setBudget({ ...budget, currency: e.target.value })}
-                  className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
-                >
+                <select value={budget.currency} onChange={(e) => patchBudget({ currency: e.target.value })} className={inputCls}>
                   {CURRENCIES.map((c) => (
                     <option key={c} value={c}>
                       {c}
@@ -223,147 +353,280 @@ export default function PresupuestoForm() {
                 </select>
               </Labeled>
               <Labeled label="Estado">
-                <select
-                  value={budget.status}
-                  onChange={(e) => setBudget({ ...budget, status: e.target.value })}
-                  className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
-                >
-                  <option value="borrador">Borrador</option>
-                  <option value="enviado">Enviado</option>
-                  <option value="aprobado">Aprobado</option>
-                  <option value="rechazado">Rechazado</option>
-                  <option value="vencido">Vencido</option>
+                <select value={budget.status} onChange={(e) => patchBudget({ status: e.target.value })} className={inputCls}>
+                  {STATUS_OPTIONS.map((s) => (
+                    <option key={s} value={s}>
+                      {STATUS[s].label}
+                    </option>
+                  ))}
                 </select>
               </Labeled>
             </div>
-          </Section>
+          </Card>
 
-          <Section title="Ítems">
-            <ItemsTable items={items} onChange={setItems} currency={budget.currency} />
-          </Section>
+          <Card title="Cliente" desc="Elegí un cliente o creá uno nuevo sin perder lo cargado.">
+            <span className="mb-1.5 block text-sm font-medium text-ink">
+              Cliente <span className="text-rust-500">*</span>
+            </span>
+            <ClientPicker
+              clients={clients}
+              value={budget.client_id}
+              onChange={(clientId) => patchBudget({ client_id: clientId })}
+              onCreateClient={handleCreateClient}
+            />
+            {errors.client_id && <FieldError>{errors.client_id}</FieldError>}
+          </Card>
 
-          <Section title="Notas y condiciones">
-            <div className="space-y-4">
-              <Labeled label="Notas para el cliente">
-                <textarea
-                  rows={3}
-                  value={budget.notes}
-                  onChange={(e) => setBudget({ ...budget, notes: e.target.value })}
-                  placeholder="Ej: Incluye 2 rondas de revisión."
-                  className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
-                />
+          <Card title="Productos o servicios">
+            <span className="mb-2 block text-sm font-medium text-ink">
+              Ítems <span className="text-rust-500">*</span>
+            </span>
+            <ItemsTable items={items} onChange={handleItems} currency={budget.currency} />
+            {errors.items && <FieldError>{errors.items}</FieldError>}
+          </Card>
+
+          <Card title="Descuentos e impuestos">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Labeled label="Tipo de descuento">
+                <select
+                  value={budget.discount_type}
+                  onChange={(e) => patchBudget({ discount_type: e.target.value })}
+                  className={inputCls}
+                >
+                  <option value="none">Sin descuento</option>
+                  <option value="percent">Porcentaje</option>
+                  <option value="fixed">Monto fijo</option>
+                </select>
               </Labeled>
-              <Labeled label="Condiciones">
-                <textarea
-                  rows={3}
-                  value={budget.terms}
-                  onChange={(e) => setBudget({ ...budget, terms: e.target.value })}
-                  className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+              {budget.discount_type !== 'none' && (
+                <Labeled
+                  label={budget.discount_type === 'percent' ? 'Descuento (%)' : 'Descuento (monto)'}
+                  error={errors.discount_value}
+                >
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    max={budget.discount_type === 'percent' ? 100 : undefined}
+                    value={budget.discount_value}
+                    onChange={(e) => patchBudget({ discount_value: e.target.value })}
+                    className={`${inputCls} font-mono`}
+                  />
+                </Labeled>
+              )}
+              <div className="sm:col-span-2">
+                <span className="mb-1.5 block text-sm font-medium text-ink">IVA / Impuesto</span>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {TAX_PRESETS.map((t) => (
+                    <Chip key={t.label} active={Number(budget.tax_rate) === t.value} onClick={() => patchBudget({ tax_rate: t.value })}>
+                      {t.label}
+                    </Chip>
+                  ))}
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      value={budget.tax_rate}
+                      onChange={(e) => patchBudget({ tax_rate: e.target.value })}
+                      className="w-24 rounded-md border border-line px-2.5 py-1.5 text-right font-mono text-sm focus:border-brand-500 focus:outline-none"
+                      aria-label="Impuesto personalizado (%)"
+                    />
+                    <span className="text-sm text-ink-soft">% personalizado</span>
+                  </div>
+                </div>
+              </div>
+              <Labeled label="Anticipo / seña (opcional)">
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  value={budget.deposit}
+                  onChange={(e) => patchBudget({ deposit: e.target.value })}
+                  className={`${inputCls} font-mono`}
                 />
               </Labeled>
             </div>
-          </Section>
-        </div>
+          </Card>
 
-        <div className="lg:col-span-1">
-          <div className="sticky top-20 space-y-6">
-            <Section title="Descuento e impuesto">
-              <div className="space-y-3">
-                <Labeled label="Tipo de descuento">
-                  <select
-                    value={budget.discount_type}
-                    onChange={(e) => setBudget({ ...budget, discount_type: e.target.value })}
-                    className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
-                  >
-                    <option value="none">Sin descuento</option>
-                    <option value="percent">Porcentaje</option>
-                    <option value="fixed">Monto fijo</option>
-                  </select>
+          <Card title="Notas, condiciones y pago">
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Labeled label="Notas para el cliente">
+                  <textarea
+                    rows={3}
+                    value={budget.notes}
+                    onChange={(e) => patchBudget({ notes: e.target.value })}
+                    placeholder="Ej: Incluye 2 rondas de revisión."
+                    className={inputCls}
+                  />
                 </Labeled>
-                {budget.discount_type !== 'none' && (
-                  <Labeled label={budget.discount_type === 'percent' ? 'Descuento (%)' : 'Descuento (monto)'}>
-                    <input
-                      type="number"
-                      min="0"
-                      value={budget.discount_value}
-                      onChange={(e) => setBudget({ ...budget, discount_value: e.target.value })}
-                      className="w-full rounded-md border border-line px-3 py-2 text-sm font-mono focus:border-brand-500 focus:outline-none"
-                    />
-                  </Labeled>
-                )}
-                <Labeled label="Impuesto (%)">
+                <Labeled label="Condiciones">
+                  <textarea rows={3} value={budget.terms} onChange={(e) => patchBudget({ terms: e.target.value })} className={inputCls} />
+                </Labeled>
+                <Labeled label="Condiciones de pago">
+                  <textarea
+                    rows={2}
+                    value={budget.payment_terms}
+                    onChange={(e) => patchBudget({ payment_terms: e.target.value })}
+                    placeholder="Ej: 50% al aprobar, 50% contra entrega."
+                    className={inputCls}
+                  />
+                </Labeled>
+                <Labeled label="Formas de pago">
+                  <textarea
+                    rows={2}
+                    value={budget.payment_methods}
+                    onChange={(e) => patchBudget({ payment_methods: e.target.value })}
+                    placeholder="Ej: Transferencia, efectivo, Mercado Pago."
+                    className={inputCls}
+                  />
+                </Labeled>
+                <Labeled label="Plazo estimado de entrega">
                   <input
-                    type="number"
-                    min="0"
-                    value={budget.tax_rate}
-                    onChange={(e) => setBudget({ ...budget, tax_rate: e.target.value })}
-                    className="w-full rounded-md border border-line px-3 py-2 text-sm font-mono focus:border-brand-500 focus:outline-none"
+                    type="text"
+                    value={budget.delivery_time}
+                    onChange={(e) => patchBudget({ delivery_time: e.target.value })}
+                    placeholder="Ej: 15 días hábiles"
+                    className={inputCls}
                   />
                 </Labeled>
               </div>
-            </Section>
+              {profile?.bank_alias && (
+                <p className="text-xs text-ink-faint">
+                  Alias/datos bancarios de «Mi negocio» se incluyen automáticamente: <span className="text-ink-soft">{profile.bank_alias}</span>
+                </p>
+              )}
+            </div>
+          </Card>
+        </div>
 
-            <Section title="Resumen">
+        {/* Resumen (sticky en desktop, en flujo en móvil) */}
+        <div className="lg:col-span-1">
+          <div className="space-y-4 lg:sticky lg:top-20">
+            <Card title="Resumen">
               <div className="space-y-2 font-mono text-sm">
                 <Row label="Subtotal" value={formatMoney(totals.subtotal, budget.currency)} />
-                {totals.discountAmount > 0 && (
-                  <Row label="Descuento" value={`-${formatMoney(totals.discountAmount, budget.currency)}`} />
-                )}
-                {totals.taxAmount > 0 && <Row label="Impuesto" value={formatMoney(totals.taxAmount, budget.currency)} />}
-                <div className="mt-2 flex items-center justify-between border-t border-line pt-2">
+                {totals.discountAmount > 0 && <Row label="Descuento" value={`-${formatMoney(totals.discountAmount, budget.currency)}`} />}
+                {totals.taxAmount > 0 && <Row label={`Impuesto (${budget.tax_rate}%)`} value={formatMoney(totals.taxAmount, budget.currency)} />}
+                <div className="mt-2 flex items-center justify-between rounded-lg bg-brand-500/[0.06] px-3 py-2">
                   <span className="font-sans text-sm font-semibold text-ink">Total</span>
-                  <span className="text-base font-semibold text-brand-600">
-                    {formatMoney(totals.total, budget.currency)}
-                  </span>
+                  <span className="font-sans text-xl font-semibold text-brand-700">{formatMoney(totals.total, budget.currency)}</span>
                 </div>
+                {totals.deposit > 0 && (
+                  <>
+                    <Row label="Anticipo / seña" value={`-${formatMoney(totals.deposit, budget.currency)}`} />
+                    <div className="flex items-center justify-between border-t border-line pt-2">
+                      <span className="font-sans text-sm font-semibold text-ink">Saldo pendiente</span>
+                      <span className="font-semibold text-ink">{formatMoney(totals.balance, budget.currency)}</span>
+                    </div>
+                  </>
+                )}
               </div>
-            </Section>
 
-            {error && <p className="text-sm text-rust-500">{error}</p>}
+              {error && <p className="mt-4 rounded-md bg-rust-500/10 px-3 py-2 text-sm text-rust-500">{error}</p>}
+              {savedMsg && <p className="mt-4 text-sm text-teal-600">{savedMsg} ✓</p>}
 
-            <div className="hidden gap-2 lg:flex">
-              <button
-                onClick={() => handleSave()}
-                disabled={saving}
-                className="btn-primary flex-1 rounded-md py-2.5 text-sm font-semibold"
-              >
-                {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear presupuesto'}
-              </button>
-            </div>
+              <div className="mt-5 space-y-2">
+                <button onClick={() => handleSave({ status: budget.status, mode: 'final', after: 'detail' })} disabled={saving} className="btn-primary w-full rounded-md py-2.5 text-sm font-semibold">
+                  {saving ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear presupuesto'}
+                </button>
+                <div className="grid grid-cols-2 gap-2">
+                  <SecondaryBtn onClick={() => setShowPreview(true)} disabled={saving}>Vista previa</SecondaryBtn>
+                  <SecondaryBtn onClick={() => handleSave({ status: budget.status, mode: 'final', after: 'download' })} disabled={saving}>
+                    Crear + PDF
+                  </SecondaryBtn>
+                  <SecondaryBtn onClick={() => handleSave({ status: 'enviado', mode: 'final', after: 'share' })} disabled={saving}>
+                    Crear + enviar
+                  </SecondaryBtn>
+                  <SecondaryBtn onClick={() => handleSave({ status: 'borrador', mode: 'draft', after: 'editar' })} disabled={saving}>
+                    Guardar borrador
+                  </SecondaryBtn>
+                </div>
+                <button onClick={handleCancel} disabled={saving} className="w-full rounded-md px-4 py-2 text-sm font-medium text-ink-soft transition hover:text-rust-500">
+                  Cancelar
+                </button>
+              </div>
+            </Card>
           </div>
         </div>
       </div>
 
-      {/* Barra de acción fija en mobile */}
-      <div className="fixed inset-x-0 bottom-16 z-20 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
+      {/* Barra inferior fija (móvil) */}
+      <div className="fixed inset-x-0 bottom-16 z-20 flex items-center gap-3 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] uppercase tracking-wide text-ink-faint">Total</p>
+          <p className="truncate font-mono text-base font-semibold text-brand-700">{formatMoney(totals.total, budget.currency)}</p>
+        </div>
         <button
-          onClick={() => handleSave()}
+          onClick={() => handleSave({ status: budget.status, mode: 'final', after: 'detail' })}
           disabled={saving}
-          className="btn-primary w-full rounded-md py-2.5 text-sm font-semibold"
+          className="btn-primary shrink-0 rounded-md px-5 py-2.5 text-sm font-semibold"
         >
-          {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear presupuesto'}
+          {saving ? 'Guardando…' : isEdit ? 'Guardar' : 'Crear'}
         </button>
       </div>
+
+      {showPreview && (
+        <PreviewModal
+          budget={previewBudget}
+          items={items}
+          client={clients.find((c) => c.id === budget.client_id) || null}
+          profile={profile}
+          totals={totals}
+          onClose={() => setShowPreview(false)}
+          actions={
+            <button
+              onClick={() => {
+                setShowPreview(false)
+                handleSave({ status: budget.status, mode: 'final', after: 'detail' })
+              }}
+              className="btn-primary rounded-md px-3.5 py-1.5 text-sm font-semibold"
+            >
+              {isEdit ? 'Guardar' : 'Crear presupuesto'}
+            </button>
+          }
+        />
+      )}
     </div>
   )
 }
 
-function Section({ title, children }) {
-  return (
-    <section>
-      <h2 className="mb-3 font-display text-base font-medium text-ink">{title}</h2>
-      {children}
-    </section>
-  )
+// Comparte el PDF por la API nativa o cae a descarga.
+async function shareBudget(pdfData) {
+  try {
+    const blob = await generateBudgetPdfBlob(pdfData)
+    const file = new File([blob], `${formatNumero(pdfData.budget.numero, pdfData.budget.issue_date)}.pdf`, { type: 'application/pdf' })
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'Presupuesto', text: `Presupuesto de ${pdfData.profile?.business_name || ''}` })
+    } else {
+      await downloadBudgetPdf(pdfData)
+    }
+  } catch (err) {
+    if (err?.name !== 'AbortError') await downloadBudgetPdf(pdfData)
+  }
 }
 
-function Labeled({ label, children }) {
+function isMissingColumn(err) {
+  const m = `${err?.message || ''} ${err?.code || ''}`.toLowerCase()
+  return m.includes('column') || err?.code === 'pgrst204' || err?.code === '42703'
+}
+
+const inputCls =
+  'w-full rounded-md border border-line px-3 py-2 text-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20'
+
+function Labeled({ label, error, children }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-sm font-medium text-ink">{label}</span>
       {children}
+      {error && <FieldError>{error}</FieldError>}
     </label>
   )
+}
+
+function FieldError({ children }) {
+  return <p className="mt-1.5 text-xs text-rust-500">{children}</p>
 }
 
 function Row({ label, value }) {
@@ -372,5 +635,34 @@ function Row({ label, value }) {
       <span>{label}</span>
       <span className="text-ink">{value}</span>
     </div>
+  )
+}
+
+function Chip({ active, onClick, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        active
+          ? 'rounded-full border border-brand-500 bg-brand-500 px-3 py-1.5 text-xs font-medium text-white'
+          : 'rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-ink-faint'
+      }
+    >
+      {children}
+    </button>
+  )
+}
+
+function SecondaryBtn({ onClick, disabled, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="rounded-md border border-line px-3 py-2 text-sm font-medium text-ink transition hover:border-ink-faint hover:bg-ink/[0.02] disabled:opacity-50"
+    >
+      {children}
+    </button>
   )
 }

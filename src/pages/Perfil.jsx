@@ -12,7 +12,10 @@ export default function Perfil() {
     tax_id: profile?.tax_id || '',
     address: profile?.address || '',
     currency: profile?.currency || 'ARS',
-    default_terms: profile?.default_terms || ''
+    default_terms: profile?.default_terms || '',
+    default_payment_terms: profile?.default_payment_terms || '',
+    default_payment_methods: profile?.default_payment_methods || '',
+    bank_alias: profile?.bank_alias || ''
   })
   const [logoFile, setLogoFile] = useState(null)
   const [preview, setPreview] = useState(profile?.logo_url || '')
@@ -145,6 +148,37 @@ export default function Perfil() {
             rows={3}
             value={form.default_terms}
             onChange={(e) => setForm({ ...form, default_terms: e.target.value })}
+            className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+          />
+        </Field>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Condiciones de pago por defecto">
+            <textarea
+              rows={2}
+              value={form.default_payment_terms}
+              onChange={(e) => setForm({ ...form, default_payment_terms: e.target.value })}
+              placeholder="Ej: 50% al aprobar, 50% contra entrega."
+              className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+            />
+          </Field>
+          <Field label="Formas de pago por defecto">
+            <textarea
+              rows={2}
+              value={form.default_payment_methods}
+              onChange={(e) => setForm({ ...form, default_payment_methods: e.target.value })}
+              placeholder="Ej: Transferencia, efectivo, Mercado Pago."
+              className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+            />
+          </Field>
+        </div>
+
+        <Field label="Datos bancarios / alias (aparecen en el PDF)">
+          <input
+            type="text"
+            value={form.bank_alias}
+            onChange={(e) => setForm({ ...form, bank_alias: e.target.value })}
+            placeholder="Ej: alias mi.negocio.mp · CBU 000..."
             className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           />
         </Field>

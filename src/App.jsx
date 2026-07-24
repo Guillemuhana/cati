@@ -9,6 +9,7 @@ import PresupuestoDetail from './pages/PresupuestoDetail'
 import Clientes from './pages/Clientes'
 import Productos from './pages/Productos'
 import Reportes from './pages/Reportes'
+import Premium from './pages/Premium'
 import PublicBudget from './pages/PublicBudget'
 import Perfil from './pages/Perfil'
 import Layout from './components/Layout'
@@ -98,6 +99,16 @@ export default function App() {
           <ProtectedRoute>
             <Layout>
               <Reportes />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/premium"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Premium />
             </Layout>
           </ProtectedRoute>
         }

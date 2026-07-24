@@ -4,11 +4,20 @@ import { useAuth } from '../context/AuthContext'
 import StatCard from '../components/StatCard'
 import Card from '../components/Card'
 import Spinner from '../components/Spinner'
+import { PremiumGate } from '../components/Paywall'
 import { formatMoney, formatDate, formatNumero, STATUS } from '../lib/utils'
 
 const ACCEPTED = ['aceptado', 'aprobado']
 
 export default function Reportes() {
+  return (
+    <PremiumGate title="Reportes">
+      <ReportesInner />
+    </PremiumGate>
+  )
+}
+
+function ReportesInner() {
   const { user, profile } = useAuth()
   const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)

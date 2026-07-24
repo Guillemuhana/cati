@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
+import { usePlan } from '../hooks/usePlan'
 import StatusBadge from '../components/StatusBadge'
 import Spinner from '../components/Spinner'
 import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
@@ -12,6 +13,7 @@ export default function PresupuestoDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, profile } = useAuth()
+  const { isPremium } = usePlan()
 
   const [budget, setBudget] = useState(null)
   const [items, setItems] = useState([])
@@ -281,7 +283,14 @@ export default function PresupuestoDetail() {
             </div>
           </div>
 
-          {publicUrl && (
+          {publicUrl && !isPremium && (
+            <Link to="/premium" className="block rounded-xl2 border border-dashed border-brand-500/40 bg-brand-500/[0.04] p-5 text-center transition hover:bg-brand-500/[0.07]">
+              <p className="text-sm font-semibold text-brand-700">🔒 Enlace público + QR</p>
+              <p className="mt-1 text-xs text-ink-soft">Compartí un link para que el cliente vea y acepte online. Función premium.</p>
+            </Link>
+          )}
+
+          {publicUrl && isPremium && (
             <div className="rounded-xl2 border border-line bg-surface p-5">
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Compartir con el cliente</p>
               <div className="flex items-center gap-3">

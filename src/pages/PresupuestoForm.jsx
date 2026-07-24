@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import ItemsTable, { newItem } from '../components/ItemsTable'
 import ClientPicker from '../components/ClientPicker'
 import ProductPicker from '../components/ProductPicker'
+import { usePlan } from '../hooks/usePlan'
 import Card from '../components/Card'
 import PreviewModal from '../components/PreviewModal'
 import Spinner from '../components/Spinner'
@@ -46,6 +47,7 @@ export default function PresupuestoForm() {
   const isEdit = Boolean(id)
   const navigate = useNavigate()
   const { user, profile } = useAuth()
+  const { isPremium } = usePlan()
 
   const [clients, setClients] = useState([])
   const [products, setProducts] = useState([])
@@ -364,7 +366,7 @@ export default function PresupuestoForm() {
           <p className="mr-1 font-mono text-sm text-ink-soft">
             {formatNumero(budget.numero || (isEdit ? 0 : undefined), budget.issue_date, profile?.number_prefix)}
           </p>
-          {templates.length > 0 && (
+          {isPremium && templates.length > 0 && (
             <select
               onChange={(e) => {
                 if (e.target.value) applyTemplate(e.target.value)
@@ -382,13 +384,15 @@ export default function PresupuestoForm() {
               ))}
             </select>
           )}
-          <button
-            type="button"
-            onClick={saveTemplate}
-            className="rounded-md border border-line px-2.5 py-1.5 text-xs font-medium text-ink-soft transition hover:border-ink-faint hover:text-ink"
-          >
-            Guardar como plantilla
-          </button>
+          {isPremium && (
+            <button
+              type="button"
+              onClick={saveTemplate}
+              className="rounded-md border border-line px-2.5 py-1.5 text-xs font-medium text-ink-soft transition hover:border-ink-faint hover:text-ink"
+            >
+              Guardar como plantilla
+            </button>
+          )}
         </div>
       </header>
 
@@ -479,7 +483,7 @@ export default function PresupuestoForm() {
 
           <Card
             title="Productos o servicios"
-            action={<ProductPicker products={products} currency={budget.currency} onPick={pickProduct} />}
+            action={isPremium ? <ProductPicker products={products} currency={budget.currency} onPick={pickProduct} /> : null}
           >
             <ItemsTable items={items} onChange={handleItems} currency={budget.currency} />
             {errors.items && <FieldError>{errors.items}</FieldError>}

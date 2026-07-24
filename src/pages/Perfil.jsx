@@ -1,10 +1,13 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { usePlan } from '../hooks/usePlan'
 import { supabase } from '../lib/supabaseClient'
 import { CURRENCIES } from '../lib/utils'
 
 export default function Perfil() {
   const { profile, user, updateProfile, refreshProfile } = useAuth()
+  const { isPremium } = usePlan()
   const [form, setForm] = useState({
     business_name: profile?.business_name || '',
     email: profile?.email || user?.email || '',
@@ -186,7 +189,14 @@ export default function Perfil() {
           />
         </Field>
 
-        <div className="rounded-xl2 border border-line bg-paper/50 p-4">
+        {!isPremium && (
+          <Link to="/premium" className="block rounded-xl2 border border-dashed border-brand-500/40 bg-brand-500/[0.04] p-4 text-center transition hover:bg-brand-500/[0.07]">
+            <p className="text-sm font-semibold text-brand-700">🔒 Marca y numeración personalizada</p>
+            <p className="mt-1 text-xs text-ink-soft">Color propio, prefijo de numeración y ocultar «Generado con Cati». Función premium.</p>
+          </Link>
+        )}
+
+        <div className={`rounded-xl2 border border-line bg-paper/50 p-4 ${isPremium ? '' : 'pointer-events-none opacity-50'}`}>
           <p className="mb-3 text-sm font-semibold text-ink">Marca y numeración</p>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Color de marca (PDF)">

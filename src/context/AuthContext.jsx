@@ -40,10 +40,13 @@ export function AuthProvider({ children }) {
     if (error) throw error
 
     if (data.user) {
+      const trialEnds = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
       await supabase.from('profiles').upsert({
         id: data.user.id,
         business_name: businessName || '',
-        email
+        email,
+        plan: 'free',
+        trial_ends_at: trialEnds
       })
     }
     return data

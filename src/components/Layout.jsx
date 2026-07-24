@@ -1,6 +1,7 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { usePlan } from '../hooks/usePlan'
 import { classNames } from '../lib/utils'
 
 const NAV_ITEMS = [
@@ -92,7 +93,10 @@ export default function Layout({ children }) {
 
       {/* Contenido */}
       <main className="pb-20 lg:ml-64 lg:pb-8">
-        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">{children}</div>
+        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+          <TrialBanner />
+          {children}
+        </div>
       </main>
 
       {/* Barra inferior mobile */}
@@ -132,6 +136,35 @@ function NavItem({ to, label, icon: Icon, onClick }) {
       <Icon className="h-[18px] w-[18px]" />
       {label}
     </NavLink>
+  )
+}
+
+function TrialBanner() {
+  const { isPaid, trialActive, hoursLeft } = usePlan()
+  if (isPaid) return null
+
+  if (trialActive) {
+    return (
+      <Link
+        to="/premium"
+        className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brand-500/25 bg-gradient-to-r from-brand-500/[0.07] to-teal-500/[0.07] px-4 py-2.5 text-sm transition hover:from-brand-500/[0.12]"
+      >
+        <span className="text-ink-soft">
+          ✨ Prueba premium activa · te quedan <b className="text-brand-700">{hoursLeft} h</b> con todo desbloqueado
+        </span>
+        <span className="font-medium text-brand-700">Ver planes →</span>
+      </Link>
+    )
+  }
+
+  return (
+    <Link
+      to="/premium"
+      className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brass-500/40 bg-brass-500/[0.08] px-4 py-2.5 text-sm transition hover:bg-brass-500/[0.14]"
+    >
+      <span className="text-ink-soft">🔒 Tu prueba gratuita terminó · desbloqueá las funciones premium</span>
+      <span className="font-semibold text-brass-600">Desbloquear por USD 2 →</span>
+    </Link>
   )
 }
 

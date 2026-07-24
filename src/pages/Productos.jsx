@@ -2,11 +2,20 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import Spinner from '../components/Spinner'
+import { PremiumGate } from '../components/Paywall'
 import { formatMoney } from '../lib/utils'
 
 const emptyProduct = { name: '', description: '', unit_price: 0 }
 
 export default function Productos() {
+  return (
+    <PremiumGate title="Catálogo de productos">
+      <ProductosInner />
+    </PremiumGate>
+  )
+}
+
+function ProductosInner() {
   const { user, profile } = useAuth()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)

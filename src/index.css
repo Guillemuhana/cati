@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+::selection {
+  background: #1F6F5C;
+  color: #F7F6F2;
+}
+
+/* Foco de teclado visible y consistente */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #1F6F5C;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Línea de puntos tipo recibo/menú, para conectar descripción -> precio */
+.leader-line {
+  flex: 1;
+  border-bottom: 1.5px dotted #C9C4B4;
+  margin: 0 0.6rem;
+  min-width: 12px;
+  transform: translateY(-4px);
+}
+
+/* Insignia de estado con aspecto de sello, ligeramente rotada */
+.stamp {
+  transform: rotate(-3deg);
+}
+
+/* Scrollbar discreta */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #E4E1D9;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

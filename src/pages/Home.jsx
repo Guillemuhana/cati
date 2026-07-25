@@ -6,8 +6,11 @@ export default function Home() {
       {/* Foto de fondo del hero, velada para que el texto siga legible */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[85vh] overflow-hidden" aria-hidden="true">
         <img src="/fondo.jpg" alt="" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-paper/85" />
-        <div className="absolute inset-0 bg-gradient-to-b from-paper/40 via-paper/70 to-paper" />
+        <div className="absolute inset-0 bg-paper/45" />
+        <div className="absolute inset-0 bg-gradient-to-b from-paper/10 via-paper/35 to-paper" />
+        {/* Halo detrás del bloque de texto, para que el gris del subtítulo no
+            compita con las zonas claras de la foto */}
+        <div className="absolute left-1/2 top-[46%] h-[30rem] w-[58rem] max-w-[95vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-paper/70 blur-3xl" />
       </div>
 
       {/* Degradados decorativos con los colores del logo */}
@@ -18,9 +21,10 @@ export default function Home() {
       </div>
 
       <header className="relative mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
-        <img src="/logo-numera.png" alt="Numera" className="h-9 w-auto object-contain" />
+        <img src="/logo-numera.png" alt="Numera" className="h-9 w-auto object-contain sm:h-14" />
         <div className="flex items-center gap-3">
-          <Link to="/ingresar" className="text-sm font-medium text-ink-soft hover:text-ink">
+          {/* En mobile no entra junto al logo, y el hero ya ofrece "Ya tengo cuenta" */}
+          <Link to="/ingresar" className="hidden text-sm font-medium text-ink-soft hover:text-ink sm:inline">
             Ingresar
           </Link>
           <Link

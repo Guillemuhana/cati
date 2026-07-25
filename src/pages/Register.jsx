@@ -54,7 +54,7 @@ export default function Register() {
             value={form.businessName}
             onChange={(e) => setForm({ ...form, businessName: e.target.value })}
             className="w-full rounded-md border border-line px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none"
-            placeholder="Ej: Estudio Cati"
+            placeholder="Ej: Estudio Martínez"
           />
         </Field>
         <Field label="Email">

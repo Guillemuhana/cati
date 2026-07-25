@@ -172,11 +172,11 @@ function TrialBanner() {
 function Brand({ compact = false }) {
   return (
     <div className="flex items-center gap-2.5">
-      <img src="/cati-icon.svg" alt="Cati" className="h-8 w-8" />
+      <img src="/numera-icon.svg" alt="Numera" className="h-8 w-8" />
       {!compact && (
-        <span className="font-display text-xl font-medium tracking-tight text-ink">Cati</span>
+        <span className="font-display text-xl font-medium tracking-tight text-ink">Numera</span>
       )}
-      {compact && <span className="font-display text-lg font-medium text-ink">Cati</span>}
+      {compact && <span className="font-display text-lg font-medium text-ink">Numera</span>}
     </div>
   )
 }

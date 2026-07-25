@@ -37,7 +37,7 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
               {profile?.logo_url ? (
                 <img src={profile.logo_url} alt="Logo" className="mb-2 h-12 w-12 object-contain" />
               ) : (
-                <img src="/cati-icon.svg" alt="Logo" className="mb-2 h-12 w-12" />
+                <img src="/numera-icon.svg" alt="Logo" className="mb-2 h-12 w-12" />
               )}
               <p className="font-display text-lg font-semibold text-ink">{profile?.business_name || 'Tu negocio'}</p>
               {profile?.tax_id && <p className="text-xs text-ink-soft">{profile.tax_id}</p>}

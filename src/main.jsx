@@ -23,7 +23,7 @@ if (!supabaseConfigured) {
       }}
     >
       <div style={{ maxWidth: 460, textAlign: 'center' }}>
-        <img src="/cati-icon.svg" alt="Cati" width={56} height={56} style={{ marginBottom: 16 }} />
+        <img src="/numera-icon.svg" alt="Numera" width={56} height={56} style={{ marginBottom: 16 }} />
         <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>Falta configurar Supabase</h1>
         <p style={{ fontSize: 14, color: '#5B6570', lineHeight: 1.5 }}>
           No se encontraron las variables <code>VITE_SUPABASE_URL</code> y{' '}

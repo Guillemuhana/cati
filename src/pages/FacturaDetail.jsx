@@ -26,6 +26,7 @@ function FacturaDetailInner() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [payOpen, setPayOpen] = useState(false)
+  const [pdfError, setPdfError] = useState('')
 
   const load = async () => {
     const { data: inv } = await supabase.from('invoices').select('*, clients(*)').eq('id', id).single()
@@ -57,10 +58,22 @@ function FacturaDetailInner() {
 
   const handleDownload = async () => {
     setBusy(true)
+    setPdfError('')
     try {
       await downloadInvoicePdf({ invoice, client, profile })
+    } catch (err) {
+      setPdfError(err?.message || 'No se pudo generar el PDF del comprobante.')
     } finally {
       setBusy(false)
+    }
+  }
+
+  const handleReceiptDownload = async (receipt) => {
+    setPdfError('')
+    try {
+      await downloadReceiptPdf({ receipt, client, profile })
+    } catch (err) {
+      setPdfError(err?.message || 'No se pudo generar el PDF del recibo.')
     }
   }
 
@@ -94,7 +107,7 @@ function FacturaDetailInner() {
     setPayOpen(false)
     await load()
     // descargar el recibo recién creado
-    downloadReceiptPdf({ receipt: rec, client, profile })
+    await handleReceiptDownload(rec)
   }
 
   const anular = async () => {
@@ -121,7 +134,7 @@ function FacturaDetailInner() {
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={handleDownload} disabled={busy} className="rounded-md border border-line px-3.5 py-2 text-sm font-medium text-ink transition hover:border-ink-faint disabled:opacity-60">
-            Descargar PDF
+            {busy ? 'Generando...' : 'Descargar PDF'}
           </button>
           {invoice.status !== 'anulada' && saldo > 0 && (
             <button onClick={() => setPayOpen(true)} className="btn-primary rounded-md px-3.5 py-2 text-sm font-semibold">
@@ -130,6 +143,12 @@ function FacturaDetailInner() {
           )}
         </div>
       </header>
+
+      {pdfError && (
+        <p className="mt-3 rounded-md border border-rust-500/40 bg-rust-500/[0.08] px-3 py-2 text-xs text-rust-500">
+          {pdfError}
+        </p>
+      )}
 
       <p className="mt-3 rounded-md bg-brass-500/[0.08] px-3 py-2 text-xs text-ink-soft">
         Comprobante interno (no fiscal). No reemplaza la factura oficial de AFIP.
@@ -173,7 +192,7 @@ function FacturaDetailInner() {
                     </div>
                     <div className="flex shrink-0 items-center gap-3">
                       <span className="font-mono text-ink">{formatMoney(r.amount, r.currency)}</span>
-                      <button onClick={() => downloadReceiptPdf({ receipt: r, client, profile })} className="text-xs font-medium text-brand-600 hover:underline">
+                      <button onClick={() => handleReceiptDownload(r)} className="text-xs font-medium text-brand-600 hover:underline">
                         PDF
                       </button>
                     </div>

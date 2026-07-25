@@ -96,6 +96,22 @@ const styles = StyleSheet.create({
   }
 })
 
+// Los ítems de una factura salen de una columna jsonb (snapshot), así que
+// pueden llegar como array, como string JSON o como null. Los de un
+// presupuesto salen de una tabla. Normalizamos para no romper el .map().
+function normalizeItems(raw) {
+  if (Array.isArray(raw)) return raw
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
 function PayCol({ title, text }) {
   if (!text) return null
   return (
@@ -110,6 +126,7 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
   const statusLabel = statusText || (STATUS[budget.status] || STATUS.borrador).label
   const accent = profile?.brand_color || '#1B2A66'
   const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)
+  const rows = normalizeItems(items)
 
   return (
     <Document title={`${numero} - ${budget.title || client?.name || ''}`}>
@@ -159,11 +176,11 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
             <Text style={[styles.th, styles.colDisc]}>Desc.</Text>
             <Text style={[styles.th, styles.colTotal]}>Importe</Text>
           </View>
-          {items.map((it) => {
+          {rows.map((it, i) => {
             const lineBase = (Number(it.quantity) || 0) * (Number(it.unit_price) || 0)
             const lineTotal = lineBase - lineBase * ((Number(it.discount) || 0) / 100)
             return (
-              <View key={it.id} style={styles.tr}>
+              <View key={it.id ?? i} style={styles.tr}>
                 <Text style={styles.colDesc}>{it.description}</Text>
                 <Text style={styles.colQty}>{it.quantity}</Text>
                 <Text style={styles.colPrice}>{formatMoney(it.unit_price, budget.currency)}</Text>
@@ -249,7 +266,7 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
         </View>
 
         <Text style={styles.footer} fixed>
-          {profile?.business_name || ''}{profile?.hide_branding ? '' : ' · Generado con Cati'}
+          {profile?.business_name || ''}{profile?.hide_branding ? '' : ' · Generado con Numera'}
         </Text>
       </Page>
     </Document>
@@ -347,7 +364,7 @@ function ReciboPDF({ receipt, client, profile }) {
         </View>
 
         <Text style={styles.footer} fixed>
-          {profile?.business_name || ''}{profile?.hide_branding ? '' : ' · Generado con Cati'}
+          {profile?.business_name || ''}{profile?.hide_branding ? '' : ' · Generado con Numera'}
         </Text>
       </Page>
     </Document>
@@ -362,12 +379,26 @@ export async function downloadReceiptPdf({ receipt, client, profile }) {
 function triggerDownload(blob, filename) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  URL.revokeObjectURL(url)
+
+  if ('download' in a) {
+    a.href = url
+    a.download = filename
+    a.rel = 'noopener'
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
+  } else {
+    // iOS Safari no soporta el atributo `download`: abrimos el PDF en otra pestaña.
+    window.open(url, '_blank')
+  }
+
+  // Revocar la URL en el mismo tick cancela la descarga en Firefox, Safari y
+  // varios WebView de Android: el navegador todavía no leyó el blob. Le damos
+  // margen antes de liberar la memoria.
+  setTimeout(() => {
+    a.remove()
+    URL.revokeObjectURL(url)
+  }, 60000)
 }
 
 export default PresupuestoPDF

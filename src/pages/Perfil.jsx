@@ -192,7 +192,7 @@ export default function Perfil() {
         {!isPremium && (
           <Link to="/premium" className="block rounded-xl2 border border-dashed border-brand-500/40 bg-brand-500/[0.04] p-4 text-center transition hover:bg-brand-500/[0.07]">
             <p className="text-sm font-semibold text-brand-700">🔒 Marca y numeración personalizada</p>
-            <p className="mt-1 text-xs text-ink-soft">Color propio, prefijo de numeración y ocultar «Generado con Cati». Función premium.</p>
+            <p className="mt-1 text-xs text-ink-soft">Color propio, prefijo de numeración y ocultar «Generado con Numera». Función premium.</p>
           </Link>
         )}
 
@@ -226,7 +226,7 @@ export default function Perfil() {
                 className="w-full rounded-md border border-line px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none"
               />
             </Field>
-            <Field label="Marca de Cati en el PDF">
+            <Field label="Marca de Numera en el PDF">
               <label className="flex items-center gap-2 py-2 text-sm text-ink-soft">
                 <input
                   type="checkbox"
@@ -234,7 +234,7 @@ export default function Perfil() {
                   onChange={(e) => setForm({ ...form, hide_branding: e.target.checked })}
                   className="h-4 w-4 rounded border-line text-brand-500 focus:ring-brand-500"
                 />
-                Ocultar «Generado con Cati»
+                Ocultar «Generado con Numera»
               </label>
             </Field>
           </div>

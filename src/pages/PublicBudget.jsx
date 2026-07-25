@@ -45,7 +45,7 @@ export default function PublicBudget() {
   if (notFound) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center bg-paper px-6 text-center">
-        <img src="/cati-icon.svg" alt="Cati" className="mb-4 h-12 w-12" />
+        <img src="/numera-icon.svg" alt="Numera" className="mb-4 h-12 w-12" />
         <h1 className="font-display text-xl font-medium text-ink">Presupuesto no encontrado</h1>
         <p className="mt-1 text-sm text-ink-soft">El enlace puede haber cambiado o ya no está disponible.</p>
       </div>
@@ -70,7 +70,7 @@ export default function PublicBudget() {
                 {business?.logo_url ? (
                   <img src={business.logo_url} alt="" className="mb-2 h-12 w-12 object-contain" />
                 ) : (
-                  <img src="/cati-icon.svg" alt="" className="mb-2 h-12 w-12" />
+                  <img src="/numera-icon.svg" alt="" className="mb-2 h-12 w-12" />
                 )}
                 <p className="font-display text-lg font-semibold text-ink">{business?.business_name || 'Presupuesto'}</p>
                 {business?.tax_id && <p className="text-xs text-ink-soft">{business.tax_id}</p>}
@@ -189,7 +189,7 @@ export default function PublicBudget() {
         </div>
 
         <p className="mt-4 text-center text-xs text-ink-faint">
-          {business?.hide_branding ? business?.business_name : 'Hecho con Cati'}
+          {business?.hide_branding ? business?.business_name : 'Hecho con Numera'}
         </p>
       </div>
     </div>

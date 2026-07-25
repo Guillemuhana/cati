@@ -18,6 +18,6 @@ export const PREMIUM_FEATURES = [
   'Plantillas de presupuesto',
   'Enlace público + QR para que el cliente vea y acepte',
   'Seguimiento: visto / aceptado / rechazado',
-  'PDF con tu marca (color, prefijo, sin “Generado con Cati”)',
+  'PDF con tu marca (color, prefijo, sin “Generado con Numera”)',
   'Reportes y exportación a Excel/CSV'
 ]

@@ -10,8 +10,8 @@ export default function Premium() {
   return (
     <div className="mx-auto max-w-2xl">
       <header className="mb-6 text-center">
-        <img src="/cati-icon.svg" alt="" className="mx-auto mb-3 h-14 w-14" />
-        <h1 className="font-display text-3xl font-medium text-ink">Cati Premium</h1>
+        <img src="/numera-icon.svg" alt="" className="mx-auto mb-3 h-14 w-14" />
+        <h1 className="font-display text-3xl font-medium text-ink">Numera Premium</h1>
         <p className="mt-1 text-sm text-ink-soft">Todo lo que necesitás para cerrar más presupuestos.</p>
       </header>
 

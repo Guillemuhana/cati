@@ -3,6 +3,13 @@ import { Link } from 'react-router-dom'
 export default function Home() {
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-paper">
+      {/* Foto de fondo del hero, velada para que el texto siga legible */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[85vh] overflow-hidden" aria-hidden="true">
+        <img src="/fondo.jpg" alt="" className="h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-paper/85" />
+        <div className="absolute inset-0 bg-gradient-to-b from-paper/40 via-paper/70 to-paper" />
+      </div>
+
       {/* Degradados decorativos con los colores del logo */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <div className="absolute -top-32 left-1/2 h-80 w-[42rem] -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl" />
@@ -11,10 +18,7 @@ export default function Home() {
       </div>
 
       <header className="relative mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
-        <div className="flex items-center gap-2.5">
-          <img src="/cati-icon.svg" alt="Cati" className="h-8 w-8" />
-          <span className="font-display text-xl font-medium text-ink">Cati</span>
-        </div>
+        <img src="/logo-numera.png" alt="Numera" className="h-9 w-auto object-contain" />
         <div className="flex items-center gap-3">
           <Link to="/ingresar" className="text-sm font-medium text-ink-soft hover:text-ink">
             Ingresar
@@ -36,7 +40,7 @@ export default function Home() {
           Armá presupuestos prolijos y compartilos en PDF en minutos
         </h1>
         <p className="mt-4 max-w-xl text-base text-ink-soft">
-          Cati es el lugar donde cargás tus ítems, tus clientes y tus condiciones — y salís con un documento
+          Numera es el lugar donde cargás tus ítems, tus clientes y tus condiciones — y salís con un documento
           listo para enviar por WhatsApp o email.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -73,7 +77,7 @@ export default function Home() {
         </dl>
       </main>
 
-      <footer className="py-6 text-center text-xs text-ink-faint">Cati · Hecho para vos</footer>
+      <footer className="py-6 text-center text-xs text-ink-faint">Numera · Hecho para vos</footer>
     </div>
   )
 }

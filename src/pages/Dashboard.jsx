@@ -54,7 +54,7 @@ export default function Dashboard() {
             </span>
           )}
         </h1>
-        <p className="mt-1 text-sm text-ink-soft">Así viene tu actividad con Cati.</p>
+        <p className="mt-1 text-sm text-ink-soft">Así viene tu actividad con Numera.</p>
       </header>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">

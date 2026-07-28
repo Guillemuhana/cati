@@ -14,6 +14,9 @@ import FacturaDetail from './pages/FacturaDetail'
 import Premium from './pages/Premium'
 import PublicBudget from './pages/PublicBudget'
 import Perfil from './pages/Perfil'
+import Ayuda from './pages/Ayuda'
+import Invitar from './pages/Invitar'
+import Admin from './pages/Admin'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -141,6 +144,40 @@ export default function App() {
           <ProtectedRoute>
             <Layout>
               <Perfil />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/invitar"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Invitar />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ayuda"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Ayuda />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* El acceso real lo decide public.is_admin() en la base de datos:
+          entrar a mano a esta URL no muestra ningún dato. */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Admin />
             </Layout>
           </ProtectedRoute>
         }

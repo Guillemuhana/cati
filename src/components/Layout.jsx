@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { usePlan } from '../hooks/usePlan'
 import { classNames } from '../lib/utils'
-import { PROMO_LABEL } from '../lib/config'
+import { PROMO_LABEL, FREE_UNTIL_LABEL, freeDaysLeft } from '../lib/config'
 
 const NAV_ITEMS = [
   { to: '/panel', label: 'Panel', icon: IconGrid },
@@ -12,7 +12,9 @@ const NAV_ITEMS = [
   { to: '/catalogo', label: 'Catálogo', icon: IconTag },
   { to: '/clientes', label: 'Clientes', icon: IconUsers },
   { to: '/reportes', label: 'Reportes', icon: IconChart },
-  { to: '/perfil', label: 'Mi negocio', icon: IconBuilding }
+  { to: '/perfil', label: 'Mi negocio', icon: IconBuilding },
+  { to: '/invitar', label: 'Invitar y ganar', icon: IconGift },
+  { to: '/ayuda', label: 'Ayuda', icon: IconHelp }
 ]
 
 // Accesos rápidos en la barra inferior de celular (el resto está en el menú).
@@ -23,10 +25,15 @@ const MOBILE_ITEMS = [
   { to: '/clientes', label: 'Clientes', icon: IconUsers }
 ]
 
+// Solo para el dueño. Se agrega al final del menú si la base de datos
+// dice que esta cuenta es admin.
+const ADMIN_ITEM = { to: '/admin', label: 'Administración', icon: IconShield }
+
 export default function Layout({ children }) {
-  const { profile, signOut } = useAuth()
+  const { profile, signOut, isAdmin } = useAuth()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
+  const navItems = isAdmin ? [...NAV_ITEMS, ADMIN_ITEM] : NAV_ITEMS
 
   const handleSignOut = async () => {
     await signOut()
@@ -39,7 +46,7 @@ export default function Layout({ children }) {
       <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-line bg-surface px-5 py-6 lg:flex">
         <Brand />
         <nav className="mt-10 flex flex-1 flex-col gap-1">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <NavItem key={item.to} {...item} />
           ))}
         </nav>
@@ -79,7 +86,7 @@ export default function Layout({ children }) {
               </button>
             </div>
             <nav className="mt-8 flex flex-col gap-1">
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <NavItem key={item.to} {...item} onClick={() => setMenuOpen(false)} />
               ))}
             </nav>
@@ -145,12 +152,24 @@ function TrialBanner() {
   const { freeForAll, isPaid, trialActive, trialLeftLabel } = usePlan()
   if (isPaid) return null
 
-  // Mientras todo sea gratis no mostramos ni prueba ni paywall.
+  // Etapa gratis: avisamos siempre hasta cuándo, y en el último mes el
+  // aviso se pone naranja para que nadie se entere el día que se corta.
   if (freeForAll) {
+    const dias = freeDaysLeft()
+    const ultimoTramo = dias <= 30
     return (
-      <div className="mb-5 rounded-xl2 border border-teal-500/30 bg-teal-500/[0.07] px-4 py-2.5 text-sm text-ink-soft">
-        🎉 ¡Aprovechá a usar la app! Estamos locos: te damos{' '}
-        <b className="text-teal-600">{PROMO_LABEL} gratis</b>, con todas las funciones desbloqueadas.
+      <div
+        className={classNames(
+          'mb-5 rounded-xl2 border px-4 py-2.5 text-sm text-ink-soft',
+          ultimoTramo
+            ? 'border-brass-500/40 bg-brass-500/[0.08]'
+            : 'border-teal-500/30 bg-teal-500/[0.07]'
+        )}
+      >
+        {ultimoTramo ? '⏳' : '🎉'} Todas las funciones están{' '}
+        <b className={ultimoTramo ? 'text-brass-600' : 'text-teal-600'}>gratis</b> hasta el{' '}
+        <b>{FREE_UNTIL_LABEL}</b>
+        {ultimoTramo ? ` · quedan ${dias} ${dias === 1 ? 'día' : 'días'}.` : '. ¡Aprovechá!'}
       </div>
     )
   }
@@ -248,6 +267,32 @@ function IconReceipt(props) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
       <path d="M5 3v18l2-1.3L9 21l2-1.3L13 21l2-1.3L17 21l2-1.3V3l-2 1.3L15 2l-2 1.3L11 2 9 3.3 7 2 5 3.3z" />
       <path d="M8 8h8M8 12h8" strokeLinecap="round" />
+    </svg>
+  )
+}
+function IconShield(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path d="M12 3l7.5 3v5.5c0 4.4-3.1 8.5-7.5 9.5-4.4-1-7.5-5.1-7.5-9.5V6z" />
+      <path d="M9.2 12.2l2 2 3.6-3.9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+function IconGift(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <rect x="3" y="8" width="18" height="4" rx="1" />
+      <path d="M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M12 8v13" />
+      <path d="M12 8S10.8 4 8.7 4a2.2 2.2 0 0 0 0 4.4M12 8s1.2-4 3.3-4a2.2 2.2 0 0 1 0 4.4" />
+    </svg>
+  )
+}
+function IconHelp(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.3-2.7 4" strokeLinecap="round" />
+      <path d="M12 17.2h.01" strokeLinecap="round" />
     </svg>
   )
 }

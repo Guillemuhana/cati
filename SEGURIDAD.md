@@ -1,7 +1,30 @@
 # Seguridad de Numera
 
-Auditoría del 27/07/2026. Este archivo es la checklist viva: cuando toques
-cobros, permisos o la base de datos, volvé acá.
+Auditoría del 27/07/2026, actualizada el 28/07/2026 (invitaciones + fin de la
+etapa gratis). Este archivo es la checklist viva: cuando toques cobros,
+permisos o la base de datos, volvé acá.
+
+---
+
+## 0. Migraciones pendientes de aplicar
+
+En orden, en Supabase Dashboard → SQL Editor → New query → pegar → Run:
+
+| Archivo | Qué hace | ¿Se puede postergar? |
+|---|---|---|
+| `migration_10_invitaciones.sql` | Link de invitación, 3 invitados = 3 meses premium | Sí, pero la pantalla «Invitar y ganar» no cuenta nada hasta que la corras |
+| `migration_11_fin_promo_noviembre_2026.sql` | La etapa gratis termina sola el 1/11/2026 | **No.** Hasta que no la corras, `is_premium()` devuelve `true` para siempre y el 1/11 no se cobra nada |
+| `migration_12_admin.sql` | Panel de administrador en `/admin` | Sí, pero el panel no muestra nada hasta que la corras |
+
+**El orden importa**: la 12 usa cosas que crean la 10 y la 11. Si las salteás,
+falla con `relation does not exist` y no se aplica nada (no rompe nada, pero no
+sirve).
+
+**Ojo con la 11**: es la que reactiva el candado del servidor que la migración 09
+había desarmado (`select true`). Si el 1 de noviembre solo cambiás el JavaScript,
+la app *se ve* cerrada pero la API REST sigue regalando todo a cualquiera que
+abra la pestaña Network. La fecha vive en `public.free_until()` y en
+`FREE_UNTIL` de `src/lib/config.js`: **si movés una, mové la otra.**
 
 ---
 
@@ -41,6 +64,51 @@ migración no se aplicó.
 | 7 | Bucket `logos`: cualquier archivo, cualquier tamaño | ✅ 2 MB, solo png/jpeg/webp |
 | 8 | No había forma de invalidar un link ya compartido | ✅ RPC `rotate_budget_token` |
 
+### Invitaciones (migraciones 10 y 11)
+
+El premio son 3 meses de premium: o sea, plata. Lo que se hizo para que no se
+regale solo:
+
+| Riesgo | Cómo está cerrado |
+|---|---|
+| Autoasignarse el premio desde la consola | El contador y `premium_until` los toca **solo** un trigger `security definer`. El cliente no tiene GRANT de UPDATE sobre esas columnas y `profiles_guard` las restaura si alguna vez se lo dieran |
+| Inventar 3 emails falsos y cobrar | La invitación cuenta recién con el **email confirmado** (trigger `on_auth_user_confirmed`). Por eso *Confirm email* tiene que quedar en ON |
+| Invitarse a uno mismo | `register_referral` descarta `ref_id = p_invited` |
+| Cobrar el premio dos veces | `referral_bonus_at is null` en el UPDATE + el `where status = 'pendiente'` del confirm, que hace de candado contra el doble conteo |
+| Escribir filas de `referrals` a mano | `revoke all` + GRANT de SELECT solo sobre columnas no sensibles |
+| Ver el email del invitado | Quien invita solo ve `invited_masked` (`ju•••@gmail.com`); el email completo no tiene GRANT |
+| Enumerar códigos ajenos | `profiles` solo deja leer la fila propia; el lookup del código ocurre dentro del trigger |
+| Basura en `raw_user_meta_data` (lo único que elige el atacante en el alta) | `handle_new_user` recorta `business_name` a 120 caracteres, saca caracteres de control y valida el código contra `^[A-Z0-9]{4,12}$` |
+
+Lo que **no** está resuelto y conviene mirar si el programa crece: alguien
+decidido puede registrar 3 cuentas con 3 emails reales propios y cobrarse los 3
+meses. Es el techo de cualquier programa de referidos sin verificación de
+identidad; el costo máximo del abuso son 3 meses por cuenta, y el tope de 3
+invitados existe justamente para acotarlo. Si un día pesa, la señal a mirar son
+varias altas seguidas desde la misma IP con el mismo código.
+
+### Panel de administrador (migración 12)
+
+Es la superficie **más sensible** de la app: por esos RPC pasa la base entera
+(emails de todos los usuarios, planes, montos). Cómo está cerrado:
+
+| Riesgo | Cómo está cerrado |
+|---|---|
+| Que un usuario común lea la base entera | Los 5 RPC arrancan con `if not public.is_admin() then raise exception 'no autorizado'`. Sin eso, `grant … to authenticated` sería un desastre |
+| Apropiarse del panel cambiándose el email a `guillemuhana@gmail.com` | El admin se identifica por **`user_id`**, no por el email del token. Una dirección se puede reclamar; un uuid no |
+| Averiguar quiénes son los admins | La tabla `admins` tiene RLS activo y **cero políticas**: PostgREST no devuelve ni una fila a nadie |
+| Regalarse premium desde `/admin` sin ser admin | Igual que arriba: `admin_grant_premium` chequea primero. El botón del front es solo un botón |
+| Que una activación quede sin rastro | Toda alta/baja se escribe en `admin_actions` con quién, a quién, cuántos meses y cuándo |
+
+Ocultar el ítem del menú **no es** una medida de seguridad: es cosmética.
+Cualquiera puede escribir `/admin` en la barra de direcciones — y va a ver
+«Panel no disponible», porque quien decide es Postgres.
+
+**Verificalo vos mismo** (una vez, después de correr la migración): logueate con
+una cuenta que NO sea la tuya, abrí la consola y pegá `await
+supabase.rpc('admin_users')`. Tiene que responder `no autorizado`. Si devuelve
+datos, no publiques hasta arreglarlo.
+
 Ya estaba bien de antes y **no lo toques**: RLS activo en todas las tablas,
 CSP y headers en `vercel.json`, `.env` en `.gitignore` (verificado: nunca se
 commiteó), sin source maps en producción, `console.*` eliminado en el build,
@@ -49,6 +117,11 @@ tokens públicos con UUID v4 (122 bits — no se adivinan por fuerza bruta).
 ---
 
 ## 3. Cobros con Stripe — la parte que falta
+
+**Fecha límite: 1 de noviembre de 2026.** Ese día `is_premium()` se cierra sola
+y las funciones premium dejan de estar disponibles para las cuentas sin
+suscripción. Si para entonces `PAYMENT_URL` sigue vacío, el usuario ve el
+paywall pero **no tiene cómo pagarte**. Llegá con esto listo antes.
 
 `PAYMENT_URL` está vacío en `src/lib/config.js`. Cuando lo actives:
 
@@ -93,7 +166,10 @@ select public.admin_cancel_premium('cliente@ejemplo.com');   -- baja
 
 Authentication → Settings:
 
-- [ ] **Confirm email: ON.** Sin esto se registran con emails ajenos o inventados.
+- [ ] **Confirm email: ON.** Sin esto se registran con emails ajenos o inventados
+      — y desde la migración 10 además se cobran los 3 meses del programa de
+      invitaciones con 3 direcciones falsas. Es la casilla más importante de
+      esta lista.
 - [ ] **Leaked password protection: ON** (Auth → Passwords). Cruza contra
       HaveIBeenPwned y frena las contraseñas ya filtradas.
 - [ ] **Minimum password length: 8** o más.
@@ -137,6 +213,12 @@ Cada vez que agregues una función premium, gatearla en **dos** lugares:
 
 Si solo hacés el 2, la función es gratis para cualquiera que sepa abrir la
 pestaña Network.
+
+Y la versión corta de la regla, que aplica a todo lo que se agregó después:
+**si una acción vale dinero — dar premium, extender una prueba, contar un
+referido — el navegador solo la pide; quien la decide es Postgres.** El
+navegador es de quien lo abre: todo lo que se decida ahí se puede falsificar
+con la consola abierta y dos líneas de JavaScript.
 
 ---
 

@@ -7,14 +7,23 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   const loadProfile = useCallback(async (userId) => {
     if (!userId) {
       setProfile(null)
+      setIsAdmin(false)
       return
     }
     const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
     setProfile(data || null)
+
+    // Quién es admin lo decide la base de datos (migración 12). Esto es
+    // solo para mostrar u ocultar el ítem del menú: aunque alguien fuerce
+    // este valor a true desde la consola, los RPC del panel le van a
+    // contestar 'no autorizado'.
+    const { data: admin } = await supabase.rpc('is_admin')
+    setIsAdmin(admin === true)
   }, [])
 
   useEffect(() => {
@@ -31,11 +40,18 @@ export function AuthProvider({ children }) {
     return () => listener.subscription.unsubscribe()
   }, [loadProfile])
 
-  const signUp = async ({ email, password, businessName }) => {
+  const signUp = async ({ email, password, businessName, referralCode }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { business_name: businessName } }
+      options: {
+        data: {
+          business_name: businessName,
+          // Código de quien invitó. Lo valida y lo acredita el trigger
+          // (migración 10): mandar un código inventado no hace nada.
+          referral_code: referralCode || ''
+        }
+      }
     })
     if (error) throw error
 
@@ -98,6 +114,7 @@ export function AuthProvider({ children }) {
     user: session?.user || null,
     profile,
     loading,
+    isAdmin,
     signUp,
     signIn,
     signOut,

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { FREE_FOR_ALL, PROMO_LABEL } from '../lib/config'
+import { FREE_FOR_ALL, PROMO_LABEL, FREE_UNTIL_LABEL } from '../lib/config'
 
 export default function Home() {
   return (
@@ -64,7 +64,7 @@ export default function Home() {
         </div>
         <p className="mt-3 text-xs text-ink-faint">
           {FREE_FOR_ALL
-            ? `Estamos locos: ${PROMO_LABEL} gratis con todas las funciones · sin tarjeta`
+            ? `Gratis con todas las funciones hasta el ${FREE_UNTIL_LABEL} · sin tarjeta`
             : `${PROMO_LABEL} gratis con todo desbloqueado · después USD 2/mes · cancelás cuando quieras`}
         </p>
 

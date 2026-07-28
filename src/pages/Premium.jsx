@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { usePlan } from '../hooks/usePlan'
 import {
   FREE_FOR_ALL,
@@ -5,7 +6,9 @@ import {
   PREMIUM_PRICE,
   PREMIUM_PRICE_FULL,
   PREMIUM_FEATURES,
-  PROMO_LABEL
+  PROMO_LABEL,
+  FREE_UNTIL_LABEL,
+  freeDaysLeft
 } from '../lib/config'
 import { useAuth } from '../context/AuthContext'
 import { formatDate } from '../lib/utils'
@@ -26,8 +29,9 @@ export default function Premium() {
       <div className="mb-6 rounded-xl2 border border-line bg-surface p-5 text-center shadow-soft">
         {FREE_FOR_ALL ? (
           <p className="text-sm text-ink-soft">
-            🎉 ¡Aprovechá a usar la app! Estamos locos: te damos{' '}
-            <b className="text-teal-600">{PROMO_LABEL} gratis</b> con todas las funciones desbloqueadas, sin tarjeta.
+            🎉 Todas las funciones están <b className="text-teal-600">gratis y desbloqueadas</b>, sin
+            tarjeta, hasta el <b className="text-ink">{FREE_UNTIL_LABEL}</b>. Después sigue por{' '}
+            {PREMIUM_PRICE_FULL}. Faltan {freeDaysLeft()} días.
           </p>
         ) : isPaid ? (
           <p className="text-sm font-medium text-teal-600">
@@ -76,7 +80,7 @@ export default function Premium() {
           </p>
           <p className="mt-1 text-xs text-ink-soft">
             {FREE_FOR_ALL
-              ? `${PROMO_LABEL} con todo desbloqueado, sin costo. Más adelante costará ${PREMIUM_PRICE_FULL}.`
+              ? `Sin costo hasta el ${FREE_UNTIL_LABEL}. A partir de esa fecha, ${PREMIUM_PRICE_FULL}.`
               : `Primeros ${PROMO_LABEL} gratis · Cancelás cuando quieras.`}
           </p>
 
@@ -105,7 +109,7 @@ export default function Premium() {
 
           <p className="mt-3 text-xs text-ink-faint">
             {FREE_FOR_ALL
-              ? 'No hace falta hacer nada: usá la app con todo incluido.'
+              ? 'No hace falta hacer nada ni cargar tarjeta: usá la app con todo incluido. Te vamos a avisar antes de que empiece a cobrarse.'
               : PAYMENT_URL
                 ? 'Después de pagar, activamos tu cuenta a la brevedad (beta).'
                 : 'Estamos habilitando el medio de pago. Mientras tanto, escribinos.'}
@@ -113,6 +117,16 @@ export default function Premium() {
           {user?.email && <p className="mt-2 text-[11px] text-ink-faint">Tu cuenta: {user.email}</p>}
         </div>
       </div>
+
+      <Link
+        to="/invitar"
+        className="mt-6 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-dashed border-teal-500/40 bg-teal-500/[0.05] px-5 py-4 transition hover:bg-teal-500/[0.09]"
+      >
+        <span className="text-sm text-ink-soft">
+          🎁 <b className="text-ink">Invitá a 3 y ganá 3 meses</b> de premium, sin pagar nada.
+        </span>
+        <span className="text-sm font-medium text-teal-600">Ver mi link →</span>
+      </Link>
     </div>
   )
 }

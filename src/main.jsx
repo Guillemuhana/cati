@@ -4,7 +4,12 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { supabaseConfigured } from './lib/supabaseClient.js'
+import { captureReferralFromUrl } from './lib/referral.js'
 import './index.css'
+
+// Si la visita llegó por un link de invitación (?ref=), lo guardamos antes
+// de que el router limpie la URL.
+captureReferralFromUrl()
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 

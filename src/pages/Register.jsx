@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import AuthLayout from '../components/AuthLayout'
 import { Field, traducirError } from './Login'
+import { getStoredReferral, clearStoredReferral } from '../lib/referral'
 
 export default function Register() {
   const { signUp } = useAuth()
@@ -11,13 +12,16 @@ export default function Register() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
+  // Se leyó del ?ref= al entrar (ver lib/referral.js).
+  const [referralCode] = useState(getStoredReferral)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      const data = await signUp(form)
+      const data = await signUp({ ...form, referralCode })
+      clearStoredReferral()
       if (data.session) {
         navigate('/panel')
       } else {
@@ -46,6 +50,12 @@ export default function Register() {
 
   return (
     <AuthLayout title="Creá tu cuenta" subtitle="Armá presupuestos prolijos en minutos.">
+      {referralCode && (
+        <div className="mb-5 rounded-xl2 border border-teal-500/30 bg-teal-500/[0.07] px-4 py-3 text-center text-sm text-ink-soft">
+          🎁 Entraste por una invitación. Creá tu cuenta y le sumás un invitado a quien te la pasó.
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label="Nombre de tu negocio">
           <input

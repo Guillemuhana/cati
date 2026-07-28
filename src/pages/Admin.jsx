@@ -20,6 +20,9 @@ export default function Admin() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [abierto, setAbierto] = useState(null) // id del usuario con la ficha abierta
+  const [detalle, setDetalle] = useState(null)
+  const [regalo, setRegalo] = useState(null) // usuario al que se le va a regalar
 
   const cargar = useCallback(async (q = '') => {
     setError('')
@@ -52,17 +55,34 @@ export default function Admin() {
     await cargar(search)
   }
 
-  const darPremium = async (u) => {
-    const meses = window.prompt(`¿Cuántos meses de premium para ${u.email}?`, '1')
-    if (!meses) return
+  const regalar = async (u, meses, motivo) => {
     setBusy(true)
     const { error: err } = await supabase.rpc('admin_grant_premium', {
       p_user: u.id,
-      p_meses: Number(meses) || 1
+      p_meses: meses,
+      p_motivo: motivo || null
     })
     if (err) window.alert(err.message)
+    setRegalo(null)
     await cargar(search)
     setBusy(false)
+  }
+
+  // La ficha se pide recién al abrirla: trae las conexiones con IP, que
+  // son caras de consultar y no tiene sentido buscarlas para 100 filas.
+  const abrirFicha = async (u) => {
+    if (abierto === u.id) {
+      setAbierto(null)
+      return
+    }
+    setAbierto(u.id)
+    setDetalle(null)
+    const { data, error: err } = await supabase.rpc('admin_user_detail', { p_user: u.id })
+    if (err) {
+      setDetalle({ error: err.message })
+      return
+    }
+    setDetalle(data)
   }
 
   const quitarPremium = async (u) => {
@@ -274,8 +294,31 @@ export default function Admin() {
                               sin confirmar
                             </span>
                           )}
+                          {u.origen === 'invitación' && (
+                            <span className="rounded-full bg-brand-500/10 px-2 py-0.5 text-[11px] font-medium text-brand-600">
+                              🎁 invitado
+                            </span>
+                          )}
+                          {u.regalos > 0 && (
+                            <span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-[11px] font-medium text-teal-600">
+                              {u.regalos} regalo{u.regalos > 1 ? 's' : ''}
+                            </span>
+                          )}
                         </div>
                         <p className="mt-0.5 truncate font-mono text-xs text-ink-soft">{u.email}</p>
+
+                        {/* Quién es y de dónde */}
+                        <p className="mt-1 text-xs text-ink-soft">
+                          {[
+                            u.address,
+                            u.phone,
+                            u.tax_id ? `CUIT ${u.tax_id}` : null,
+                            paisPorMoneda(u.currency)
+                          ]
+                            .filter(Boolean)
+                            .join(' · ') || 'Todavía no completó los datos de su negocio'}
+                        </p>
+
                         <p className="mt-1 text-xs text-ink-faint">
                           Alta {formatDate(u.created_at.slice(0, 10))} ·{' '}
                           {u.last_sign_in_at
@@ -295,13 +338,19 @@ export default function Admin() {
                           </p>
                         )}
                       </div>
-                      <div className="flex shrink-0 gap-2">
+                      <div className="flex shrink-0 flex-wrap gap-2">
                         <button
-                          onClick={() => darPremium(u)}
-                          disabled={busy}
-                          className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-teal-500 hover:text-teal-600 disabled:opacity-50"
+                          onClick={() => abrirFicha(u)}
+                          className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-ink-faint hover:text-ink"
                         >
-                          + Premium
+                          {abierto === u.id ? 'Cerrar ficha' : 'Ver ficha'}
+                        </button>
+                        <button
+                          onClick={() => setRegalo(u)}
+                          disabled={busy}
+                          className="rounded-md border border-teal-500/40 bg-teal-500/[0.06] px-3 py-1.5 text-xs font-medium text-teal-600 transition hover:bg-teal-500/[0.12] disabled:opacity-50"
+                        >
+                          🎁 Regalar meses
                         </button>
                         {u.es_premium && (
                           <button
@@ -314,6 +363,8 @@ export default function Admin() {
                         )}
                       </div>
                     </div>
+
+                    {abierto === u.id && <Ficha detalle={detalle} />}
                   </li>
                 ))}
               </ul>
@@ -350,6 +401,7 @@ export default function Admin() {
                     <p className="mt-0.5 text-xs text-ink-faint">
                       {formatDate(a.created_at.slice(0, 10))} · por {a.admin_email}
                       {a.detail?.meses ? ` · ${a.detail.meses} mes(es)` : ''}
+                      {a.detail?.motivo ? ` · "${a.detail.motivo}"` : ''}
                     </p>
                   </div>
                 </li>
@@ -358,6 +410,261 @@ export default function Admin() {
           )}
         </div>
       )}
+
+      {regalo && (
+        <ModalRegalo
+          usuario={regalo}
+          busy={busy}
+          onCerrar={() => setRegalo(null)}
+          onConfirmar={(meses, motivo) => regalar(regalo, meses, motivo)}
+        />
+      )}
+    </div>
+  )
+}
+
+/** País probable a partir de la moneda que eligió el usuario. Es una
+ *  pista, no un dato: alguien en España puede facturar en dólares. */
+function paisPorMoneda(cur) {
+  const mapa = {
+    ARS: '🇦🇷 Argentina',
+    UYU: '🇺🇾 Uruguay',
+    CLP: '🇨🇱 Chile',
+    MXN: '🇲🇽 México',
+    BRL: '🇧🇷 Brasil',
+    EUR: '🇪🇺 Zona euro',
+    USD: '💵 USD'
+  }
+  return mapa[cur] || cur || null
+}
+
+/** Ficha completa. Se pide al servidor al abrirla. */
+function Ficha({ detalle }) {
+  if (!detalle) {
+    return (
+      <div className="mt-4 flex justify-center rounded-xl2 border border-line bg-paper/50 py-8">
+        <Spinner />
+      </div>
+    )
+  }
+  if (detalle.error) {
+    return (
+      <p className="mt-4 rounded-xl2 border border-rust-500/40 bg-rust-500/[0.06] px-4 py-3 text-xs text-rust-500">
+        {detalle.error} · ¿Ejecutaste la migración 13?
+      </p>
+    )
+  }
+
+  const p = detalle.perfil || {}
+  const act = detalle.actividad || {}
+  const otros = detalle.otros || {}
+
+  return (
+    <div className="mt-4 space-y-4 rounded-xl2 border border-line bg-paper/50 p-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <Titulo>Datos del negocio</Titulo>
+          <Dato label="Negocio" valor={p.business_name} />
+          <Dato label="Email de la cuenta" valor={p.email} mono />
+          <Dato label="Email de contacto" valor={p.contacto_email} mono />
+          <Dato label="Teléfono" valor={p.phone} />
+          <Dato label="Dirección" valor={p.address} />
+          <Dato label="CUIT / ID fiscal" valor={p.tax_id} />
+          <Dato label="Moneda" valor={paisPorMoneda(p.currency)} />
+          <Dato label="Datos bancarios" valor={p.bank_alias} />
+          <Dato label="Prefijo" valor={p.number_prefix} />
+        </div>
+
+        <div>
+          <Titulo>Cuenta</Titulo>
+          <Dato label="Alta" valor={p.created_at && formatDate(p.created_at.slice(0, 10))} />
+          <Dato
+            label="Último ingreso"
+            valor={p.last_sign_in_at ? formatDate(p.last_sign_in_at.slice(0, 10)) : 'nunca'}
+          />
+          <Dato label="Email confirmado" valor={p.email_confirmado ? 'sí' : 'NO'} />
+          <Dato label="Plan" valor={p.plan} />
+          <Dato
+            label="Prueba hasta"
+            valor={p.trial_ends_at && formatDate(p.trial_ends_at.slice(0, 10))}
+          />
+          <Dato
+            label="Premium hasta"
+            valor={p.premium_until && formatDate(p.premium_until.slice(0, 10))}
+          />
+          <Dato label="Su código" valor={p.referral_code} mono />
+          <Dato label="Lo invitó" valor={p.invitado_por} mono />
+        </div>
+      </div>
+
+      <div>
+        <Titulo>Actividad</Titulo>
+        <p className="text-xs text-ink-soft">
+          {act.presupuestos || 0} presupuestos ({act.ultimos_30 || 0} en los últimos 30 días) ·{' '}
+          {act.aceptados || 0} aceptados · {otros.clientes || 0} clientes · {otros.productos || 0}{' '}
+          productos · {otros.facturas || 0} comprobantes
+        </p>
+        {act.primer_presupuesto && (
+          <p className="mt-1 text-xs text-ink-faint">
+            Primero el {formatDate(act.primer_presupuesto.slice(0, 10))} · último el{' '}
+            {formatDate(act.ultimo_presupuesto.slice(0, 10))}
+          </p>
+        )}
+        {(detalle.montos || []).length > 0 && (
+          <ul className="mt-2 space-y-0.5">
+            {detalle.montos.map((m) => (
+              <li key={m.moneda} className="font-mono text-xs text-ink-soft">
+                {m.moneda}: emitido {formatMoney(m.emitido, m.moneda)} · aceptado{' '}
+                <span className="text-teal-600">{formatMoney(m.aceptado, m.moneda)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {(detalle.invitados || []).length > 0 && (
+        <div>
+          <Titulo>A quiénes invitó</Titulo>
+          <ul className="space-y-0.5">
+            {detalle.invitados.map((i, n) => (
+              <li key={n} className="text-xs text-ink-soft">
+                <span className="font-mono">{i.email}</span> ·{' '}
+                <span className={i.estado === 'confirmado' ? 'text-teal-600' : 'text-brass-600'}>
+                  {i.estado}
+                </span>{' '}
+                · {formatDate(i.fecha.slice(0, 10))}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {(detalle.movimientos || []).length > 0 && (
+        <div>
+          <Titulo>Regalos y bajas de esta cuenta</Titulo>
+          <ul className="space-y-0.5">
+            {detalle.movimientos.map((m, n) => (
+              <li key={n} className="text-xs text-ink-soft">
+                {m.accion === 'grant_premium' ? '🎁' : '✗'} {formatDate(m.fecha.slice(0, 10))}
+                {m.detail?.meses ? ` · ${m.detail.meses} mes(es)` : ''}
+                {m.detail?.motivo ? ` · "${m.detail.motivo}"` : ''} · por {m.admin}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div>
+        <Titulo>Últimas conexiones</Titulo>
+        {(detalle.conexiones || []).length === 0 ? (
+          <p className="text-xs text-ink-faint">Sin registro de conexiones.</p>
+        ) : (
+          <ul className="space-y-0.5">
+            {detalle.conexiones.map((c, n) => (
+              <li key={n} className="font-mono text-xs text-ink-soft">
+                {formatDate(String(c.fecha).slice(0, 10))} · {c.accion || '—'} · {c.ip || 'sin IP'}
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-1 text-[11px] text-ink-faint">
+          La IP sirve para detectar a alguien creando varias cuentas desde la misma conexión. Es
+          dato personal de tus usuarios: no lo compartas fuera de acá.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function Titulo({ children }) {
+  return (
+    <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+      {children}
+    </p>
+  )
+}
+
+function Dato({ label, valor, mono }) {
+  if (!valor) return null
+  return (
+    <p className="text-xs text-ink-soft">
+      <span className="text-ink-faint">{label}:</span>{' '}
+      <span className={mono ? 'font-mono text-ink' : 'text-ink'}>{valor}</span>
+    </p>
+  )
+}
+
+/** Ventana para regalar meses con un motivo. */
+function ModalRegalo({ usuario, onCerrar, onConfirmar, busy }) {
+  const [meses, setMeses] = useState(3)
+  const [motivo, setMotivo] = useState('')
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-ink/40" onClick={onCerrar} />
+      <div className="relative w-full max-w-md rounded-xl2 border border-line bg-surface p-6 shadow-soft">
+        <h2 className="font-display text-lg font-medium text-ink">Regalar meses de premium</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          A <b className="text-ink">{usuario.business_name || 'Sin nombre'}</b>
+          <br />
+          <span className="font-mono text-xs">{usuario.email}</span>
+        </p>
+        {usuario.premium_until && (
+          <p className="mt-2 text-xs text-ink-faint">
+            Ya tiene premium hasta el {formatDate(usuario.premium_until.slice(0, 10))}. Los meses
+            nuevos se suman a esa fecha, no la pisan.
+          </p>
+        )}
+
+        <p className="mt-4 mb-2 text-sm font-medium text-ink">¿Cuántos meses?</p>
+        <div className="grid grid-cols-5 gap-2">
+          {[1, 3, 6, 12, 24].map((m) => (
+            <button
+              key={m}
+              onClick={() => setMeses(m)}
+              className={`rounded-md border py-2 text-sm font-semibold transition ${
+                meses === m
+                  ? 'border-teal-500 bg-teal-500/10 text-teal-600'
+                  : 'border-line text-ink-soft hover:border-ink-faint'
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+
+        <label className="mt-4 block">
+          <span className="mb-1.5 block text-sm font-medium text-ink">Motivo (opcional)</span>
+          <input
+            type="text"
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            maxLength={200}
+            placeholder="Ej: usuario fundador, compensación, sorteo"
+            className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+          />
+          <span className="mt-1 block text-xs text-ink-faint">
+            Queda guardado en el historial. Dentro de seis meses no te vas a acordar por qué lo
+            regalaste.
+          </span>
+        </label>
+
+        <div className="mt-5 flex gap-2">
+          <button
+            onClick={() => onConfirmar(meses, motivo)}
+            disabled={busy}
+            className="btn-primary flex-1 rounded-md py-2.5 text-sm font-semibold disabled:opacity-60"
+          >
+            {busy ? 'Regalando...' : `Regalar ${meses} ${meses === 1 ? 'mes' : 'meses'}`}
+          </button>
+          <button
+            onClick={onCerrar}
+            className="rounded-md border border-line px-4 py-2.5 text-sm text-ink-soft"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

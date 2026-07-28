@@ -15,6 +15,7 @@ En orden, en Supabase Dashboard → SQL Editor → New query → pegar → Run:
 | `migration_10_invitaciones.sql` | Link de invitación, 3 invitados = 3 meses premium | Sí, pero la pantalla «Invitar y ganar» no cuenta nada hasta que la corras |
 | `migration_11_fin_promo_noviembre_2026.sql` | La etapa gratis termina sola el 1/11/2026 | **No.** Hasta que no la corras, `is_premium()` devuelve `true` para siempre y el 1/11 no se cobra nada |
 | `migration_12_admin.sql` | Panel de administrador en `/admin` | Sí, pero el panel no muestra nada hasta que la corras |
+| `migration_13_admin_detalle.sql` | Ficha de usuario, regalos con motivo **y arregla un cerrojo que no funcionaba** | Correla: ver abajo |
 
 **El orden importa**: la 12 usa cosas que crean la 10 y la 11. Si las salteás,
 falla con `relation does not exist` y no se aplica nada (no rompe nada, pero no
@@ -86,6 +87,24 @@ meses. Es el techo de cualquier programa de referidos sin verificación de
 identidad; el costo máximo del abuso son 3 meses por cuenta, y el tope de 3
 invitados existe justamente para acotarlo. Si un día pesa, la señal a mirar son
 varias altas seguidas desde la misma IP con el mismo código.
+
+### 🐛 Bug encontrado el 28/07/2026: el segundo cerrojo no funcionaba
+
+`profiles_guard()` (migración 07, punto 1.b) preguntaba
+`current_user in ('authenticated','anon')` para saber si quien edita es el
+navegador. Adentro de una función `SECURITY DEFINER`, **`current_user` es el
+dueño de la función (`postgres`), nunca el que llama**. Esa condición daba
+`false` siempre, así que el guard no restauraba ningún campo.
+
+**No hubo agujero real**: lo que protege de verdad es el GRANT por columna del
+punto 1.a, y ese sí funciona — por eso el ataque de la sección 1 sigue fallando.
+Pero el "segundo cerrojo" era decorativo, y un cerrojo decorativo es peor que no
+tenerlo, porque uno cuenta con él.
+
+Arreglado en la migración 13 con `public.caller_role()`, que lee el rol del JWT
+(`authenticated` / `anon` / `service_role`, o `NULL` si no hay token). Si algún
+día escribís otra función que necesite saber quién la llama, usá esa — **nunca
+`current_user` dentro de un `SECURITY DEFINER`.**
 
 ### Panel de administrador (migración 12)
 

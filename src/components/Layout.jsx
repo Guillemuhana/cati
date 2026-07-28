@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { usePlan } from '../hooks/usePlan'
 import { classNames } from '../lib/utils'
+import { PROMO_LABEL } from '../lib/config'
 
 const NAV_ITEMS = [
   { to: '/panel', label: 'Panel', icon: IconGrid },
@@ -141,8 +142,18 @@ function NavItem({ to, label, icon: Icon, onClick }) {
 }
 
 function TrialBanner() {
-  const { isPaid, trialActive, trialLeftLabel } = usePlan()
+  const { freeForAll, isPaid, trialActive, trialLeftLabel } = usePlan()
   if (isPaid) return null
+
+  // Mientras todo sea gratis no mostramos ni prueba ni paywall.
+  if (freeForAll) {
+    return (
+      <div className="mb-5 rounded-xl2 border border-teal-500/30 bg-teal-500/[0.07] px-4 py-2.5 text-sm text-ink-soft">
+        🎉 ¡Aprovechá a usar la app! Estamos locos: te damos{' '}
+        <b className="text-teal-600">{PROMO_LABEL} gratis</b>, con todas las funciones desbloqueadas.
+      </div>
+    )
+  }
 
   if (trialActive) {
     return (
@@ -151,7 +162,7 @@ function TrialBanner() {
         className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brand-500/25 bg-gradient-to-r from-brand-500/[0.07] to-teal-500/[0.07] px-4 py-2.5 text-sm transition hover:from-brand-500/[0.12]"
       >
         <span className="text-ink-soft">
-          ✨ Mes gratis activo · te quedan <b className="text-brand-700">{trialLeftLabel}</b> con todo desbloqueado
+          ✨ {PROMO_LABEL} gratis · te quedan <b className="text-brand-700">{trialLeftLabel}</b> con todo desbloqueado
         </span>
         <span className="font-medium text-brand-700">Ver planes →</span>
       </Link>
@@ -163,7 +174,7 @@ function TrialBanner() {
       to="/premium"
       className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brass-500/40 bg-brass-500/[0.08] px-4 py-2.5 text-sm transition hover:bg-brass-500/[0.14]"
     >
-      <span className="text-ink-soft">🔒 Tu mes gratis terminó · desbloqueá las funciones premium</span>
+      <span className="text-ink-soft">🔒 Tu período gratis terminó · desbloqueá las funciones premium</span>
       <span className="font-semibold text-brass-600">Suscribirme por USD 2/mes →</span>
     </Link>
   )

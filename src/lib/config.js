@@ -2,9 +2,22 @@
 // Todas las funciones premium son gratis durante la prueba de 1 mes
 // y luego se desbloquean con la suscripción mensual.
 
-export const TRIAL_DAYS = 30
+// ⚠ INTERRUPTOR GENERAL · TODO GRATIS
+// Mientras esté en true, la app no cobra ni bloquea nada: todas las
+// funciones premium quedan abiertas para cualquier usuario y no se
+// muestran ni el paywall ni el cartel de prueba.
+//
+// Para volver a cobrar:
+//   1) poner esto en false
+//   2) restaurar el bloqueo del servidor ejecutando en Supabase la parte
+//      "VOLVER A COBRAR" de supabase/migration_09_todo_gratis.sql
+export const FREE_FOR_ALL = true
+
+// Promo de lanzamiento: 2 meses gratis con todo desbloqueado.
+export const TRIAL_DAYS = 60
 export const TRIAL_HOURS = TRIAL_DAYS * 24
-export const TRIAL_LABEL = '1 mes gratis'
+export const PROMO_LABEL = '2 meses'
+export const TRIAL_LABEL = `${PROMO_LABEL} gratis`
 export const PREMIUM_PRICE = 'USD 2'
 export const PREMIUM_PERIOD = 'por mes' // suscripción mensual
 export const PREMIUM_PRICE_FULL = `${PREMIUM_PRICE}/mes`

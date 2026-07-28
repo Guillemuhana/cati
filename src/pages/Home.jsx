@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { FREE_FOR_ALL, PROMO_LABEL } from '../lib/config'
 
 export default function Home() {
   return (
@@ -62,7 +63,9 @@ export default function Home() {
           </Link>
         </div>
         <p className="mt-3 text-xs text-ink-faint">
-          1 mes gratis con todo desbloqueado · después USD 2/mes · cancelás cuando quieras
+          {FREE_FOR_ALL
+            ? `Estamos locos: ${PROMO_LABEL} gratis con todas las funciones · sin tarjeta`
+            : `${PROMO_LABEL} gratis con todo desbloqueado · después USD 2/mes · cancelás cuando quieras`}
         </p>
 
         <dl className="mt-16 grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-3">

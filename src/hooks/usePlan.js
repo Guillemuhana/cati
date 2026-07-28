@@ -1,7 +1,9 @@
 import { useAuth } from '../context/AuthContext'
+import { FREE_FOR_ALL } from '../lib/config'
 
 /**
  * Estado del plan del usuario.
+ * - Si FREE_FOR_ALL está activo, todo está desbloqueado para todos.
  * - Durante la prueba (1 mes) todas las funciones premium están habilitadas.
  * - Después, solo si plan === 'premium'.
  */
@@ -17,7 +19,7 @@ export function usePlan() {
   const premiumUntil = profile?.premium_until ? new Date(profile.premium_until).getTime() : null
   const isPaid = profile?.plan === 'premium' && (premiumUntil == null || now < premiumUntil)
 
-  const isPremium = isPaid || trialActive
+  const isPremium = FREE_FOR_ALL || isPaid || trialActive
 
   const msLeft = trialEndsAt ? Math.max(0, trialEndsAt - now) : 0
   const hoursLeft = Math.ceil(msLeft / 3_600_000)
@@ -28,6 +30,7 @@ export function usePlan() {
 
   return {
     plan: profile?.plan || 'free',
+    freeForAll: FREE_FOR_ALL,
     isPremium,
     isPaid,
     trialActive,

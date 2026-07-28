@@ -61,6 +61,9 @@ export default function Home() {
             Ya tengo cuenta
           </Link>
         </div>
+        <p className="mt-3 text-xs text-ink-faint">
+          1 mes gratis con todo desbloqueado · después USD 2/mes · cancelás cuando quieras
+        </p>
 
         <dl className="mt-16 grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-3">
           <Feature

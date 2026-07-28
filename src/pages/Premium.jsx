@@ -5,7 +5,7 @@ import { formatDate } from '../lib/utils'
 
 export default function Premium() {
   const { user } = useAuth()
-  const { isPaid, trialActive, hoursLeft, premiumUntil } = usePlan()
+  const { isPaid, trialActive, trialLeftLabel, premiumUntil } = usePlan()
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -23,11 +23,13 @@ export default function Premium() {
           </p>
         ) : trialActive ? (
           <p className="text-sm text-ink-soft">
-            Estás en tu <b>prueba gratuita</b>. Te quedan{' '}
-            <span className="font-semibold text-brand-700">{hoursLeft} h</span> con todo desbloqueado.
+            Estás en tu <b>mes gratis</b>. Te quedan{' '}
+            <span className="font-semibold text-brand-700">{trialLeftLabel}</span> con todo desbloqueado.
           </p>
         ) : (
-          <p className="text-sm text-ink-soft">Tu prueba gratuita terminó. Desbloqueá todo con un pago único.</p>
+          <p className="text-sm text-ink-soft">
+            Tu mes gratis terminó. Seguí con todo desbloqueado por {PREMIUM_PRICE_FULL}.
+          </p>
         )}
       </div>
 
@@ -52,7 +54,7 @@ export default function Premium() {
             {PREMIUM_PRICE}
             <span className="text-lg font-medium text-ink-soft"> /mes</span>
           </p>
-          <p className="mt-1 text-xs text-ink-soft">Cancelás cuando quieras.</p>
+          <p className="mt-1 text-xs text-ink-soft">Primer mes gratis · Cancelás cuando quieras.</p>
 
           {isPaid ? (
             <div className="mt-6 rounded-md bg-teal-500/10 px-4 py-3 text-center text-sm font-medium text-teal-600">

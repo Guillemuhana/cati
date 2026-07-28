@@ -39,16 +39,9 @@ export function AuthProvider({ children }) {
     })
     if (error) throw error
 
-    if (data.user) {
-      const trialEnds = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
-      await supabase.from('profiles').upsert({
-        id: data.user.id,
-        business_name: businessName || '',
-        email,
-        plan: 'free',
-        trial_ends_at: trialEnds
-      })
-    }
+    // El perfil y la prueba de 1 mes los crea un trigger en la base de datos
+    // (handle_new_user, migración 07). No se crean desde el navegador: si no,
+    // cualquiera podría auto-asignarse plan premium o una prueba infinita.
     return data
   }
 
@@ -64,11 +57,35 @@ export function AuthProvider({ children }) {
 
   const refreshProfile = () => loadProfile(session?.user?.id)
 
+  // Campos del negocio que el usuario puede editar. Es la misma lista que los
+  // GRANT a nivel columna de la migración 07: si acá se colara un campo de
+  // facturación (plan, premium_until…), Postgres rechazaría el UPDATE entero.
+  const EDITABLE_FIELDS = [
+    'business_name',
+    'email',
+    'phone',
+    'tax_id',
+    'address',
+    'logo_url',
+    'currency',
+    'default_terms',
+    'default_payment_terms',
+    'default_payment_methods',
+    'bank_alias',
+    'brand_color',
+    'number_prefix',
+    'hide_branding'
+  ]
+
   const updateProfile = async (updates) => {
     if (!session?.user?.id) return
+    const safe = Object.fromEntries(
+      Object.entries(updates).filter(([k]) => EDITABLE_FIELDS.includes(k))
+    )
     const { data, error } = await supabase
       .from('profiles')
-      .upsert({ id: session.user.id, ...updates })
+      .update(safe)
+      .eq('id', session.user.id)
       .select()
       .single()
     if (error) throw error

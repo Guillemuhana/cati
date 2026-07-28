@@ -2,7 +2,7 @@ import { useAuth } from '../context/AuthContext'
 
 /**
  * Estado del plan del usuario.
- * - Durante la prueba (72 h) todas las funciones premium están habilitadas.
+ * - Durante la prueba (1 mes) todas las funciones premium están habilitadas.
  * - Después, solo si plan === 'premium'.
  */
 export function usePlan() {
@@ -21,6 +21,10 @@ export function usePlan() {
 
   const msLeft = trialEndsAt ? Math.max(0, trialEndsAt - now) : 0
   const hoursLeft = Math.ceil(msLeft / 3_600_000)
+  const daysLeft = Math.ceil(msLeft / 86_400_000)
+
+  // Texto amigable: en días mientras falte más de un día, en horas al final.
+  const trialLeftLabel = hoursLeft > 48 ? `${daysLeft} días` : `${hoursLeft} h`
 
   return {
     plan: profile?.plan || 'free',
@@ -30,6 +34,8 @@ export function usePlan() {
     trialEndsAt,
     premiumUntil,
     hoursLeft,
+    daysLeft,
+    trialLeftLabel,
     msLeft
   }
 }

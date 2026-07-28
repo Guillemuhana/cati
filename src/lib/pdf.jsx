@@ -3,95 +3,140 @@ import { formatMoney, formatDate, formatNumero, STATUS } from './utils'
 
 // Fuentes: usamos Helvetica (nativa de react-pdf) para asegurar que el PDF
 // se genere sin depender de carga de red en tiempo de export.
+//
+// Diseño: comprobante comercial clásico argentino — todo en recuadros.
+//   ┌ logo │ datos del emisor │ X │ PRESUPUESTO N° / FECHA ┐
+//   ├ datos del cliente (dos columnas) ──────────────────────┤
+//   ├ entrega / observaciones ───────────────────────────────┤
+//   ├ tabla de ítems con encabezado gris ────────────────────┤
+//                                    └ caja de totales ──────┘
+const LINE = '#111111'
+const SOFT = '#555555'
+
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
-    fontSize: 10,
+    paddingHorizontal: 28,
+    paddingTop: 28,
+    paddingBottom: 56,
+    fontSize: 8.5,
     fontFamily: 'Helvetica',
-    color: '#14181C'
+    color: LINE
   },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 28
+
+  // ── Encabezado ────────────────────────────────────────────
+  headerBox: { flexDirection: 'row', borderWidth: 1, borderColor: LINE },
+  headerLogoCell: {
+    width: 120,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRightWidth: 1,
+    borderRightColor: LINE
   },
-  logo: { width: 52, height: 52, objectFit: 'contain', marginBottom: 8 },
-  businessName: { fontSize: 14, fontFamily: 'Helvetica-Bold' },
-  small: { fontSize: 9, color: '#5B6570', marginTop: 1 },
-  docTitle: { fontSize: 20, fontFamily: 'Helvetica-Bold', textAlign: 'right' },
-  docNumber: { fontSize: 10, color: '#5B6570', textAlign: 'right', marginTop: 2 },
-  statusBadge: {
-    marginTop: 8,
-    alignSelf: 'flex-end',
+  logo: { width: 100, height: 46, objectFit: 'contain' },
+  logoFallback: { fontSize: 13, fontFamily: 'Helvetica-Bold', textAlign: 'center' },
+  headerEmitterCell: { flex: 1, padding: 8, justifyContent: 'center', alignItems: 'center' },
+  businessName: { fontSize: 12, fontFamily: 'Helvetica-Bold', textAlign: 'center' },
+  emitterLine: { fontSize: 8, color: SOFT, textAlign: 'center', marginTop: 2 },
+  headerTypeCell: {
+    width: 46,
+    borderLeftWidth: 1,
+    borderLeftColor: LINE,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  typeLetter: {
+    fontSize: 20,
+    fontFamily: 'Helvetica-Bold',
     borderWidth: 1,
-    borderColor: '#1B2A66',
-    borderRadius: 4,
-    paddingVertical: 3,
+    borderColor: LINE,
     paddingHorizontal: 8,
+    paddingTop: 2,
+    paddingBottom: 1
+  },
+  headerDocCell: { width: 190, padding: 8, justifyContent: 'center' },
+  docTitle: { fontSize: 17, fontFamily: 'Helvetica-Bold', textAlign: 'right' },
+  docNumber: { fontSize: 12, textAlign: 'right', marginTop: 2 },
+  docDate: { fontSize: 11, fontFamily: 'Helvetica-Bold', textAlign: 'right', marginTop: 2 },
+  docFiscal: { fontSize: 6.5, color: SOFT, textAlign: 'right', marginTop: 3 },
+
+  // ── Bloques de datos ──────────────────────────────────────
+  dataBox: {
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderColor: LINE,
+    paddingHorizontal: 6,
+    paddingVertical: 5,
+    flexDirection: 'row'
+  },
+  dataCol: { width: '50%', paddingRight: 8 },
+  fieldRow: { flexDirection: 'row', marginBottom: 2 },
+  fieldLabel: { fontSize: 8, fontFamily: 'Helvetica-Bold' },
+  fieldValue: { fontSize: 8, flex: 1 },
+
+  // ── Tabla de ítems ────────────────────────────────────────
+  table: { marginTop: 10, borderWidth: 1, borderColor: LINE },
+  tableHeader: { flexDirection: 'row', backgroundColor: '#DDDDDD', borderBottomWidth: 1, borderBottomColor: LINE },
+  th: {
     fontSize: 8,
     fontFamily: 'Helvetica-Bold',
-    color: '#1B2A66',
-    textTransform: 'uppercase',
-    letterSpacing: 1
+    textAlign: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 3,
+    borderRightWidth: 1,
+    borderRightColor: LINE
   },
-  metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  metaBlock: { maxWidth: '48%' },
-  metaLabel: { fontSize: 8, color: '#94998F', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 3 },
-  metaValue: { fontSize: 10.5, fontFamily: 'Helvetica-Bold' },
-  table: { marginTop: 8 },
-  tableHeader: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#14181C',
-    paddingBottom: 6,
-    marginBottom: 6
+  tr: { flexDirection: 'row', borderBottomWidth: 0.5, borderBottomColor: '#999999' },
+  td: { fontSize: 8, paddingVertical: 3.5, paddingHorizontal: 3, borderRightWidth: 0.5, borderRightColor: '#999999' },
+  lastCell: { borderRightWidth: 0 },
+  colDesc: { flex: 3.6 },
+  colQty: { width: 55, textAlign: 'right' },
+  colPrice: { width: 70, textAlign: 'right' },
+  colDisc: { width: 42, textAlign: 'right' },
+  colTotal: { width: 80, textAlign: 'right' },
+
+  // ── Totales ───────────────────────────────────────────────
+  totalsBox: {
+    marginTop: 10,
+    alignSelf: 'flex-end',
+    width: 250,
+    borderWidth: 1,
+    borderColor: LINE,
+    paddingHorizontal: 8,
+    paddingVertical: 6
   },
-  th: { fontSize: 8, fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', letterSpacing: 0.5, color: '#5B6570' },
-  tr: {
-    flexDirection: 'row',
-    paddingVertical: 7,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#E4E1D9'
-  },
-  colDesc: { flex: 3.4 },
-  colQty: { flex: 0.8, textAlign: 'right' },
-  colPrice: { flex: 1.2, textAlign: 'right' },
-  colDisc: { flex: 0.8, textAlign: 'right' },
-  colTotal: { flex: 1.2, textAlign: 'right' },
-  totalsBox: { marginTop: 16, alignSelf: 'flex-end', width: 220 },
-  totalsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 },
-  totalsLabel: { fontSize: 9.5, color: '#5B6570' },
-  totalsValue: { fontSize: 9.5, fontFamily: 'Helvetica-Bold' },
+  totalsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 1.5 },
+  totalsLabel: { fontSize: 8.5 },
+  totalsValue: { fontSize: 8.5 },
   grandTotalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 6,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#14181C'
+    alignItems: 'center',
+    marginTop: 3,
+    paddingTop: 4,
+    borderTopWidth: 0.5,
+    borderTopColor: '#999999'
   },
-  grandTotalLabel: { fontSize: 11, fontFamily: 'Helvetica-Bold' },
-  grandTotalValue: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#1B2A66' },
-  notesBlock: { marginTop: 24 },
-  notesTitle: { fontSize: 8, textTransform: 'uppercase', letterSpacing: 1, color: '#94998F', marginBottom: 4 },
-  notesText: { fontSize: 9, color: '#3A4148', lineHeight: 1.5 },
-  payGrid: { marginTop: 28, flexDirection: 'row', flexWrap: 'wrap' },
-  payCol: { width: '50%', paddingRight: 12, marginBottom: 12 },
-  signRow: { marginTop: 36, flexDirection: 'row', justifyContent: 'space-between' },
+  grandTotalLabel: { fontSize: 12, fontFamily: 'Helvetica-Bold' },
+  grandTotalValue: { fontSize: 12, fontFamily: 'Helvetica-Bold' },
+
+  // ── Pie de página ─────────────────────────────────────────
+  notesBlock: { marginTop: 14 },
+  notesTitle: { fontSize: 8, fontFamily: 'Helvetica-Bold', marginBottom: 2 },
+  notesText: { fontSize: 8, color: '#333333', lineHeight: 1.45 },
+  payGrid: { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap' },
+  payCol: { width: '50%', paddingRight: 12, marginBottom: 8 },
+  signRow: { marginTop: 30, flexDirection: 'row', justifyContent: 'space-between' },
   signBox: { width: '45%' },
-  signLine: { borderTopWidth: 0.8, borderTopColor: '#94998F', marginBottom: 4, marginTop: 24 },
-  signLabel: { fontSize: 8, color: '#94998F', textTransform: 'uppercase', letterSpacing: 0.5 },
+  signLine: { borderTopWidth: 0.8, borderTopColor: '#999999', marginBottom: 3, marginTop: 22 },
+  signLabel: { fontSize: 7.5, color: SOFT },
   footer: {
     position: 'absolute',
-    bottom: 30,
-    left: 40,
-    right: 40,
-    borderTopWidth: 0.5,
-    borderTopColor: '#E4E1D9',
-    paddingTop: 8,
-    fontSize: 8,
-    color: '#94998F',
+    bottom: 26,
+    left: 28,
+    right: 28,
+    fontSize: 7.5,
+    color: SOFT,
     textAlign: 'center'
   }
 })
@@ -112,6 +157,19 @@ function normalizeItems(raw) {
   return []
 }
 
+// Campo "ETIQUETA: valor" dentro de los recuadros de datos.
+// Se muestra siempre (aunque esté vacío) cuando `always` es true, igual que
+// los comprobantes impresos, donde el renglón queda en blanco.
+function Field({ label, value, always = false }) {
+  if (!value && !always) return null
+  return (
+    <View style={styles.fieldRow}>
+      <Text style={styles.fieldLabel}>{label}: </Text>
+      <Text style={styles.fieldValue}>{value || ''}</Text>
+    </View>
+  )
+}
+
 function PayCol({ title, text }) {
   if (!text) return null
   return (
@@ -127,100 +185,127 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
   const accent = profile?.brand_color || '#1B2A66'
   const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)
   const rows = normalizeItems(items)
+  const qtyTotal = rows.reduce((acc, it) => acc + (Number(it.quantity) || 0), 0)
 
   return (
     <Document title={`${numero} - ${budget.title || client?.name || ''}`}>
       <Page size="A4" style={styles.page}>
-        <View style={styles.headerRow}>
-          <View>
-            {profile?.logo_url && <Image src={profile.logo_url} style={styles.logo} />}
-            <Text style={styles.businessName}>{profile?.business_name || 'Tu negocio'}</Text>
-            {profile?.tax_id && <Text style={styles.small}>{profile.tax_id}</Text>}
-            {profile?.email && <Text style={styles.small}>{profile.email}</Text>}
-            {profile?.phone && <Text style={styles.small}>{profile.phone}</Text>}
-            {profile?.address && <Text style={styles.small}>{profile.address}</Text>}
-          </View>
-          <View>
-            <Text style={[styles.docTitle, { color: accent }]}>{docLabel}</Text>
-            <Text style={styles.docNumber}>{numero}</Text>
-            {!!budget.reference && <Text style={styles.docNumber}>Ref: {budget.reference}</Text>}
-            <Text style={[styles.statusBadge, { borderColor: accent, color: accent }]}>{statusLabel}</Text>
-          </View>
-        </View>
-
-        <View style={styles.metaRow}>
-          <View style={styles.metaBlock}>
-            <Text style={styles.metaLabel}>Para</Text>
-            <Text style={styles.metaValue}>{client?.name || 'Cliente sin asignar'}</Text>
-            {client?.email && <Text style={styles.small}>{client.email}</Text>}
-            {client?.tax_id && <Text style={styles.small}>{client.tax_id}</Text>}
-            {client?.address && <Text style={styles.small}>{client.address}</Text>}
-          </View>
-          <View style={styles.metaBlock}>
-            <Text style={styles.metaLabel}>Emisión</Text>
-            <Text style={styles.metaValue}>{formatDate(budget.issue_date)}</Text>
-            {budget.due_date && (
-              <>
-                <Text style={[styles.metaLabel, { marginTop: 8 }]}>Válido hasta</Text>
-                <Text style={styles.metaValue}>{formatDate(budget.due_date)}</Text>
-              </>
+        {/* Encabezado: logo | emisor | tipo | número y fecha */}
+        <View style={styles.headerBox}>
+          <View style={styles.headerLogoCell}>
+            {profile?.logo_url ? (
+              <Image src={profile.logo_url} style={styles.logo} />
+            ) : (
+              <Text style={styles.logoFallback}>{profile?.business_name || 'Tu negocio'}</Text>
             )}
           </View>
+          <View style={styles.headerEmitterCell}>
+            <Text style={styles.businessName}>{(profile?.business_name || 'Tu negocio').toUpperCase()}</Text>
+            {!!profile?.address && <Text style={styles.emitterLine}>{profile.address}</Text>}
+            {!!profile?.phone && <Text style={styles.emitterLine}>TEL: {profile.phone}</Text>}
+            {!!profile?.email && <Text style={styles.emitterLine}>{profile.email}</Text>}
+          </View>
+          <View style={styles.headerTypeCell}>
+            <Text style={styles.typeLetter}>X</Text>
+          </View>
+          <View style={styles.headerDocCell}>
+            <Text style={[styles.docTitle, { color: accent }]}>{docLabel.toUpperCase()}</Text>
+            <Text style={styles.docNumber}>N° {numero}</Text>
+            <Text style={styles.docDate}>FECHA: {formatDate(budget.issue_date)}</Text>
+            {!!profile?.tax_id && <Text style={styles.docFiscal}>CUIT: {profile.tax_id}</Text>}
+            <Text style={styles.docFiscal}>{statusLabel.toUpperCase()}</Text>
+          </View>
         </View>
 
+        {/* Datos del cliente */}
+        <View style={styles.dataBox}>
+          <View style={styles.dataCol}>
+            <Field label="SEÑOR/ES" value={client?.name || 'Cliente sin asignar'} />
+            <Field label="DOMICILIO" value={client?.address} always />
+            <Field label="CORREO ELECTRONICO" value={client?.email} always />
+            <Field label="CONDICION DE PAGO" value={budget.payment_terms} always />
+          </View>
+          <View style={styles.dataCol}>
+            <Field label="CUIT / CUIL" value={client?.tax_id} always />
+            <Field label="TELEFONO" value={client?.phone} always />
+            <Field label="FECHA VENCIMIENTO" value={budget.due_date ? formatDate(budget.due_date) : ''} always />
+            <Field label="REFERENCIA" value={budget.reference} always />
+          </View>
+        </View>
+
+        {/* Entrega y observaciones */}
+        <View style={[styles.dataBox, { flexDirection: 'column' }]}>
+          <View style={{ flexDirection: 'row' }}>
+            <View style={styles.dataCol}>
+              <Field label="PLAZO DE ENTREGA" value={budget.delivery_time} always />
+            </View>
+            <View style={styles.dataCol}>
+              <Field label="FORMAS DE PAGO" value={budget.payment_methods} always />
+            </View>
+          </View>
+          <Field label="OBSERVACIONES" value={budget.title} always />
+        </View>
+
+        {/* Detalle de ítems */}
         <View style={styles.table}>
           <View style={styles.tableHeader}>
-            <Text style={[styles.th, styles.colDesc]}>Descripción</Text>
+            <Text style={[styles.th, styles.colDesc]}>Descripcion</Text>
             <Text style={[styles.th, styles.colQty]}>Cant.</Text>
-            <Text style={[styles.th, styles.colPrice]}>Precio unit.</Text>
-            <Text style={[styles.th, styles.colDisc]}>Desc.</Text>
-            <Text style={[styles.th, styles.colTotal]}>Importe</Text>
+            <Text style={[styles.th, styles.colPrice]}>Precio Uni.</Text>
+            <Text style={[styles.th, styles.colDisc]}>% Desc</Text>
+            <Text style={[styles.th, styles.colTotal, styles.lastCell]}>Sub Total</Text>
           </View>
           {rows.map((it, i) => {
             const lineBase = (Number(it.quantity) || 0) * (Number(it.unit_price) || 0)
             const lineTotal = lineBase - lineBase * ((Number(it.discount) || 0) / 100)
             return (
               <View key={it.id ?? i} style={styles.tr}>
-                <Text style={styles.colDesc}>{it.description}</Text>
-                <Text style={styles.colQty}>{it.quantity}</Text>
-                <Text style={styles.colPrice}>{formatMoney(it.unit_price, budget.currency)}</Text>
-                <Text style={styles.colDisc}>{it.discount ? `${it.discount}%` : '—'}</Text>
-                <Text style={styles.colTotal}>{formatMoney(lineTotal, budget.currency)}</Text>
+                <Text style={[styles.td, styles.colDesc]}>{it.description}</Text>
+                <Text style={[styles.td, styles.colQty]}>{it.quantity}</Text>
+                <Text style={[styles.td, styles.colPrice]}>{formatMoney(it.unit_price, budget.currency)}</Text>
+                <Text style={[styles.td, styles.colDisc]}>{Number(it.discount) || 0}</Text>
+                <Text style={[styles.td, styles.colTotal, styles.lastCell]}>
+                  {formatMoney(lineTotal, budget.currency)}
+                </Text>
               </View>
             )
           })}
         </View>
 
-        <View style={styles.totalsBox}>
+        <View style={styles.totalsBox} wrap={false}>
           <View style={styles.totalsRow}>
-            <Text style={styles.totalsLabel}>Subtotal</Text>
+            <Text style={styles.totalsLabel}>CTD ITEMS:</Text>
+            <Text style={styles.totalsValue}>{qtyTotal}</Text>
+          </View>
+          <View style={styles.totalsRow}>
+            <Text style={styles.totalsLabel}>SUBTOTAL:</Text>
             <Text style={styles.totalsValue}>{formatMoney(budget.subtotal, budget.currency)}</Text>
           </View>
           {budget.discount_amount > 0 && (
             <View style={styles.totalsRow}>
-              <Text style={styles.totalsLabel}>Descuento</Text>
+              <Text style={styles.totalsLabel}>DESCUENTO:</Text>
               <Text style={styles.totalsValue}>-{formatMoney(budget.discount_amount, budget.currency)}</Text>
             </View>
           )}
           {budget.tax_amount > 0 && (
             <View style={styles.totalsRow}>
-              <Text style={styles.totalsLabel}>Impuesto ({budget.tax_rate}%)</Text>
+              <Text style={styles.totalsLabel}>IVA ({budget.tax_rate}%):</Text>
               <Text style={styles.totalsValue}>{formatMoney(budget.tax_amount, budget.currency)}</Text>
             </View>
           )}
           <View style={styles.grandTotalRow}>
-            <Text style={styles.grandTotalLabel}>Total</Text>
+            <Text style={styles.grandTotalLabel}>TOTAL:</Text>
             <Text style={[styles.grandTotalValue, { color: accent }]}>{formatMoney(budget.total, budget.currency)}</Text>
           </View>
           {Number(budget.deposit) > 0 && (
             <>
-              <View style={[styles.totalsRow, { marginTop: 4 }]}>
-                <Text style={styles.totalsLabel}>Anticipo / seña</Text>
+              <View style={[styles.totalsRow, { marginTop: 3 }]}>
+                <Text style={styles.totalsLabel}>ANTICIPO / SEÑA:</Text>
                 <Text style={styles.totalsValue}>-{formatMoney(budget.deposit, budget.currency)}</Text>
               </View>
               <View style={styles.totalsRow}>
-                <Text style={[styles.totalsLabel, { fontFamily: 'Helvetica-Bold', color: '#14181C' }]}>Saldo pendiente</Text>
-                <Text style={styles.totalsValue}>
+                <Text style={[styles.totalsLabel, { fontFamily: 'Helvetica-Bold' }]}>SALDO PENDIENTE:</Text>
+                <Text style={[styles.totalsValue, { fontFamily: 'Helvetica-Bold' }]}>
                   {formatMoney((Number(budget.total) || 0) - (Number(budget.deposit) || 0), budget.currency)}
                 </Text>
               </View>
@@ -228,12 +313,10 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
           )}
         </View>
 
-        {(budget.payment_terms || budget.payment_methods || profile?.bank_alias || budget.delivery_time) && (
+        {/* Condiciones, formas de pago y plazo ya van en los recuadros de arriba. */}
+        {!!profile?.bank_alias && (
           <View style={styles.payGrid} wrap={false}>
-            <PayCol title="Condiciones de pago" text={budget.payment_terms} />
-            <PayCol title="Formas de pago" text={budget.payment_methods} />
-            <PayCol title="Datos bancarios / alias" text={profile?.bank_alias} />
-            <PayCol title="Plazo de entrega" text={budget.delivery_time} />
+            <PayCol title="Datos bancarios / alias" text={profile.bank_alias} />
           </View>
         )}
 
@@ -314,43 +397,56 @@ function ReciboPDF({ receipt, client, profile }) {
   return (
     <Document title={numero}>
       <Page size="A4" style={styles.page}>
-        <View style={styles.headerRow}>
-          <View>
-            {profile?.logo_url && <Image src={profile.logo_url} style={styles.logo} />}
-            <Text style={styles.businessName}>{profile?.business_name || 'Tu negocio'}</Text>
-            {profile?.tax_id && <Text style={styles.small}>{profile.tax_id}</Text>}
-            {profile?.email && <Text style={styles.small}>{profile.email}</Text>}
-            {profile?.phone && <Text style={styles.small}>{profile.phone}</Text>}
+        <View style={styles.headerBox}>
+          <View style={styles.headerLogoCell}>
+            {profile?.logo_url ? (
+              <Image src={profile.logo_url} style={styles.logo} />
+            ) : (
+              <Text style={styles.logoFallback}>{profile?.business_name || 'Tu negocio'}</Text>
+            )}
           </View>
-          <View>
-            <Text style={[styles.docTitle, { color: accent }]}>Recibo</Text>
-            <Text style={styles.docNumber}>{numero}</Text>
-            <Text style={styles.docNumber}>{formatDate(receipt.receipt_date)}</Text>
+          <View style={styles.headerEmitterCell}>
+            <Text style={styles.businessName}>{(profile?.business_name || 'Tu negocio').toUpperCase()}</Text>
+            {!!profile?.address && <Text style={styles.emitterLine}>{profile.address}</Text>}
+            {!!profile?.phone && <Text style={styles.emitterLine}>TEL: {profile.phone}</Text>}
+            {!!profile?.email && <Text style={styles.emitterLine}>{profile.email}</Text>}
+          </View>
+          <View style={styles.headerTypeCell}>
+            <Text style={styles.typeLetter}>X</Text>
+          </View>
+          <View style={styles.headerDocCell}>
+            <Text style={[styles.docTitle, { color: accent }]}>RECIBO</Text>
+            <Text style={styles.docNumber}>N° {numero}</Text>
+            <Text style={styles.docDate}>FECHA: {formatDate(receipt.receipt_date)}</Text>
+            {!!profile?.tax_id && <Text style={styles.docFiscal}>CUIT: {profile.tax_id}</Text>}
           </View>
         </View>
 
-        <View style={styles.metaRow}>
-          <View style={styles.metaBlock}>
-            <Text style={styles.metaLabel}>Recibimos de</Text>
-            <Text style={styles.metaValue}>{client?.name || 'Cliente'}</Text>
-            {client?.tax_id && <Text style={styles.small}>{client.tax_id}</Text>}
+        <View style={styles.dataBox}>
+          <View style={styles.dataCol}>
+            <Field label="RECIBIMOS DE" value={client?.name || 'Cliente'} />
+            <Field label="DOMICILIO" value={client?.address} always />
+          </View>
+          <View style={styles.dataCol}>
+            <Field label="CUIT / CUIL" value={client?.tax_id} always />
+            <Field label="TELEFONO" value={client?.phone} always />
           </View>
         </View>
 
-        <View style={{ marginTop: 12, padding: 16, borderWidth: 1, borderColor: '#E4E1D9', borderRadius: 6 }}>
-          <Text style={styles.metaLabel}>La suma de</Text>
+        <View style={{ marginTop: 12, padding: 14, borderWidth: 1, borderColor: LINE }}>
+          <Text style={styles.notesTitle}>LA SUMA DE</Text>
           <Text style={[styles.grandTotalValue, { color: accent, fontSize: 20, marginTop: 2 }]}>
             {formatMoney(receipt.amount, receipt.currency)}
           </Text>
           {!!receipt.concept && (
             <>
-              <Text style={[styles.metaLabel, { marginTop: 12 }]}>En concepto de</Text>
+              <Text style={[styles.notesTitle, { marginTop: 12 }]}>EN CONCEPTO DE</Text>
               <Text style={styles.notesText}>{receipt.concept}</Text>
             </>
           )}
           {!!receipt.method && (
             <>
-              <Text style={[styles.metaLabel, { marginTop: 12 }]}>Forma de pago</Text>
+              <Text style={[styles.notesTitle, { marginTop: 12 }]}>FORMA DE PAGO</Text>
               <Text style={styles.notesText}>{receipt.method}</Text>
             </>
           )}

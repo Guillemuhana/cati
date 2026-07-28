@@ -19,7 +19,7 @@ export default function Paywall({ title = 'Función premium' }) {
       </span>
       <h2 className="mt-3 font-display text-2xl font-medium text-ink">Desbloqueá Numera completo</h2>
       <p className="mt-2 text-sm text-ink-soft">
-        Tu prueba gratuita terminó. Activá todas las funciones premium por <b>{PREMIUM_PRICE_FULL}</b>.
+        Tu mes gratis terminó. Activá todas las funciones premium por <b>{PREMIUM_PRICE_FULL}</b>.
       </p>
       <ul className="mx-auto mt-5 max-w-xs space-y-2 text-left text-sm text-ink-soft">
         {PREMIUM_FEATURES.map((f) => (

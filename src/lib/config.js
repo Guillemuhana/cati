@@ -1,8 +1,10 @@
 // Configuración de monetización (beta) ─────────────────────────
-// Todas las funciones premium son gratis durante la prueba y luego
-// se desbloquean con un pago único.
+// Todas las funciones premium son gratis durante la prueba de 1 mes
+// y luego se desbloquean con la suscripción mensual.
 
-export const TRIAL_HOURS = 72
+export const TRIAL_DAYS = 30
+export const TRIAL_HOURS = TRIAL_DAYS * 24
+export const TRIAL_LABEL = '1 mes gratis'
 export const PREMIUM_PRICE = 'USD 2'
 export const PREMIUM_PERIOD = 'por mes' // suscripción mensual
 export const PREMIUM_PRICE_FULL = `${PREMIUM_PRICE}/mes`

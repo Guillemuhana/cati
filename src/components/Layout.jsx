@@ -141,7 +141,7 @@ function NavItem({ to, label, icon: Icon, onClick }) {
 }
 
 function TrialBanner() {
-  const { isPaid, trialActive, hoursLeft } = usePlan()
+  const { isPaid, trialActive, trialLeftLabel } = usePlan()
   if (isPaid) return null
 
   if (trialActive) {
@@ -151,7 +151,7 @@ function TrialBanner() {
         className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brand-500/25 bg-gradient-to-r from-brand-500/[0.07] to-teal-500/[0.07] px-4 py-2.5 text-sm transition hover:from-brand-500/[0.12]"
       >
         <span className="text-ink-soft">
-          ✨ Prueba premium activa · te quedan <b className="text-brand-700">{hoursLeft} h</b> con todo desbloqueado
+          ✨ Mes gratis activo · te quedan <b className="text-brand-700">{trialLeftLabel}</b> con todo desbloqueado
         </span>
         <span className="font-medium text-brand-700">Ver planes →</span>
       </Link>
@@ -163,7 +163,7 @@ function TrialBanner() {
       to="/premium"
       className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brass-500/40 bg-brass-500/[0.08] px-4 py-2.5 text-sm transition hover:bg-brass-500/[0.14]"
     >
-      <span className="text-ink-soft">🔒 Tu prueba gratuita terminó · desbloqueá las funciones premium</span>
+      <span className="text-ink-soft">🔒 Tu mes gratis terminó · desbloqueá las funciones premium</span>
       <span className="font-semibold text-brass-600">Suscribirme por USD 2/mes →</span>
     </Link>
   )

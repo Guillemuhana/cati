@@ -310,10 +310,16 @@ export default function PresupuestoForm() {
           client: clients.find((c) => c.id === budget.client_id) || null,
           profile
         }
-        if (after === 'download') {
-          await downloadBudgetPdf(pdfData)
-        } else {
-          await shareBudget(pdfData)
+        // El presupuesto ya quedó guardado: si falla el PDF avisamos, pero
+        // no lo reportamos como si no se hubiera guardado.
+        try {
+          if (after === 'download') {
+            await downloadBudgetPdf(pdfData)
+          } else {
+            await shareBudget(pdfData)
+          }
+        } catch (pdfErr) {
+          setError(pdfErr?.message || 'Se guardó el presupuesto, pero no se pudo generar el PDF.')
         }
       }
 

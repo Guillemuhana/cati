@@ -24,6 +24,7 @@ export default function PresupuestoDetail() {
   const [linkCopied, setLinkCopied] = useState(false)
   const [qr, setQr] = useState('')
   const [invoiceId, setInvoiceId] = useState(null)
+  const [pdfError, setPdfError] = useState('')
 
   useEffect(() => {
     if (!user || !id) return
@@ -134,8 +135,11 @@ export default function PresupuestoDetail() {
 
   const handleDownload = async () => {
     setBusy(true)
+    setPdfError('')
     try {
       await downloadBudgetPdf({ budget, items, client, profile })
+    } catch (err) {
+      setPdfError(err?.message || 'No se pudo generar el PDF del presupuesto.')
     } finally {
       setBusy(false)
     }
@@ -143,6 +147,7 @@ export default function PresupuestoDetail() {
 
   const handleShare = async () => {
     setBusy(true)
+    setPdfError('')
     try {
       const blob = await generateBudgetPdfBlob({ budget, items, client, profile })
       const file = new File([blob], `${formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)}.pdf`, { type: 'application/pdf' })
@@ -157,7 +162,12 @@ export default function PresupuestoDetail() {
       }
     } catch (err) {
       if (err?.name !== 'AbortError') {
-        await downloadBudgetPdf({ budget, items, client, profile })
+        // Si compartir falla, al menos intentamos la descarga.
+        try {
+          await downloadBudgetPdf({ budget, items, client, profile })
+        } catch (err2) {
+          setPdfError(err2?.message || 'No se pudo generar el PDF del presupuesto.')
+        }
       }
     } finally {
       setBusy(false)
@@ -280,6 +290,12 @@ export default function PresupuestoDetail() {
           </button>
         </div>
       </header>
+
+      {pdfError && (
+        <p className="mt-3 rounded-md border border-rust-500/40 bg-rust-500/[0.08] px-3 py-2 text-xs text-rust-500">
+          {pdfError}
+        </p>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">

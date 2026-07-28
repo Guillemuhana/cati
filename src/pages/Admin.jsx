@@ -644,10 +644,15 @@ function ModalRegalo({ usuario, onCerrar, onConfirmar, busy }) {
             className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           />
           <span className="mt-1 block text-xs text-ink-faint">
-            Queda guardado en el historial. Dentro de seis meses no te vas a acordar por qué lo
-            regalaste.
+            Queda en el historial y <b>se lo mostramos al usuario</b> en el aviso, así que escribilo
+            pensando en que lo va a leer él.
           </span>
         </label>
+
+        <p className="mt-3 rounded-md bg-teal-500/[0.07] px-3 py-2 text-xs text-ink-soft">
+          🔔 Le va a aparecer un cartel con el regalo la próxima vez que entre a la app, y le queda
+          el aviso en la campanita.
+        </p>
 
         <div className="mt-5 flex gap-2">
           <button

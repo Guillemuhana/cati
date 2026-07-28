@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { usePlan } from '../hooks/usePlan'
 import { classNames } from '../lib/utils'
+import Notificaciones from './Notificaciones'
 import { PROMO_LABEL, FREE_UNTIL_LABEL, freeDaysLeft } from '../lib/config'
 
 const NAV_ITEMS = [
@@ -51,9 +52,12 @@ export default function Layout({ children }) {
           ))}
         </nav>
         <div className="border-t border-line pt-4">
-          <p className="truncate font-sans text-sm font-semibold text-ink">
-            {profile?.business_name || 'Tu negocio'}
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate font-sans text-sm font-semibold text-ink">
+              {profile?.business_name || 'Tu negocio'}
+            </p>
+            <Notificaciones />
+          </div>
           <button
             onClick={handleSignOut}
             className="mt-2 text-sm text-ink-soft transition hover:text-rust-500"
@@ -66,13 +70,16 @@ export default function Layout({ children }) {
       {/* Topbar mobile */}
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-surface/90 px-4 py-3 backdrop-blur lg:hidden">
         <Brand compact />
-        <button
-          aria-label="Abrir menú"
-          onClick={() => setMenuOpen(true)}
-          className="rounded-lg border border-line p-2 text-ink"
-        >
-          <IconMenu />
-        </button>
+        <div className="flex items-center gap-2">
+          <Notificaciones />
+          <button
+            aria-label="Abrir menú"
+            onClick={() => setMenuOpen(true)}
+            className="rounded-lg border border-line p-2 text-ink"
+          >
+            <IconMenu />
+          </button>
+        </div>
       </header>
 
       {menuOpen && (

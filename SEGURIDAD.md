@@ -16,6 +16,11 @@ En orden, en Supabase Dashboard → SQL Editor → New query → pegar → Run:
 | `migration_11_fin_promo_noviembre_2026.sql` | La etapa gratis termina sola el 1/11/2026 | **No.** Hasta que no la corras, `is_premium()` devuelve `true` para siempre y el 1/11 no se cobra nada |
 | `migration_12_admin.sql` | Panel de administrador en `/admin` | Sí, pero el panel no muestra nada hasta que la corras |
 | `migration_13_admin_detalle.sql` | Ficha de usuario, regalos con motivo **y arregla un cerrojo que no funcionaba** | Correla: ver abajo |
+| `migration_14_notificaciones.sql` | Avisos en la app: al usuario le llega la campanita cuando le regalás meses | Sí, pero los regalos pasan desapercibidos |
+
+Detalle de la 14: el usuario **no puede insertar avisos** (`revoke all`, solo
+`select` y `update (read_at)`). Si pudiera, cualquiera se fabricaría un «te
+regalamos 12 meses» y te mandaría la captura pidiendo que se lo cumplas.
 
 **El orden importa**: la 12 usa cosas que crean la 10 y la 11. Si las salteás,
 falla con `relation does not exist` y no se aplica nada (no rompe nada, pero no

@@ -32,22 +32,28 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
 
         {/* Documento */}
         <div className="p-6 sm:p-10">
-          <header className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              {profile?.logo_url ? (
-                <img src={profile.logo_url} alt="Logo" className="mb-2 h-12 w-12 object-contain" />
-              ) : (
-                <img src="/numera-icon.svg" alt="Logo" className="mb-2 h-12 w-12" />
-              )}
-              <p className="font-display text-lg font-semibold text-ink">{profile?.business_name || 'Tu negocio'}</p>
-              {profile?.tax_id && <p className="text-xs text-ink-soft">{profile.tax_id}</p>}
-              {profile?.email && <p className="text-xs text-ink-soft">{profile.email}</p>}
-              {profile?.phone && <p className="text-xs text-ink-soft">{profile.phone}</p>}
-            </div>
-            <div className="text-right">
-              <p className="font-display text-2xl font-medium text-brand-700">Presupuesto</p>
+          <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+            <div className="order-2 min-w-0 sm:order-1">
+              <p className="font-display text-xl font-medium text-brand-700 sm:text-2xl">Presupuesto</p>
               <p className="mt-0.5 font-mono text-sm text-ink-soft">{formatNumero(budget.numero, budget.issue_date)}</p>
               {budget.reference && <p className="mt-0.5 text-xs text-ink-faint">Ref: {budget.reference}</p>}
+              <p className="mt-3 break-words font-display text-lg font-semibold text-ink">
+                {profile?.business_name || 'Tu negocio'}
+              </p>
+              {profile?.tax_id && <p className="break-words text-xs text-ink-soft">{profile.tax_id}</p>}
+              {profile?.email && <p className="break-all text-xs text-ink-soft">{profile.email}</p>}
+              {profile?.phone && <p className="text-xs text-ink-soft">{profile.phone}</p>}
+            </div>
+            <div className="order-1 shrink-0 sm:order-2">
+              {profile?.logo_url ? (
+                <img
+                  src={profile.logo_url}
+                  alt="Logo"
+                  className="h-20 w-auto max-w-[160px] object-contain object-left sm:h-24 sm:max-w-[200px] sm:object-right"
+                />
+              ) : (
+                <img src="/numera-icon.svg" alt="Logo" className="h-16 w-16 sm:h-20 sm:w-20" />
+              )}
             </div>
           </header>
 

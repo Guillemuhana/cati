@@ -26,14 +26,14 @@ const styles = StyleSheet.create({
   // ── Encabezado ────────────────────────────────────────────
   headerBox: { flexDirection: 'row', borderWidth: 1, borderColor: LINE },
   headerLogoCell: {
-    width: 120,
+    width: 150,
     padding: 8,
     justifyContent: 'center',
     alignItems: 'center',
     borderRightWidth: 1,
     borderRightColor: LINE
   },
-  logo: { width: 100, height: 46, objectFit: 'contain' },
+  logo: { width: 134, height: 62, objectFit: 'contain' },
   logoFallback: { fontSize: 13, fontFamily: 'Helvetica-Bold', textAlign: 'center' },
   headerEmitterCell: { flex: 1, padding: 8, justifyContent: 'center', alignItems: 'center' },
   businessName: { fontSize: 12, fontFamily: 'Helvetica-Bold', textAlign: 'center' },

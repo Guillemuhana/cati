@@ -63,22 +63,24 @@ export default function PublicBudget() {
       <div className="mx-auto max-w-3xl px-4">
         <div className="overflow-hidden rounded-xl2 border border-line bg-surface shadow-soft">
           <div className="h-1.5" style={{ background: accent }} />
-          <div className="p-6 sm:p-10">
+          <div className="p-4 sm:p-10">
             {/* Encabezado */}
-            <header className="flex items-start justify-between gap-4">
+            <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 {business?.logo_url ? (
                   <img src={business.logo_url} alt="" className="mb-2 h-12 w-12 object-contain" />
                 ) : (
                   <img src="/numera-icon.svg" alt="" className="mb-2 h-12 w-12" />
                 )}
-                <p className="font-display text-lg font-semibold text-ink">{business?.business_name || 'Presupuesto'}</p>
-                {business?.tax_id && <p className="text-xs text-ink-soft">{business.tax_id}</p>}
-                {business?.email && <p className="text-xs text-ink-soft">{business.email}</p>}
+                <p className="break-words font-display text-lg font-semibold text-ink">
+                  {business?.business_name || 'Presupuesto'}
+                </p>
+                {business?.tax_id && <p className="break-words text-xs text-ink-soft">{business.tax_id}</p>}
+                {business?.email && <p className="break-all text-xs text-ink-soft">{business.email}</p>}
                 {business?.phone && <p className="text-xs text-ink-soft">{business.phone}</p>}
               </div>
-              <div className="text-right">
-                <p className="font-display text-2xl font-medium" style={{ color: accent }}>
+              <div className="shrink-0 sm:text-right">
+                <p className="font-display text-xl font-medium sm:text-2xl" style={{ color: accent }}>
                   Presupuesto
                 </p>
                 <p className="mt-0.5 font-mono text-sm text-ink-soft">{formatNumero(budget.numero, budget.issue_date)}</p>
@@ -101,21 +103,40 @@ export default function PublicBudget() {
 
             {/* Ítems */}
             <div className="mt-8 overflow-hidden rounded-lg border border-line">
-              <div className="grid grid-cols-[1fr_50px_90px_90px] gap-2 border-b border-line bg-paper px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-ink-faint">
+              <div className="hidden grid-cols-[1fr_60px_minmax(90px,110px)_minmax(90px,110px)] gap-3 border-b border-line bg-paper px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-ink-faint sm:grid">
                 <span>Descripción</span>
                 <span className="text-right">Cant.</span>
                 <span className="text-right">Precio</span>
                 <span className="text-right">Importe</span>
               </div>
               {items.map((it, i) => (
-                <div key={i} className="grid grid-cols-[1fr_50px_90px_90px] gap-2 border-b border-line px-3 py-2 text-sm last:border-0">
-                  <span className="text-ink">
+                <div
+                  key={i}
+                  className="border-b border-line px-3 py-3 text-sm last:border-0 sm:grid sm:grid-cols-[1fr_60px_minmax(90px,110px)_minmax(90px,110px)] sm:items-start sm:gap-3 sm:py-2"
+                >
+                  <span className="block min-w-0 break-words text-ink">
                     {it.description}
                     {Number(it.discount) > 0 && <span className="ml-1 text-xs text-brass-600">-{it.discount}%</span>}
                   </span>
-                  <span className="text-right font-mono text-ink-soft">{it.quantity}</span>
-                  <span className="text-right font-mono text-ink-soft">{formatMoney(it.unit_price, currency)}</span>
-                  <span className="text-right font-mono font-medium text-ink">{formatMoney(lineAmount(it), currency)}</span>
+
+                  {/* Móvil: cantidad × precio en una línea, importe a la derecha */}
+                  <div className="mt-1.5 flex items-baseline justify-between gap-3 sm:hidden">
+                    <span className="font-mono text-xs text-ink-soft">
+                      {it.quantity} × {formatMoney(it.unit_price, currency)}
+                    </span>
+                    <span className="whitespace-nowrap font-mono font-medium text-ink">
+                      {formatMoney(lineAmount(it), currency)}
+                    </span>
+                  </div>
+
+                  {/* Escritorio: columnas */}
+                  <span className="hidden text-right font-mono text-ink-soft sm:block">{it.quantity}</span>
+                  <span className="hidden whitespace-nowrap text-right font-mono text-ink-soft sm:block">
+                    {formatMoney(it.unit_price, currency)}
+                  </span>
+                  <span className="hidden whitespace-nowrap text-right font-mono font-medium text-ink sm:block">
+                    {formatMoney(lineAmount(it), currency)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -126,18 +147,18 @@ export default function PublicBudget() {
                 <Row label="Subtotal" value={formatMoney(budget.subtotal, currency)} />
                 {Number(budget.discount_amount) > 0 && <Row label="Descuento" value={`-${formatMoney(budget.discount_amount, currency)}`} />}
                 {Number(budget.tax_amount) > 0 && <Row label={`Impuesto (${budget.tax_rate}%)`} value={formatMoney(budget.tax_amount, currency)} />}
-                <div className="flex items-center justify-between border-t border-line pt-2">
+                <div className="flex items-center justify-between gap-3 border-t border-line pt-2">
                   <span className="font-sans font-semibold text-ink">Total</span>
-                  <span className="text-base font-semibold" style={{ color: accent }}>
+                  <span className="whitespace-nowrap text-base font-semibold" style={{ color: accent }}>
                     {formatMoney(budget.total, currency)}
                   </span>
                 </div>
                 {Number(budget.deposit) > 0 && (
                   <>
                     <Row label="Anticipo / seña" value={`-${formatMoney(budget.deposit, currency)}`} />
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-3">
                       <span className="font-sans font-semibold text-ink">Saldo</span>
-                      <span className="font-semibold text-ink">{formatMoney(balance, currency)}</span>
+                      <span className="whitespace-nowrap font-semibold text-ink">{formatMoney(balance, currency)}</span>
                     </div>
                   </>
                 )}
@@ -153,6 +174,18 @@ export default function PublicBudget() {
                 <Block title="Plazo de entrega" text={budget.delivery_time} />
                 <Block title="Notas" text={budget.notes} />
                 <Block title="Condiciones" text={budget.terms} />
+              </div>
+            )}
+
+            {/* Términos y condiciones del negocio */}
+            {business?.legal_terms?.trim() && (
+              <div className="mt-8 border-t border-line pt-5">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+                  Términos y condiciones
+                </p>
+                <p className="mt-2 whitespace-pre-line text-xs leading-relaxed text-ink-soft">
+                  {business.legal_terms.trim()}
+                </p>
               </div>
             )}
           </div>
@@ -198,9 +231,9 @@ export default function PublicBudget() {
 
 function Row({ label, value }) {
   return (
-    <div className="flex items-center justify-between text-ink-soft">
+    <div className="flex items-center justify-between gap-3 text-ink-soft">
       <span>{label}</span>
-      <span className="text-ink">{value}</span>
+      <span className="whitespace-nowrap text-ink">{value}</span>
     </div>
   )
 }
@@ -210,7 +243,7 @@ function Block({ title, text }) {
   return (
     <div>
       <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">{title}</p>
-      <p className="mt-1 whitespace-pre-line text-ink-soft">{text}</p>
+      <p className="mt-1 whitespace-pre-line break-words text-ink-soft">{text}</p>
     </div>
   )
 }

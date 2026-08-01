@@ -51,10 +51,10 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
                 <img
                   src={profile.logo_url}
                   alt="Logo"
-                  className="h-16 w-auto max-w-[110px] object-contain object-right sm:h-24 sm:max-w-[200px]"
+                  className="h-[83px] w-auto max-w-[143px] object-contain object-right sm:h-[125px] sm:max-w-[260px]"
                 />
               ) : (
-                <img src="/numera-icon.svg" alt="Logo" className="h-14 w-14 sm:h-20 sm:w-20" />
+                <img src="/numera-icon.svg" alt="Logo" className="h-[73px] w-[73px] sm:h-[104px] sm:w-[104px]" />
               )}
             </div>
           </header>

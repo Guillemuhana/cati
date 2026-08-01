@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import Spinner from '../components/Spinner'
-import { formatDate, formatMoney } from '../lib/utils'
+import { formatDate, formatMoney, formatNumero } from '../lib/utils'
 import { PREMIUM_PRICE_FULL } from '../lib/config'
 
 /**
@@ -30,6 +30,15 @@ export default function Admin() {
   const [actDias, setActDias] = useState(7)
   const [actCargando, setActCargando] = useState(false)
   const [actError, setActError] = useState('')
+
+  // Presupuestos de todos los usuarios. También carga sola al abrir.
+  const [presus, setPresus] = useState(null)
+  const [presuBusca, setPresuBusca] = useState('')
+  const [presuEstado, setPresuEstado] = useState('')
+  const [presuCargando, setPresuCargando] = useState(false)
+  const [presuError, setPresuError] = useState('')
+  const [presuAbierto, setPresuAbierto] = useState(null) // id del presupuesto abierto
+  const [presuDetalle, setPresuDetalle] = useState(null)
 
   const cargar = useCallback(async (q = '') => {
     setError('')
@@ -79,6 +88,50 @@ export default function Admin() {
   useEffect(() => {
     if (tab === 'actividad') cargarActividad(actDias)
   }, [tab, actDias, cargarActividad])
+
+  const cargarPresus = useCallback(async (q, estado) => {
+    setPresuCargando(true)
+    setPresuError('')
+    const { data, error: err } = await supabase.rpc('admin_budgets', {
+      p_search: q || null,
+      p_user: null,
+      p_status: estado || null,
+      p_limit: 100,
+      p_offset: 0
+    })
+    if (err) {
+      setPresuError(
+        /no autorizado/i.test(err.message)
+          ? 'Tu cuenta no tiene permisos de administrador.'
+          : `${err.message}. ¿Ejecutaste la migración 17 en Supabase?`
+      )
+      setPresus(null)
+    } else {
+      setPresus(data)
+    }
+    setPresuCargando(false)
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'presupuestos') cargarPresus(presuBusca, presuEstado)
+    // presuBusca no va como dependencia: la búsqueda se dispara al enviar
+    // el formulario, no en cada tecla.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, presuEstado, cargarPresus])
+
+  // Abrir un presupuesto es una acción a propósito: queda registrada en
+  // la auditoría del lado del servidor.
+  const abrirPresu = async (p) => {
+    if (presuAbierto === p.id) {
+      setPresuAbierto(null)
+      setPresuDetalle(null)
+      return
+    }
+    setPresuAbierto(p.id)
+    setPresuDetalle(null)
+    const { data, error: err } = await supabase.rpc('admin_budget_detail', { p_budget: p.id })
+    setPresuDetalle(err ? { error: err.message } : data)
+  }
 
   const buscar = async (e) => {
     e.preventDefault()
@@ -183,6 +236,7 @@ export default function Admin() {
           ['resumen', 'Resumen'],
           ['usuarios', `Usuarios (${users?.total ?? 0})`],
           ['actividad', 'Actividad'],
+          ['presupuestos', 'Presupuestos'],
           ['movimientos', 'Movimientos']
         ].map(([k, label]) => (
           <button
@@ -484,6 +538,107 @@ export default function Admin() {
         </div>
       )}
 
+      {tab === 'presupuestos' && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                cargarPresus(presuBusca, presuEstado)
+              }}
+              className="flex flex-1 gap-2"
+            >
+              <input
+                value={presuBusca}
+                onChange={(e) => setPresuBusca(e.target.value)}
+                placeholder="Buscar por negocio, email, cliente, título o número…"
+                className="min-w-0 flex-1 rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand-500"
+              />
+              <button
+                type="submit"
+                className="rounded-md border border-line px-4 py-2 text-sm font-medium text-ink-soft transition hover:text-ink"
+              >
+                Buscar
+              </button>
+            </form>
+            <select
+              value={presuEstado}
+              onChange={(e) => setPresuEstado(e.target.value)}
+              className="rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand-500"
+            >
+              <option value="">Todos los estados</option>
+              <option value="borrador">Borrador</option>
+              <option value="enviado">Enviado</option>
+              <option value="visto">Visto</option>
+              {/* 'aceptado' es el que usa la app hoy; 'aprobado' quedó del
+                  esquema original y puede haber presupuestos viejos con él. */}
+              <option value="aceptado">Aceptado</option>
+              <option value="aprobado">Aprobado (viejo)</option>
+              <option value="rechazado">Rechazado</option>
+              <option value="vencido">Vencido</option>
+            </select>
+            {presuCargando && <Spinner />}
+          </div>
+
+          {presuError && (
+            <p className="rounded-xl2 border border-rust-500/40 bg-rust-500/[0.06] px-4 py-3 text-xs text-rust-500">
+              {presuError}
+            </p>
+          )}
+
+          {presus && (
+            <div className="overflow-hidden rounded-xl2 border border-line bg-surface">
+              {(presus.presupuestos || []).length === 0 ? (
+                <p className="px-6 py-12 text-center text-sm text-ink-soft">
+                  No hay presupuestos que coincidan.
+                </p>
+              ) : (
+                <ul className="divide-y divide-line">
+                  {presus.presupuestos.map((p) => (
+                    <li key={p.id}>
+                      <button
+                        onClick={() => abrirPresu(p)}
+                        className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 px-5 py-3 text-left transition hover:bg-paper/60"
+                      >
+                        <span className="font-mono text-xs tabular-nums text-ink-soft">
+                          {formatNumero(p.numero, p.issue_date, p.prefijo)}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-sm text-ink">
+                          {p.negocio || p.email}
+                          {p.cliente && (
+                            <span className="text-ink-soft"> → {p.cliente}</span>
+                          )}
+                        </span>
+                        <EstadoPresu estado={p.estado} />
+                        <span className="whitespace-nowrap font-mono text-sm tabular-nums text-ink">
+                          {formatMoney(p.total, p.moneda)}
+                        </span>
+                        <span className="whitespace-nowrap text-xs tabular-nums text-ink-faint">
+                          {formatDate(String(p.created_at).slice(0, 10))}
+                        </span>
+                      </button>
+                      {presuAbierto === p.id && <FichaPresupuesto detalle={presuDetalle} />}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {presus?.total > (presus?.presupuestos || []).length && (
+            <p className="text-xs text-ink-faint">
+              Mostrando {presus.presupuestos.length} de {presus.total}. Usá el buscador para acotar.
+            </p>
+          )}
+
+          <p className="text-[11px] leading-relaxed text-ink-faint">
+            El listado no incluye el contenido. Al abrir un presupuesto ves sus ítems y precios, y
+            esa apertura queda registrada en Movimientos con tu email y la fecha. Del cliente final
+            solo se muestra el nombre: es un tercero ajeno a la app.
+          </p>
+        </div>
+      )}
+
       {tab === 'movimientos' && (
         <div className="overflow-hidden rounded-xl2 border border-line bg-surface">
           <div className="border-b border-line px-5 py-3">
@@ -501,8 +656,14 @@ export default function Admin() {
                 <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm text-ink">
-                      {a.action === 'grant_premium' ? '✓ Alta premium' : '✗ Baja premium'} ·{' '}
-                      <span className="font-mono text-xs text-ink-soft">{a.target_email}</span>
+                      {
+                        {
+                          grant_premium: '✓ Alta premium',
+                          revoke_premium: '✗ Baja premium',
+                          view_budget: '👁 Presupuesto abierto'
+                        }[a.action] || a.action
+                      }{' '}
+                      · <span className="font-mono text-xs text-ink-soft">{a.target_email}</span>
                     </p>
                     <p className="mt-0.5 text-xs text-ink-faint">
                       {formatDate(a.created_at.slice(0, 10))} · por {a.admin_email}
@@ -853,6 +1014,103 @@ function AltasPorDia({ datos }) {
       <p className="mt-2 text-xs text-ink-faint">
         Pasá el mouse por cada barra para ver el día y la cantidad.
       </p>
+    </div>
+  )
+}
+
+function EstadoPresu({ estado }) {
+  const tono =
+    {
+      aprobado: 'bg-teal-500/10 text-teal-600',
+      aceptado: 'bg-teal-500/10 text-teal-600',
+      rechazado: 'bg-rust-500/10 text-rust-500',
+      enviado: 'bg-brand-500/10 text-brand-600',
+      vencido: 'bg-brass-500/10 text-brass-600'
+    }[estado] || 'bg-ink/[0.06] text-ink-faint'
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${tono}`}>{estado}</span>
+  )
+}
+
+function FichaPresupuesto({ detalle }) {
+  if (!detalle) {
+    return (
+      <div className="flex justify-center border-t border-line bg-paper/50 py-6">
+        <Spinner />
+      </div>
+    )
+  }
+  if (detalle.error) {
+    return (
+      <p className="border-t border-line bg-paper/50 px-5 py-3 text-xs text-rust-500">
+        {detalle.error} · ¿Ejecutaste la migración 17?
+      </p>
+    )
+  }
+
+  const b = detalle.presupuesto || {}
+  const items = detalle.items || []
+  const cur = b.moneda
+
+  return (
+    <div className="space-y-3 border-t border-line bg-paper/50 px-5 py-4">
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-ink-soft">
+        <span>
+          De <b className="text-ink">{detalle.usuario?.negocio || detalle.usuario?.email}</b>
+        </span>
+        {detalle.cliente && (
+          <span>
+            Para <b className="text-ink">{detalle.cliente}</b>
+          </span>
+        )}
+        <span>Emitido {formatDate(String(b.issue_date).slice(0, 10))}</span>
+        {b.due_date && <span>Vence {formatDate(String(b.due_date).slice(0, 10))}</span>}
+      </div>
+
+      {b.titulo && <p className="text-sm text-ink">{b.titulo}</p>}
+
+      {items.length === 0 ? (
+        <p className="text-xs text-ink-faint">Sin ítems cargados.</p>
+      ) : (
+        <div className="overflow-hidden rounded-lg border border-line bg-surface">
+          {items.map((i, n) => (
+            <div
+              key={n}
+              className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-line px-3 py-2 text-xs last:border-0"
+            >
+              <span className="min-w-0 flex-1 break-words text-ink">{i.description}</span>
+              <span className="font-mono tabular-nums text-ink-faint">
+                {i.quantity} × {formatMoney(i.unit_price, cur)}
+                {Number(i.discount) > 0 ? ` −${i.discount}%` : ''}
+              </span>
+              <span className="whitespace-nowrap font-mono font-medium tabular-nums text-ink">
+                {formatMoney(
+                  Number(i.quantity) * Number(i.unit_price) * (1 - Number(i.discount || 0) / 100),
+                  cur
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-wrap justify-end gap-x-5 gap-y-1 font-mono text-xs tabular-nums text-ink-soft">
+        <span>Subtotal {formatMoney(b.subtotal, cur)}</span>
+        {Number(b.discount_amount) > 0 && <span>Desc. −{formatMoney(b.discount_amount, cur)}</span>}
+        {Number(b.tax_amount) > 0 && (
+          <span>
+            Imp. ({b.tax_rate}%) {formatMoney(b.tax_amount, cur)}
+          </span>
+        )}
+        <span className="font-semibold text-ink">Total {formatMoney(b.total, cur)}</span>
+      </div>
+
+      {(b.notas || b.condiciones) && (
+        <div className="space-y-1 text-[11px] leading-relaxed text-ink-faint">
+          {b.notas && <p className="whitespace-pre-line">Notas: {b.notas}</p>}
+          {b.condiciones && <p className="whitespace-pre-line">Condiciones: {b.condiciones}</p>}
+        </div>
+      )}
     </div>
   )
 }

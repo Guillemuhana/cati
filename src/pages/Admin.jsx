@@ -24,6 +24,13 @@ export default function Admin() {
   const [detalle, setDetalle] = useState(null)
   const [regalo, setRegalo] = useState(null) // usuario al que se le va a regalar
 
+  // Actividad: se carga aparte y solo al abrir la pestaña. Es la consulta
+  // más pesada del panel y no tiene sentido pagarla en cada visita a /admin.
+  const [actividad, setActividad] = useState(null)
+  const [actDias, setActDias] = useState(7)
+  const [actCargando, setActCargando] = useState(false)
+  const [actError, setActError] = useState('')
+
   const cargar = useCallback(async (q = '') => {
     setError('')
     const [s, u, l] = await Promise.all([
@@ -48,6 +55,30 @@ export default function Admin() {
   useEffect(() => {
     cargar()
   }, [cargar])
+
+  const cargarActividad = useCallback(async (dias) => {
+    setActCargando(true)
+    setActError('')
+    const { data, error: err } = await supabase.rpc('admin_actividad', {
+      p_days: dias,
+      p_limit: 200
+    })
+    if (err) {
+      setActError(
+        /no autorizado/i.test(err.message)
+          ? 'Tu cuenta no tiene permisos de administrador.'
+          : `${err.message}. ¿Ejecutaste la migración 16 en Supabase?`
+      )
+      setActividad(null)
+    } else {
+      setActividad(data)
+    }
+    setActCargando(false)
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'actividad') cargarActividad(actDias)
+  }, [tab, actDias, cargarActividad])
 
   const buscar = async (e) => {
     e.preventDefault()
@@ -151,6 +182,7 @@ export default function Admin() {
         {[
           ['resumen', 'Resumen'],
           ['usuarios', `Usuarios (${users?.total ?? 0})`],
+          ['actividad', 'Actividad'],
           ['movimientos', 'Movimientos']
         ].map(([k, label]) => (
           <button
@@ -374,6 +406,80 @@ export default function Admin() {
             <p className="mt-3 text-xs text-ink-faint">
               Mostrando {users.usuarios.length} de {users.total}. Usá el buscador para acotar.
             </p>
+          )}
+        </div>
+      )}
+
+      {tab === 'actividad' && (
+        <div className="space-y-5">
+          {/* Ventana de tiempo */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-ink-faint">Ver los últimos</span>
+            {[1, 7, 30].map((d) => (
+              <button
+                key={d}
+                onClick={() => setActDias(d)}
+                className={`rounded-md border px-3 py-1.5 text-xs font-medium transition ${
+                  actDias === d
+                    ? 'border-brand-500 bg-brand-50 text-brand-700'
+                    : 'border-line text-ink-soft hover:text-ink'
+                }`}
+              >
+                {d === 1 ? '24 horas' : `${d} días`}
+              </button>
+            ))}
+            {actCargando && <Spinner />}
+          </div>
+
+          {actError && (
+            <p className="rounded-xl2 border border-rust-500/40 bg-rust-500/[0.06] px-4 py-3 text-xs text-rust-500">
+              {actError}
+            </p>
+          )}
+
+          {actividad && (
+            <>
+              <Bloque titulo={`Resumen de ${actDias === 1 ? 'las últimas 24 horas' : `los últimos ${actDias} días`}`}>
+                <Metrica label="Ingresos" valor={actividad.resumen?.ingresos ?? 0} destacada />
+                <Metrica label="Altas nuevas" valor={actividad.resumen?.altas ?? 0} tono="teal" />
+                <Metrica label="Presupuestos" valor={actividad.resumen?.presupuestos ?? 0} />
+                <Metrica label="Aceptados" valor={actividad.resumen?.aceptados ?? 0} tono="teal" />
+                <Metrica
+                  label="Usuarios que armaron algo"
+                  valor={actividad.resumen?.usuarios_activos ?? 0}
+                />
+              </Bloque>
+
+              <IngresosPorDia datos={actividad.por_dia || []} />
+
+              <div className="overflow-hidden rounded-xl2 border border-line bg-surface">
+                <div className="border-b border-line px-5 py-3">
+                  <p className="text-sm font-medium text-ink">Línea de tiempo</p>
+                  <p className="mt-0.5 text-xs text-ink-faint">
+                    Quién entró, quién se registró y qué presupuestos se armaron, del más reciente al
+                    más viejo.
+                  </p>
+                </div>
+                {(actividad.eventos || []).length === 0 ? (
+                  <p className="px-6 py-12 text-center text-sm text-ink-soft">
+                    Sin actividad en este período.
+                  </p>
+                ) : (
+                  <ul className="divide-y divide-line">
+                    {actividad.eventos.map((e, n) => (
+                      <Evento key={n} e={e} />
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <p className="text-[11px] leading-relaxed text-ink-faint">
+                Los ingresos salen del registro de auth de Supabase, que se purga solo cada pocas
+                semanas: no sirve como historial largo. Si la lista aparece sin ingresos pero sí con
+                altas y presupuestos, es que el registro de auth no está disponible — el resto de los
+                datos igual es correcto.
+              </p>
+            </>
           )}
         </div>
       )}
@@ -749,4 +855,84 @@ function AltasPorDia({ datos }) {
       </p>
     </div>
   )
+}
+
+function IngresosPorDia({ datos }) {
+  if (datos.length === 0) return null
+  const max = Math.max(...datos.map((d) => d.ingresos), 1)
+  return (
+    <div className="rounded-xl2 border border-line bg-surface p-5">
+      <h2 className="font-display text-base font-medium text-ink">Ingresos por día</h2>
+      <p className="mt-0.5 text-xs text-ink-faint">
+        Barra llena: cuántas veces se entró. El número de abajo son personas distintas.
+      </p>
+      <div className="mt-4 flex h-28 items-end gap-1">
+        {datos.map((d) => (
+          <div key={d.dia} className="group flex flex-1 flex-col items-center gap-1">
+            <span className="text-[10px] tabular-nums text-ink-faint opacity-0 transition group-hover:opacity-100">
+              {d.ingresos}
+            </span>
+            <div
+              className="w-full rounded-t bg-gradient-to-t from-brand-600 to-brand-300"
+              style={{ height: `${Math.max(4, (d.ingresos / max) * 100)}%` }}
+              title={`${d.dia}: ${d.ingresos} ingresos · ${d.usuarios} usuarios`}
+            />
+            <span className="text-[9px] tabular-nums text-ink-faint">{d.usuarios || ''}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Una fila del feed. El tipo define ícono, color y qué se cuenta.
+function Evento({ e }) {
+  const cfg = {
+    ingreso: { icono: '→', color: 'text-brand-600', texto: 'entró a la app' },
+    alta: { icono: '★', color: 'text-teal-600', texto: 'creó su cuenta' },
+    presupuesto: { icono: '▤', color: 'text-brass-600', texto: 'armó un presupuesto' }
+  }[e.tipo] || { icono: '·', color: 'text-ink-faint', texto: e.tipo }
+
+  const d = e.detalle
+
+  return (
+    <li className="flex items-start gap-3 px-5 py-2.5">
+      <span className={`mt-0.5 w-4 shrink-0 text-center text-sm ${cfg.color}`}>{cfg.icono}</span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm text-ink">
+          <span className="font-medium">{e.negocio || e.email || 'usuario'}</span>{' '}
+          <span className="text-ink-soft">{cfg.texto}</span>
+          {d && (
+            <span className="text-ink-soft">
+              {' '}
+              · {formatMoney(d.total, d.moneda)}{' '}
+              <span className="text-ink-faint">({d.estado})</span>
+            </span>
+          )}
+        </p>
+        {e.negocio && e.email && (
+          <p className="truncate font-mono text-[11px] text-ink-faint">{e.email}</p>
+        )}
+      </div>
+      <span className="shrink-0 whitespace-nowrap font-mono text-[11px] tabular-nums text-ink-faint">
+        {formatFechaHora(e.fecha)}
+      </span>
+    </li>
+  )
+}
+
+// Fecha corta con hora: en un feed de actividad la hora es la mitad del dato.
+function formatFechaHora(value) {
+  if (!value) return '—'
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return '—'
+  const hoy = new Date()
+  const mismoDia =
+    d.getDate() === hoy.getDate() &&
+    d.getMonth() === hoy.getMonth() &&
+    d.getFullYear() === hoy.getFullYear()
+  const hora = new Intl.DateTimeFormat('es-AR', { hour: '2-digit', minute: '2-digit' }).format(d)
+  if (mismoDia) return `hoy ${hora}`
+  const fecha = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: 'short' }).format(d)
+  return `${fecha} ${hora}`
 }

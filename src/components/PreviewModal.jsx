@@ -135,6 +135,18 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
             <Signature label="Firma del cliente" />
             <Signature label={`Por ${profile?.business_name || 'la empresa'}`} />
           </div>
+
+          {/* Términos y condiciones del negocio */}
+          {profile?.legal_terms?.trim() && (
+            <div className="mt-8 border-t border-line pt-4">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-faint">
+                Términos y condiciones
+              </p>
+              <p className="mt-1.5 whitespace-pre-line text-xs leading-relaxed text-ink-faint">
+                {profile.legal_terms.trim()}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

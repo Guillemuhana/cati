@@ -18,6 +18,7 @@ export default function Perfil() {
     default_terms: profile?.default_terms || '',
     default_payment_terms: profile?.default_payment_terms || '',
     default_payment_methods: profile?.default_payment_methods || '',
+    legal_terms: profile?.legal_terms || '',
     bank_alias: profile?.bank_alias || '',
     brand_color: profile?.brand_color || '#2F6BFF',
     number_prefix: profile?.number_prefix || 'PRES',
@@ -187,6 +188,20 @@ export default function Perfil() {
             placeholder="Ej: alias mi.negocio.mp · CBU 000..."
             className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           />
+        </Field>
+
+        <Field label="Términos y condiciones (opcional)">
+          <textarea
+            rows={7}
+            value={form.legal_terms}
+            onChange={(e) => setForm({ ...form, legal_terms: e.target.value })}
+            placeholder={'Ej: La garantía cubre 6 meses por defectos de fabricación.\nLas cancelaciones con menos de 48 hs de aviso no reintegran la seña.\nLos plazos de entrega pueden variar por demoras del proveedor.'}
+            className="w-full rounded-md border border-line px-3 py-2 text-sm leading-relaxed focus:border-brand-500 focus:outline-none"
+          />
+          <p className="mt-1.5 text-xs text-ink-faint">
+            Texto legal de tu negocio (garantía, cancelaciones, letra chica). Se imprime al final del PDF y del enlace
+            público de todos tus documentos. Si lo dejás vacío, no aparece nada.
+          </p>
         </Field>
 
         {!isPremium && (

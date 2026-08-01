@@ -87,6 +87,7 @@ export function AuthProvider({ children }) {
     'default_terms',
     'default_payment_terms',
     'default_payment_methods',
+    'legal_terms',
     'bank_alias',
     'brand_color',
     'number_prefix',

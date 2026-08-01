@@ -124,6 +124,9 @@ const styles = StyleSheet.create({
   notesBlock: { marginTop: 14 },
   notesTitle: { fontSize: 8, fontFamily: 'Helvetica-Bold', marginBottom: 2 },
   notesText: { fontSize: 8, color: '#333333', lineHeight: 1.45 },
+  legalBlock: { marginTop: 16, borderTopWidth: 0.5, borderTopColor: '#DDDDDD', paddingTop: 8 },
+  legalTitle: { fontSize: 7, fontFamily: 'Helvetica-Bold', color: SOFT, letterSpacing: 0.5, marginBottom: 3 },
+  legalText: { fontSize: 6.5, color: SOFT, lineHeight: 1.4, textAlign: 'justify' },
   payGrid: { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap' },
   payCol: { width: '50%', paddingRight: 12, marginBottom: 8 },
   signRow: { marginTop: 30, flexDirection: 'row', justifyContent: 'space-between' },
@@ -347,6 +350,14 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
             <Text style={styles.signLabel}>Por {profile?.business_name || 'la empresa'}</Text>
           </View>
         </View>
+
+        {/* Términos y condiciones del negocio (opcionales, se cargan en Mi negocio) */}
+        {!!profile?.legal_terms?.trim() && (
+          <View style={styles.legalBlock}>
+            <Text style={styles.legalTitle}>TÉRMINOS Y CONDICIONES</Text>
+            <Text style={styles.legalText}>{profile.legal_terms.trim()}</Text>
+          </View>
+        )}
 
         <Text style={styles.footer} fixed>
           {profile?.business_name || ''}{profile?.hide_branding ? '' : ' · Generado con Numera'}

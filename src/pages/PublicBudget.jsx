@@ -314,7 +314,7 @@ export default function PublicBudget() {
           variants={reveal}
           className="mt-5 text-center text-[11px] uppercase tracking-[0.16em] text-ink-faint"
         >
-          {business?.hide_branding ? business?.business_name : 'Hecho con Numera'}
+          {business?.hide_branding ? business?.business_name : 'Numera de sTuDiO B2B'}
         </motion.p>
         </motion.div>
       </div>

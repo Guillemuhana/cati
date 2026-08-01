@@ -92,11 +92,10 @@ export default function PublicBudget() {
           />
           <motion.div className="p-4 sm:p-10" variants={stagger}>
             {/* Encabezado */}
-            <motion.header
-              variants={reveal}
-              className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
-            >
-              <div className="order-2 min-w-0 sm:order-1">
+            {/* Logo a la derecha, en la misma fila que el título: en celular
+                así no se come una fila entera. */}
+            <motion.header variants={reveal} className="flex items-start justify-between gap-4 sm:gap-6">
+              <div className="min-w-0">
                 <p className="font-display text-xl font-medium sm:text-2xl" style={{ color: accent }}>
                   Presupuesto
                 </p>
@@ -108,15 +107,15 @@ export default function PublicBudget() {
                 {business?.email && <p className="break-all text-xs text-ink-soft">{business.email}</p>}
                 {business?.phone && <p className="text-xs text-ink-soft">{business.phone}</p>}
               </div>
-              <div className="order-1 shrink-0 sm:order-2">
+              <div className="shrink-0">
                 {business?.logo_url ? (
                   <img
                     src={business.logo_url}
                     alt=""
-                    className="h-20 w-auto max-w-[160px] object-contain object-left sm:h-24 sm:max-w-[200px] sm:object-right"
+                    className="h-16 w-auto max-w-[110px] object-contain object-right sm:h-24 sm:max-w-[200px]"
                   />
                 ) : (
-                  <img src="/numera-icon.svg" alt="" className="h-16 w-16 sm:h-20 sm:w-20" />
+                  <img src="/numera-icon.svg" alt="" className="h-14 w-14 sm:h-20 sm:w-20" />
                 )}
               </div>
             </motion.header>

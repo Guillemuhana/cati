@@ -32,8 +32,10 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
 
         {/* Documento */}
         <div className="p-6 sm:p-10">
-          <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-            <div className="order-2 min-w-0 sm:order-1">
+          {/* Logo a la derecha, en la misma fila que el título: en celular
+              así no se come una fila entera. */}
+          <header className="flex items-start justify-between gap-4 sm:gap-6">
+            <div className="min-w-0">
               <p className="font-display text-xl font-medium text-brand-700 sm:text-2xl">Presupuesto</p>
               <p className="mt-0.5 font-mono text-sm text-ink-soft">{formatNumero(budget.numero, budget.issue_date)}</p>
               {budget.reference && <p className="mt-0.5 text-xs text-ink-faint">Ref: {budget.reference}</p>}
@@ -44,15 +46,15 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
               {profile?.email && <p className="break-all text-xs text-ink-soft">{profile.email}</p>}
               {profile?.phone && <p className="text-xs text-ink-soft">{profile.phone}</p>}
             </div>
-            <div className="order-1 shrink-0 sm:order-2">
+            <div className="shrink-0">
               {profile?.logo_url ? (
                 <img
                   src={profile.logo_url}
                   alt="Logo"
-                  className="h-20 w-auto max-w-[160px] object-contain object-left sm:h-24 sm:max-w-[200px] sm:object-right"
+                  className="h-16 w-auto max-w-[110px] object-contain object-right sm:h-24 sm:max-w-[200px]"
                 />
               ) : (
-                <img src="/numera-icon.svg" alt="Logo" className="h-16 w-16 sm:h-20 sm:w-20" />
+                <img src="/numera-icon.svg" alt="Logo" className="h-14 w-14 sm:h-20 sm:w-20" />
               )}
             </div>
           </header>

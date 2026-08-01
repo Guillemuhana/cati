@@ -1,9 +1,29 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import {
+  AnimatePresence,
+  MotionConfig,
+  animate,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useTransform
+} from 'motion/react'
 import { supabase } from '../lib/supabaseClient'
 import Spinner from '../components/Spinner'
 import { formatMoney, formatDate, formatNumero } from '../lib/utils'
 import { lineAmount } from '../components/ItemsTable'
+
+// Entrada en cascada: cada bloque del documento aparece apenas después del anterior.
+const reveal = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 220, damping: 26 } }
+}
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05, delayChildren: 0.08 } }
+}
 
 export default function PublicBudget() {
   const { token } = useParams()
@@ -59,36 +79,50 @@ export default function PublicBudget() {
   const decided = budget.status === 'aceptado' || budget.status === 'rechazado'
 
   return (
-    <div className="min-h-dvh bg-paper py-6 sm:py-10">
-      <div className="mx-auto max-w-3xl px-4">
-        <div className="overflow-hidden rounded-xl2 border border-line bg-surface shadow-soft">
-          <div className="h-1.5" style={{ background: accent }} />
-          <div className="p-4 sm:p-10">
+    <MotionConfig reducedMotion="user">
+      <div className="min-h-dvh bg-paper py-6 sm:py-10">
+        <motion.div className="mx-auto max-w-3xl px-4" variants={stagger} initial="hidden" animate="show">
+        <motion.div variants={reveal} className="overflow-hidden rounded-xl2 border border-line bg-surface shadow-soft">
+          <motion.div
+            className="h-1.5 origin-left"
+            style={{ background: accent }}
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+          />
+          <motion.div className="p-4 sm:p-10" variants={stagger}>
             {/* Encabezado */}
-            <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                {business?.logo_url ? (
-                  <img src={business.logo_url} alt="" className="mb-2 h-12 w-12 object-contain" />
-                ) : (
-                  <img src="/numera-icon.svg" alt="" className="mb-2 h-12 w-12" />
-                )}
-                <p className="break-words font-display text-lg font-semibold text-ink">
+            <motion.header
+              variants={reveal}
+              className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
+            >
+              <div className="order-2 min-w-0 sm:order-1">
+                <p className="font-display text-xl font-medium sm:text-2xl" style={{ color: accent }}>
+                  Presupuesto
+                </p>
+                <p className="mt-0.5 font-mono text-sm text-ink-soft">{formatNumero(budget.numero, budget.issue_date)}</p>
+                <p className="mt-3 break-words font-display text-lg font-semibold text-ink">
                   {business?.business_name || 'Presupuesto'}
                 </p>
                 {business?.tax_id && <p className="break-words text-xs text-ink-soft">{business.tax_id}</p>}
                 {business?.email && <p className="break-all text-xs text-ink-soft">{business.email}</p>}
                 {business?.phone && <p className="text-xs text-ink-soft">{business.phone}</p>}
               </div>
-              <div className="shrink-0 sm:text-right">
-                <p className="font-display text-xl font-medium sm:text-2xl" style={{ color: accent }}>
-                  Presupuesto
-                </p>
-                <p className="mt-0.5 font-mono text-sm text-ink-soft">{formatNumero(budget.numero, budget.issue_date)}</p>
+              <div className="order-1 shrink-0 sm:order-2">
+                {business?.logo_url ? (
+                  <img
+                    src={business.logo_url}
+                    alt=""
+                    className="h-20 w-auto max-w-[160px] object-contain object-left sm:h-24 sm:max-w-[200px] sm:object-right"
+                  />
+                ) : (
+                  <img src="/numera-icon.svg" alt="" className="h-16 w-16 sm:h-20 sm:w-20" />
+                )}
               </div>
-            </header>
+            </motion.header>
 
             {/* Meta */}
-            <div className="mt-8 grid grid-cols-2 gap-6 text-sm">
+            <motion.div variants={reveal} className="mt-8 grid grid-cols-2 gap-6 text-sm">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Emisión</p>
                 <p className="mt-1 text-ink">{formatDate(budget.issue_date)}</p>
@@ -99,10 +133,10 @@ export default function PublicBudget() {
                   <p className="mt-1 text-ink">{formatDate(budget.due_date)}</p>
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* Ítems */}
-            <div className="mt-8 overflow-hidden rounded-lg border border-line">
+            <motion.div variants={reveal} className="mt-8 overflow-hidden rounded-lg border border-line">
               <div className="hidden grid-cols-[1fr_60px_minmax(90px,110px)_minmax(90px,110px)] gap-3 border-b border-line bg-paper px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-ink-faint sm:grid">
                 <span>Descripción</span>
                 <span className="text-right">Cant.</span>
@@ -110,9 +144,12 @@ export default function PublicBudget() {
                 <span className="text-right">Importe</span>
               </div>
               {items.map((it, i) => (
-                <div
+                <motion.div
                   key={i}
-                  className="border-b border-line px-3 py-3 text-sm last:border-0 sm:grid sm:grid-cols-[1fr_60px_minmax(90px,110px)_minmax(90px,110px)] sm:items-start sm:gap-3 sm:py-2"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 + i * 0.04, type: 'spring', stiffness: 260, damping: 28 }}
+                  className="border-b border-line px-3 py-3 text-sm transition-colors last:border-0 hover:bg-paper sm:grid sm:grid-cols-[1fr_60px_minmax(90px,110px)_minmax(90px,110px)] sm:items-start sm:gap-3 sm:py-2"
                 >
                   <span className="block min-w-0 break-words text-ink">
                     {it.description}
@@ -137,12 +174,12 @@ export default function PublicBudget() {
                   <span className="hidden whitespace-nowrap text-right font-mono font-medium text-ink sm:block">
                     {formatMoney(lineAmount(it), currency)}
                   </span>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
             {/* Totales */}
-            <div className="mt-4 flex justify-end">
+            <motion.div variants={reveal} className="mt-4 flex justify-end">
               <div className="w-full max-w-xs space-y-1.5 font-mono text-sm">
                 <Row label="Subtotal" value={formatMoney(budget.subtotal, currency)} />
                 {Number(budget.discount_amount) > 0 && <Row label="Descuento" value={`-${formatMoney(budget.discount_amount, currency)}`} />}
@@ -150,7 +187,7 @@ export default function PublicBudget() {
                 <div className="flex items-center justify-between gap-3 border-t border-line pt-2">
                   <span className="font-sans font-semibold text-ink">Total</span>
                   <span className="whitespace-nowrap text-base font-semibold" style={{ color: accent }}>
-                    {formatMoney(budget.total, currency)}
+                    <CountingMoney value={budget.total} currency={currency} />
                   </span>
                 </div>
                 {Number(budget.deposit) > 0 && (
@@ -163,69 +200,138 @@ export default function PublicBudget() {
                   </>
                 )}
               </div>
-            </div>
+            </motion.div>
 
             {/* Pago / notas */}
             {(budget.payment_terms || budget.payment_methods || business?.bank_alias || budget.delivery_time || budget.notes || budget.terms) && (
-              <div className="mt-8 grid gap-4 text-sm sm:grid-cols-2">
+              <motion.div variants={reveal} className="mt-8 grid gap-4 text-sm sm:grid-cols-2">
                 <Block title="Condiciones de pago" text={budget.payment_terms} />
                 <Block title="Formas de pago" text={budget.payment_methods} />
                 <Block title="Datos bancarios / alias" text={business?.bank_alias} />
                 <Block title="Plazo de entrega" text={budget.delivery_time} />
                 <Block title="Notas" text={budget.notes} />
                 <Block title="Condiciones" text={budget.terms} />
-              </div>
+              </motion.div>
             )}
 
             {/* Términos y condiciones del negocio */}
             {business?.legal_terms?.trim() && (
-              <div className="mt-8 border-t border-line pt-5">
+              <motion.div variants={reveal} className="mt-8 border-t border-line pt-5">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
                   Términos y condiciones
                 </p>
                 <p className="mt-2 whitespace-pre-line text-xs leading-relaxed text-ink-soft">
                   {business.legal_terms.trim()}
                 </p>
-              </div>
+              </motion.div>
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Acciones del cliente */}
-        <div className="mt-4 rounded-xl2 border border-line bg-surface p-5 text-center shadow-soft">
-          {decided ? (
-            <p className="text-sm font-medium" style={{ color: budget.status === 'aceptado' ? '#189B84' : '#B4483A' }}>
-              {budget.status === 'aceptado' ? '✓ Aceptaste este presupuesto. ¡Gracias!' : 'Rechazaste este presupuesto.'}
-            </p>
-          ) : (
-            <>
-              <p className="mb-3 text-sm text-ink-soft">¿Querés avanzar con este presupuesto?</p>
-              <div className="flex flex-col justify-center gap-2 sm:flex-row">
-                <button
-                  onClick={() => respond('aceptado')}
-                  disabled={responding}
-                  className="rounded-md px-6 py-2.5 text-sm font-semibold text-white shadow-soft transition disabled:opacity-60"
-                  style={{ background: accent }}
+        <motion.div
+          variants={reveal}
+          layout
+          className="mt-4 rounded-xl2 border border-line bg-surface p-5 text-center shadow-soft"
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {decided ? (
+              <motion.div
+                key="decidido"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="flex items-center justify-center gap-2"
+              >
+                {budget.status === 'aceptado' && <CheckMark color="#189B84" />}
+                <p
+                  className="text-sm font-medium"
+                  style={{ color: budget.status === 'aceptado' ? '#189B84' : '#B4483A' }}
                 >
-                  {responding ? 'Enviando…' : 'Aceptar presupuesto'}
-                </button>
-                <button
-                  onClick={() => respond('rechazado')}
-                  disabled={responding}
-                  className="rounded-md border border-line px-6 py-2.5 text-sm font-medium text-ink-soft transition hover:border-rust-500 hover:text-rust-500 disabled:opacity-60"
-                >
-                  Rechazar
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+                  {budget.status === 'aceptado'
+                    ? 'Aceptaste este presupuesto. ¡Gracias!'
+                    : 'Rechazaste este presupuesto.'}
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div key="pendiente" exit={{ opacity: 0, y: -8 }}>
+                <p className="mb-3 text-sm text-ink-soft">¿Querés avanzar con este presupuesto?</p>
+                <div className="flex flex-col justify-center gap-2 sm:flex-row">
+                  <motion.button
+                    onClick={() => respond('aceptado')}
+                    disabled={responding}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    className="rounded-md px-6 py-2.5 text-sm font-semibold text-white shadow-soft disabled:opacity-60"
+                    style={{ background: accent }}
+                  >
+                    {responding ? 'Enviando…' : 'Aceptar presupuesto'}
+                  </motion.button>
+                  <motion.button
+                    onClick={() => respond('rechazado')}
+                    disabled={responding}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    className="rounded-md border border-line px-6 py-2.5 text-sm font-medium text-ink-soft transition-colors hover:border-rust-500 hover:text-rust-500 disabled:opacity-60"
+                  >
+                    Rechazar
+                  </motion.button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
-        <p className="mt-4 text-center text-xs text-ink-faint">
+        <motion.p variants={reveal} className="mt-4 text-center text-xs text-ink-faint">
           {business?.hide_branding ? business?.business_name : 'Hecho con Numera'}
-        </p>
+        </motion.p>
+        </motion.div>
       </div>
-    </div>
+    </MotionConfig>
+  )
+}
+
+// El total cuenta desde cero hasta su valor: llama la atención sin ser estridente.
+function CountingMoney({ value, currency }) {
+  const target = Number(value) || 0
+  const reduced = useReducedMotion()
+  const raw = useMotionValue(reduced ? target : 0)
+  const text = useTransform(raw, (v) => formatMoney(v, currency))
+
+  useEffect(() => {
+    if (reduced) {
+      raw.set(target)
+      return
+    }
+    const controls = animate(raw, target, { duration: 1.1, delay: 0.5, ease: [0.22, 1, 0.36, 1] })
+    return () => controls.stop()
+  }, [target, reduced, raw])
+
+  return <motion.span>{text}</motion.span>
+}
+
+function CheckMark({ color }) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke={color} strokeWidth="2.4">
+      <motion.circle
+        cx="12"
+        cy="12"
+        r="10"
+        strokeWidth="1.5"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      />
+      <motion.path
+        d="M7.5 12.5l3 3 6-6.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 0.35, delay: 0.35, ease: 'easeOut' }}
+      />
+    </svg>
   )
 }
 

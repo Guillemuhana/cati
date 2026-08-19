@@ -208,3 +208,10 @@ export function needsOutline(hex) {
   const rgb = toRgb(hex)
   return rgb ? contrast(rgb, [255, 255, 255]) < 2 : false
 }
+
+// El mismo color con transparencia, para sombras teñidas del color de marca.
+export function withAlpha(hex, alpha) {
+  const rgb = toRgb(hex)
+  if (!rgb) return `rgba(20, 24, 28, ${alpha})`
+  return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`
+}

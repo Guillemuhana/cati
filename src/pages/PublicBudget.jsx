@@ -18,7 +18,8 @@ import {
   contrastText,
   readableAccent,
   isPaleColor,
-  needsOutline
+  needsOutline,
+  withAlpha
 } from '../lib/utils'
 import { lineAmount } from '../components/ItemsTable'
 
@@ -109,6 +110,9 @@ export default function PublicBudget() {
   const actionBg = isPaleColor(accent) ? '#14181C' : accent
   const onAction = contrastText(actionBg)
   const outlineAction = needsOutline(actionBg)
+  // Sombra teñida con el propio color del botón: lo levanta del papel sin
+  // ensuciarlo con un gris genérico.
+  const actionShadow = `0 10px 22px -8px ${withAlpha(actionBg, 0.55)}, 0 3px 8px -3px rgba(20, 24, 28, 0.22)`
   const currency = budget.currency
   const balance = (Number(budget.total) || 0) - (Number(budget.deposit) || 0)
   const decided = budget.status === 'aceptado' || budget.status === 'rechazado'
@@ -296,8 +300,10 @@ export default function PublicBudget() {
         <motion.div
           variants={reveal}
           layout
-          className={`mt-4 rounded-xl2 border border-line bg-surface p-5 text-center shadow-soft sm:p-6 ${
-            decided ? '' : 'sticky bottom-3 z-20'
+          className={`mt-4 rounded-xl2 border border-line bg-surface p-5 text-center sm:p-6 ${
+            decided
+              ? 'shadow-soft'
+              : 'sticky bottom-3 z-20 shadow-[0_-2px_10px_-6px_rgba(20,24,28,0.12),0_16px_40px_-16px_rgba(20,24,28,0.35)]'
           }`}
         >
           <AnimatePresence mode="wait" initial={false}>
@@ -329,13 +335,14 @@ export default function PublicBudget() {
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.97 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                    className="rounded-lg border px-7 py-3 text-sm font-semibold tracking-tight shadow-soft disabled:opacity-60"
+                    className="rounded-xl border px-7 py-4 text-base font-semibold tracking-tight disabled:opacity-60 sm:py-3.5"
                     style={{
                       background: actionBg,
                       color: onAction,
                       // Un color claro (un amarillo, por ejemplo) necesita borde
                       // para recortarse del papel.
-                      borderColor: outlineAction ? 'rgba(20,24,28,0.18)' : 'transparent'
+                      borderColor: outlineAction ? 'rgba(20,24,28,0.18)' : 'transparent',
+                      boxShadow: actionShadow
                     }}
                   >
                     {responding ? 'Enviando…' : 'Aceptar presupuesto'}
@@ -345,7 +352,7 @@ export default function PublicBudget() {
                     disabled={responding}
                     whileTap={{ scale: 0.97 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                    className="rounded-lg border border-line px-7 py-3 text-sm font-medium text-ink-soft transition-colors hover:border-rust-500 hover:text-rust-500 disabled:opacity-60"
+                    className="rounded-xl px-7 py-2.5 text-sm font-medium text-ink-faint underline-offset-4 transition-colors hover:text-rust-500 hover:underline disabled:opacity-60"
                   >
                     Rechazar
                   </motion.button>

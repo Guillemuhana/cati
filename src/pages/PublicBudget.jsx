@@ -15,12 +15,8 @@ import {
   formatMoney,
   formatDate,
   formatNumero,
-  contrastText,
   readableAccent,
-  isPaleColor,
-  needsOutline,
-  withAlpha,
-  ensureContrast
+  resolveAccent
 } from '../lib/utils'
 import { lineAmount } from '../components/ItemsTable'
 
@@ -99,25 +95,19 @@ export default function PublicBudget() {
   }
 
   const { budget, items, business } = data
-  // El color de marca lo elige el usuario en Perfil sin restricciones, así que
-  // puede ser un amarillo o un pastel. Derivamos una variante oscurecida para
-  // usarlo como texto y el color de texto del botón, para que «Aceptar
-  // presupuesto» nunca termine en blanco sobre un fondo claro.
-  const accent = business?.brand_color || '#2F6BFF'
+  // El color de marca lo elige el usuario en Perfil y llega crudo de la base:
+  // puede venir vacío, con otro formato o directamente inservible. resolveAccent
+  // garantiza un #rrggbb; accentInk lo oscurece lo justo para usarlo como texto
+  // sobre papel blanco (título y total), que si no también quedaba ilegible.
+  const accent = resolveAccent(business?.brand_color)
   const accentInk = readableAccent(accent)
-  // Si la marca se funde con el papel (blancos, cremas) no hay color con el que
-  // pintar el botón: cae en tinta, que se lee siempre y sigue pareciendo el
-  // botón principal. Un gris derivado del blanco quedaba apagado.
-  const brandBg = isPaleColor(accent) ? '#14181C' : accent
-  const onAction = contrastText(brandBg)
-  // Un tono medio deja el texto en ~3:1 mire para donde mire. En ese caso
-  // corremos el fondo hasta que la etiqueta llegue a AA, en vez de dejarla
-  // «casi» legible.
-  const actionBg = ensureContrast(brandBg, onAction)
-  const outlineAction = needsOutline(actionBg)
-  // Sombra teñida con el propio color del botón: lo levanta del papel sin
-  // ensuciarlo con un gris genérico.
-  const actionShadow = `0 10px 22px -8px ${withAlpha(actionBg, 0.55)}, 0 3px 8px -3px rgba(20, 24, 28, 0.22)`
+  // El botón de aceptar NO usa el color de marca, a propósito. Es la única
+  // acción del documento y tiene que leerse siempre, venga lo que venga de la
+  // base. Derivarlo del color de marca fue justamente lo que lo dejó blanco
+  // sobre blanco. La marca sigue mandando en la barra, el título y el total.
+  const actionBg = '#14181C'
+  const onAction = '#FFFFFF'
+  const actionShadow = '0 10px 22px -8px rgba(20, 24, 28, 0.45), 0 3px 8px -3px rgba(20, 24, 28, 0.25)'
   const currency = budget.currency
   const balance = (Number(budget.total) || 0) - (Number(budget.deposit) || 0)
   const decided = budget.status === 'aceptado' || budget.status === 'rechazado'
@@ -344,9 +334,7 @@ export default function PublicBudget() {
                     style={{
                       background: actionBg,
                       color: onAction,
-                      // Un color claro (un amarillo, por ejemplo) necesita borde
-                      // para recortarse del papel.
-                      borderColor: outlineAction ? 'rgba(20,24,28,0.18)' : 'transparent',
+                      borderColor: 'transparent',
                       boxShadow: actionShadow
                     }}
                   >

@@ -174,11 +174,11 @@ function contrast(a, b) {
   return (l1 + 0.05) / (l2 + 0.05)
 }
 
-// Texto legible sobre un fondo dado: blanco o tinta, el que más contraste dé.
-export function contrastText(hex) {
-  const rgb = toRgb(hex)
-  if (!rgb) return '#FFFFFF'
-  return contrast(rgb, [255, 255, 255]) >= contrast(rgb, [20, 24, 28]) ? '#FFFFFF' : '#14181C'
+// El color de marca sale de la base y puede ser cualquier cosa: vacio, un
+// 'white', un rgb(...) o basura de una carga vieja. Todo lo que sigue asume
+// #rrggbb, asi que lo normalizamos una sola vez acá.
+export function resolveAccent(hex, fallback = '#2F6BFF') {
+  return toRgb(hex) ? (String(hex).trim().startsWith('#') ? String(hex).trim() : '#' + String(hex).trim()) : fallback
 }
 
 // Versión del color de marca oscurecida lo justo para usarla COMO TEXTO
@@ -191,42 +191,4 @@ export function readableAccent(hex, minRatio = 4.5) {
     out = out.map((v) => v * 0.88)
   }
   return toHex(out)
-}
-
-// ¿El color se funde con el papel? No alcanza con mirar la luminancia: un
-// amarillo es clarísimo pero se distingue perfecto del blanco. Pedimos las dos
-// cosas — claro Y sin saturación — para no apagar marcas vivas.
-export function isPaleColor(hex) {
-  const rgb = toRgb(hex)
-  if (!rgb) return false
-  const chroma = Math.max(...rgb) - Math.min(...rgb)
-  return contrast(rgb, [255, 255, 255]) < 1.6 && chroma < 60
-}
-
-// ¿Conviene dibujarle un borde al botón para que se recorte del papel?
-export function needsOutline(hex) {
-  const rgb = toRgb(hex)
-  return rgb ? contrast(rgb, [255, 255, 255]) < 2 : false
-}
-
-// Empuja el fondo hacia oscuro o hacia claro hasta que el texto encima llegue
-// al contraste mínimo AA. Los tonos medios son el caso feo: ni el blanco ni la
-// tinta llegan a 4,5:1 y el botón queda legible «a medias».
-export function ensureContrast(bg, fg, minRatio = 4.5) {
-  const bgRgb = toRgb(bg)
-  const fgRgb = toRgb(fg)
-  if (!bgRgb || !fgRgb) return bg
-  const toward = luminance(fgRgb) > 0.5 ? 0 : 255
-  let out = bgRgb
-  for (let i = 0; i < 40 && contrast(out, fgRgb) < minRatio; i++) {
-    out = out.map((v) => v + (toward - v) * 0.06)
-  }
-  return toHex(out)
-}
-
-// El mismo color con transparencia, para sombras teñidas del color de marca.
-export function withAlpha(hex, alpha) {
-  const rgb = toRgb(hex)
-  if (!rgb) return `rgba(20, 24, 28, ${alpha})`
-  return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`
 }

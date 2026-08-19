@@ -209,6 +209,21 @@ export function needsOutline(hex) {
   return rgb ? contrast(rgb, [255, 255, 255]) < 2 : false
 }
 
+// Empuja el fondo hacia oscuro o hacia claro hasta que el texto encima llegue
+// al contraste mínimo AA. Los tonos medios son el caso feo: ni el blanco ni la
+// tinta llegan a 4,5:1 y el botón queda legible «a medias».
+export function ensureContrast(bg, fg, minRatio = 4.5) {
+  const bgRgb = toRgb(bg)
+  const fgRgb = toRgb(fg)
+  if (!bgRgb || !fgRgb) return bg
+  const toward = luminance(fgRgb) > 0.5 ? 0 : 255
+  let out = bgRgb
+  for (let i = 0; i < 40 && contrast(out, fgRgb) < minRatio; i++) {
+    out = out.map((v) => v + (toward - v) * 0.06)
+  }
+  return toHex(out)
+}
+
 // El mismo color con transparencia, para sombras teñidas del color de marca.
 export function withAlpha(hex, alpha) {
   const rgb = toRgb(hex)

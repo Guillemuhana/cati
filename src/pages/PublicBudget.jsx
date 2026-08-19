@@ -19,7 +19,8 @@ import {
   readableAccent,
   isPaleColor,
   needsOutline,
-  withAlpha
+  withAlpha,
+  ensureContrast
 } from '../lib/utils'
 import { lineAmount } from '../components/ItemsTable'
 
@@ -107,8 +108,12 @@ export default function PublicBudget() {
   // Si la marca se funde con el papel (blancos, cremas) no hay color con el que
   // pintar el botón: cae en tinta, que se lee siempre y sigue pareciendo el
   // botón principal. Un gris derivado del blanco quedaba apagado.
-  const actionBg = isPaleColor(accent) ? '#14181C' : accent
-  const onAction = contrastText(actionBg)
+  const brandBg = isPaleColor(accent) ? '#14181C' : accent
+  const onAction = contrastText(brandBg)
+  // Un tono medio deja el texto en ~3:1 mire para donde mire. En ese caso
+  // corremos el fondo hasta que la etiqueta llegue a AA, en vez de dejarla
+  // «casi» legible.
+  const actionBg = ensureContrast(brandBg, onAction)
   const outlineAction = needsOutline(actionBg)
   // Sombra teñida con el propio color del botón: lo levanta del papel sin
   // ensuciarlo con un gris genérico.

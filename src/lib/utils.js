@@ -144,3 +144,67 @@ export const STATUS_OPTIONS = ['borrador', 'enviado', 'visto', 'aceptado', 'rech
 export function classNames(...list) {
   return list.filter(Boolean).join(' ')
 }
+
+// ------------------------------------------------------------
+// Color de marca: el usuario elige cualquier hex desde Perfil,
+// incluso amarillos o pasteles. Estas funciones evitan que el
+// documento público quede ilegible (texto blanco sobre amarillo).
+// ------------------------------------------------------------
+
+function toRgb(hex) {
+  const h = String(hex || '').trim().replace('#', '')
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
+  if (!/^[0-9a-fA-F]{6}$/.test(full)) return null
+  return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16))
+}
+
+const toHex = (rgb) => '#' + rgb.map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('')
+
+// Luminancia relativa según WCAG 2.1
+function luminance(rgb) {
+  const [r, g, b] = rgb.map((v) => {
+    const s = v / 255
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+function contrast(a, b) {
+  const [l1, l2] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+  return (l1 + 0.05) / (l2 + 0.05)
+}
+
+// Texto legible sobre un fondo dado: blanco o tinta, el que más contraste dé.
+export function contrastText(hex) {
+  const rgb = toRgb(hex)
+  if (!rgb) return '#FFFFFF'
+  return contrast(rgb, [255, 255, 255]) >= contrast(rgb, [20, 24, 28]) ? '#FFFFFF' : '#14181C'
+}
+
+// Versión del color de marca oscurecida lo justo para usarla COMO TEXTO
+// sobre papel blanco (títulos, el total). Los colores oscuros no cambian.
+export function readableAccent(hex, minRatio = 4.5) {
+  const rgb = toRgb(hex)
+  if (!rgb) return '#2F6BFF'
+  let out = rgb
+  for (let i = 0; i < 24 && contrast(out, [255, 255, 255]) < minRatio; i++) {
+    out = out.map((v) => v * 0.88)
+  }
+  return toHex(out)
+}
+
+// ¿El color se funde con el papel? No alcanza con mirar la luminancia: un
+// amarillo es clarísimo pero se distingue perfecto del blanco. Pedimos las dos
+// cosas — claro Y sin saturación — para no apagar marcas vivas.
+export function isPaleColor(hex) {
+  const rgb = toRgb(hex)
+  if (!rgb) return false
+  const chroma = Math.max(...rgb) - Math.min(...rgb)
+  return contrast(rgb, [255, 255, 255]) < 1.6 && chroma < 60
+}
+
+// ¿Conviene dibujarle un borde al botón para que se recorte del papel?
+export function needsOutline(hex) {
+  const rgb = toRgb(hex)
+  return rgb ? contrast(rgb, [255, 255, 255]) < 2 : false
+}

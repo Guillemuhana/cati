@@ -11,7 +11,15 @@ import {
 } from 'motion/react'
 import { supabase } from '../lib/supabaseClient'
 import Spinner from '../components/Spinner'
-import { formatMoney, formatDate, formatNumero } from '../lib/utils'
+import {
+  formatMoney,
+  formatDate,
+  formatNumero,
+  contrastText,
+  readableAccent,
+  isPaleColor,
+  needsOutline
+} from '../lib/utils'
 import { lineAmount } from '../components/ItemsTable'
 
 // Entrada en cascada: cada bloque del documento aparece apenas después del anterior.
@@ -31,6 +39,7 @@ export default function PublicBudget() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [responding, setResponding] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     let active = true
@@ -49,8 +58,23 @@ export default function PublicBudget() {
   const respond = async (action) => {
     if (responding) return
     setResponding(true)
-    const { data: res } = await supabase.rpc('set_budget_response', { p_token: token, p_action: action })
-    if (res?.ok) setData((d) => ({ ...d, budget: { ...d.budget, status: res.status } }))
+    setError('')
+    const { data: res, error: rpcError } = await supabase.rpc('set_budget_response', {
+      p_token: token,
+      p_action: action
+    })
+    if (res?.status) {
+      // Sirve tanto para la respuesta nueva como para `ya_respondido`: en los
+      // dos casos el estado que manda es el que devuelve la base. Antes, si el
+      // presupuesto ya estaba respondido, el clic no hacía nada visible.
+      setData((d) => ({ ...d, budget: { ...d.budget, status: res.status } }))
+    } else {
+      setError(
+        rpcError
+          ? 'No pudimos registrar tu respuesta. Probá de nuevo en un momento.'
+          : 'Este enlace ya no está disponible. Pedile uno nuevo a quien te lo envió.'
+      )
+    }
     setResponding(false)
   }
 
@@ -73,7 +97,18 @@ export default function PublicBudget() {
   }
 
   const { budget, items, business } = data
+  // El color de marca lo elige el usuario en Perfil sin restricciones, así que
+  // puede ser un amarillo o un pastel. Derivamos una variante oscurecida para
+  // usarlo como texto y el color de texto del botón, para que «Aceptar
+  // presupuesto» nunca termine en blanco sobre un fondo claro.
   const accent = business?.brand_color || '#2F6BFF'
+  const accentInk = readableAccent(accent)
+  // Si la marca se funde con el papel (blancos, cremas) no hay color con el que
+  // pintar el botón: cae en tinta, que se lee siempre y sigue pareciendo el
+  // botón principal. Un gris derivado del blanco quedaba apagado.
+  const actionBg = isPaleColor(accent) ? '#14181C' : accent
+  const onAction = contrastText(actionBg)
+  const outlineAction = needsOutline(actionBg)
   const currency = budget.currency
   const balance = (Number(budget.total) || 0) - (Number(budget.deposit) || 0)
   const decided = budget.status === 'aceptado' || budget.status === 'rechazado'
@@ -96,7 +131,7 @@ export default function PublicBudget() {
                 así no se come una fila entera. */}
             <motion.header variants={reveal} className="flex items-start justify-between gap-4 sm:gap-6">
               <div className="min-w-0">
-                <p className="font-display text-2xl font-medium leading-none sm:text-3xl" style={{ color: accent }}>
+                <p className="font-display text-2xl font-medium leading-none sm:text-3xl" style={{ color: accentInk }}>
                   Presupuesto
                 </p>
                 <p className="mt-1.5 font-mono text-sm tabular-nums tracking-tight text-ink-soft">
@@ -210,7 +245,7 @@ export default function PublicBudget() {
                   <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
                     Total
                   </span>
-                  <span className="whitespace-nowrap text-xl font-semibold tabular-nums" style={{ color: accent }}>
+                  <span className="whitespace-nowrap text-xl font-semibold tabular-nums" style={{ color: accentInk }}>
                     <CountingMoney value={budget.total} currency={currency} />
                   </span>
                 </div>
@@ -255,11 +290,15 @@ export default function PublicBudget() {
           </motion.div>
         </motion.div>
 
-        {/* Acciones del cliente */}
+        {/* Acciones del cliente. Mientras está pendiente la tarjeta queda pegada
+            al borde inferior de la pantalla: el botón de aceptar se ve desde el
+            primer momento, sin tener que scrollear el documento entero. */}
         <motion.div
           variants={reveal}
           layout
-          className="mt-4 rounded-xl2 border border-line bg-surface p-6 text-center shadow-soft"
+          className={`mt-4 rounded-xl2 border border-line bg-surface p-5 text-center shadow-soft sm:p-6 ${
+            decided ? '' : 'sticky bottom-3 z-20'
+          }`}
         >
           <AnimatePresence mode="wait" initial={false}>
             {decided ? (
@@ -290,8 +329,14 @@ export default function PublicBudget() {
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.97 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                    className="rounded-lg px-7 py-3 text-sm font-semibold tracking-tight text-white shadow-soft disabled:opacity-60"
-                    style={{ background: accent }}
+                    className="rounded-lg border px-7 py-3 text-sm font-semibold tracking-tight shadow-soft disabled:opacity-60"
+                    style={{
+                      background: actionBg,
+                      color: onAction,
+                      // Un color claro (un amarillo, por ejemplo) necesita borde
+                      // para recortarse del papel.
+                      borderColor: outlineAction ? 'rgba(20,24,28,0.18)' : 'transparent'
+                    }}
                   >
                     {responding ? 'Enviando…' : 'Aceptar presupuesto'}
                   </motion.button>
@@ -305,6 +350,7 @@ export default function PublicBudget() {
                     Rechazar
                   </motion.button>
                 </div>
+                {error && <p className="mt-3 text-sm text-rust-500">{error}</p>}
               </motion.div>
             )}
           </AnimatePresence>

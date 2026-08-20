@@ -1,13 +1,12 @@
 {
   "rewrites": [
     {
-      "//": "Solo los robots que arman la vista previa del link pasan por la funcion: una persona entra a la app de siempre. Si la funcion falla, se cae la miniatura, nunca el presupuesto.",
       "source": "/p/:token",
       "has": [
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*(WhatsApp|whatsapp|facebookexternalhit|Facebot|Twitterbot|Slackbot|Slack-ImgProxy|TelegramBot|Discordbot|LinkedInBot|SkypeUriPreview|Applebot|redditbot|Pinterest|vkShare|Iframely|Embedly|Googlebot|bingbot).*"
+          "value": ".*(?:WhatsApp|whatsapp|facebookexternalhit|Facebot|Twitterbot|Slackbot|Slack-ImgProxy|TelegramBot|Discordbot|LinkedInBot|SkypeUriPreview|Applebot|redditbot|Pinterest|vkShare|Iframely|Embedly|Googlebot|bingbot).*"
         }
       ],
       "destination": "/api/preview?token=:token"

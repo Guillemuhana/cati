@@ -55,6 +55,11 @@ const FAQS = [
     keywords: 'cliente nuevo cargar alta obligatorio'
   },
   {
+    q: '¿Puedo agregar datos propios al presupuesto (fecha del evento, patente, medidas)?',
+    a: 'Sí. En el formulario, en «Datos del trabajo», tocás el dato que quieras sumar y lo llenás. Los que te ofrece salen de tu rubro (un fotógrafo ve «Fecha del evento» y «Horas de cobertura», un taller ve «Patente» y «Kilometraje»), y con «Agregar otro dato» inventás el que necesites con el nombre que quieras. Entran hasta 8 y se imprimen arriba del detalle, en el PDF y en el enlace que ve el cliente. Si no cargás ninguno, no aparece nada.',
+    keywords: 'datos campos extra personalizado fecha evento patente medidas superficie dato propio'
+  },
+  {
     q: '¿Para qué sirve el rubro?',
     a: 'Lo elegís al crear la cuenta y lo cambiás cuando quieras en «Mi negocio». Sirve para que un presupuesto nuevo arranque con las condiciones, las formas de pago y la validez que se usan en tu rubro, en vez de nacer vacío. Es solo un punto de partida: lo que vos hayas escrito en «Mi negocio» siempre manda, y en cada presupuesto podés editar todo. No te limita ninguna función de la app.',
     keywords: 'rubro actividad oficio profesion profesión sugerencias condiciones defecto'

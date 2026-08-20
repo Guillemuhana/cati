@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Image, Font, pdf } from '@react-pdf/renderer'
 import { formatMoney, formatDate, formatNumero, STATUS, safeImages } from './utils'
+import { cleanDetails } from '../components/BudgetDetails'
 
 // Fuentes: usamos Helvetica (nativa de react-pdf) para asegurar que el PDF
 // se genere sin depender de carga de red en tiempo de export.
@@ -235,6 +236,19 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
             <Field label="REFERENCIA" value={budget.reference} always />
           </View>
         </View>
+
+        {/* Datos del trabajo (los que cargó el usuario, si cargó alguno) */}
+        {cleanDetails(budget.details).length > 0 && (
+          <View style={styles.dataBox} wrap={false}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: '100%' }}>
+              {cleanDetails(budget.details).map((d) => (
+                <View key={d.label} style={styles.dataCol}>
+                  <Field label={d.label.toUpperCase()} value={d.value} />
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* Entrega y observaciones */}
         <View style={[styles.dataBox, { flexDirection: 'column' }]}>

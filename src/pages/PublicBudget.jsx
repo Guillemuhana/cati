@@ -11,6 +11,7 @@ import {
 } from 'motion/react'
 import { supabase } from '../lib/supabaseClient'
 import Spinner from '../components/Spinner'
+import { cleanDetails } from '../components/BudgetDetails'
 import {
   formatMoney,
   formatDate,
@@ -267,6 +268,18 @@ export default function PublicBudget() {
                 )}
               </div>
             </motion.div>
+
+            {/* Datos del trabajo */}
+            {cleanDetails(budget.details).length > 0 && (
+              <motion.div variants={reveal} className="mt-8 grid gap-x-8 gap-y-4 border-t border-line pt-6 sm:grid-cols-2">
+                {cleanDetails(budget.details).map((d) => (
+                  <div key={d.label}>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-faint">{d.label}</p>
+                    <p className="mt-1 text-sm text-ink">{d.value}</p>
+                  </div>
+                ))}
+              </motion.div>
+            )}
 
             {/* Imágenes que adjuntó el emisor (opcionales) */}
             {safeImages(budget.images).length > 0 && (

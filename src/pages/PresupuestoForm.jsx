@@ -9,6 +9,7 @@ import { usePlan } from '../hooks/usePlan'
 import Card from '../components/Card'
 import PreviewModal from '../components/PreviewModal'
 import BudgetImages from '../components/BudgetImages'
+import BudgetDetails, { cleanDetails } from '../components/BudgetDetails'
 import Spinner from '../components/Spinner'
 import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
 import {
@@ -44,7 +45,8 @@ const emptyBudget = {
   payment_terms: '',
   payment_methods: '',
   delivery_time: '',
-  images: []
+  images: [],
+  details: []
 }
 
 export default function PresupuestoForm() {
@@ -279,6 +281,7 @@ export default function PresupuestoForm() {
         payment_methods: budget.payment_methods || '',
         delivery_time: budget.delivery_time || '',
         images: Array.isArray(budget.images) ? budget.images : [],
+        details: cleanDetails(budget.details),
         subtotal: totals.subtotal,
         discount_amount: totals.discountAmount,
         tax_amount: totals.taxAmount,
@@ -510,6 +513,14 @@ export default function PresupuestoForm() {
               onCreateClient={handleCreateClient}
             />
             {errors.client_id && <FieldError>{errors.client_id}</FieldError>}
+          </Card>
+
+          <Card title="Datos del trabajo" desc="Los que usa tu rubro, o los que quieras inventar. Todo opcional.">
+            <BudgetDetails
+              sugeridos={getRubro(profile?.rubro).fields}
+              value={budget.details}
+              onChange={(details) => patchBudget({ details })}
+            />
           </Card>
 
           <Card

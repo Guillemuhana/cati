@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { usePlan } from '../hooks/usePlan'
 import StatusBadge from '../components/StatusBadge'
 import Spinner from '../components/Spinner'
+import { cleanDetails } from '../components/BudgetDetails'
 import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
 import { formatDate, formatMoney, formatNumero, STATUS_OPTIONS, safeImages, storagePathFromUrl } from '../lib/utils'
 
@@ -444,6 +445,20 @@ export default function PresupuestoDetail() {
               ))}
             </div>
           </div>
+
+          {cleanDetails(budget.details).length > 0 && (
+            <div className="rounded-xl2 border border-line bg-surface p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Datos del trabajo</p>
+              <dl className="mt-2 space-y-1.5">
+                {cleanDetails(budget.details).map((d) => (
+                  <div key={d.label} className="flex justify-between gap-3 text-sm">
+                    <dt className="text-ink-soft">{d.label}</dt>
+                    <dd className="text-right font-medium text-ink">{d.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
 
           {safeImages(budget.images).length > 0 && (
             <div className="rounded-xl2 border border-line bg-surface p-5">

@@ -1,4 +1,5 @@
 import { formatMoney, formatDate, formatNumero, safeImages } from '../lib/utils'
+import { cleanDetails } from './BudgetDetails'
 import { lineAmount } from './ItemsTable'
 
 /**
@@ -135,6 +136,18 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
             <div className="mt-6 space-y-4 text-sm">
               <PreviewBlock title="Notas" text={budget.notes} />
               <PreviewBlock title="Condiciones" text={budget.terms} />
+            </div>
+          )}
+
+          {/* Datos del trabajo */}
+          {cleanDetails(budget.details).length > 0 && (
+            <div className="mt-6 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+              {cleanDetails(budget.details).map((d) => (
+                <div key={d.label}>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-faint">{d.label}</p>
+                  <p className="mt-0.5 text-ink">{d.value}</p>
+                </div>
+              ))}
             </div>
           )}
 

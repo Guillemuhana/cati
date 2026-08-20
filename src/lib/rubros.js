@@ -145,8 +145,20 @@ export const RUBROS = [
     itemPlaceholder: 'Ej: Integración de chatbot con IA'
   },
   {
-    key: 'diseno',
+    key: 'tecnologia',
     group: 'Tecnología y digital',
+    label: 'Soporte técnico, redes y hardware',
+    fields: ['Equipo / modelo', 'Falla reportada', 'Dirección', 'Garantía'],
+    terms:
+      'Presupuesto válido por 15 días. Incluye el diagnóstico detallado. Los repuestos quedan sujetos a disponibilidad y a variación de precio. Garantía de 90 días sobre el trabajo; no cubre daños por mal uso.',
+    payment_terms: 'Se abona al finalizar el trabajo.',
+    payment_methods: 'Efectivo, transferencia o Mercado Pago.',
+    validity: 15,
+    itemPlaceholder: 'Ej: Cableado de red · 8 puestos'
+  },
+  {
+    key: 'diseno',
+    group: 'Creativos y comunicación',
     label: 'Diseño gráfico y branding',
     fields: ['Piezas incluidas', 'Formatos de entrega', 'Fecha de entrega'],
     terms:
@@ -158,7 +170,7 @@ export const RUBROS = [
   },
   {
     key: 'marketing',
-    group: 'Tecnología y digital',
+    group: 'Creativos y comunicación',
     label: 'Marketing digital y publicidad',
     fields: ['Período del abono', 'Redes incluidas', 'Inversión en pauta'],
     terms:
@@ -170,27 +182,23 @@ export const RUBROS = [
   },
   {
     key: 'audiovisual',
-    group: 'Tecnología y digital',
+    group: 'Creativos y comunicación',
     label: 'Fotografía y video',
-    fields: ['Fecha del evento', 'Lugar', 'Horas de cobertura', 'Material que se entrega'],
+    fields: [
+      'Fecha del evento',
+      'Lugar',
+      'Horario de inicio',
+      'Horas de cobertura',
+      'Material que se entrega',
+      'Plazo de entrega',
+      'Segundo fotógrafo'
+    ],
     terms:
-      'Presupuesto válido por 15 días. Incluye la cantidad de material editado que figura en el listado; el material en bruto no se entrega. La fecha se reserva con la seña.',
-    payment_terms: '50% de seña para reservar la fecha, 50% antes de la entrega.',
+      'Presupuesto válido por 15 días. La fecha se reserva con la seña y queda bloqueada para otros trabajos: por eso la seña no se reintegra si el cliente cancela. Se entrega la cantidad de material editado que figura en el listado, en alta calidad y por enlace de descarga; el material en bruto y las tomas descartadas no se entregan. Las horas de cobertura que excedan lo presupuestado se cobran aparte, a valor hora. El cliente puede usar las imágenes libremente para lo que quiera, y el autor puede mostrarlas en su portfolio y redes salvo que se pida lo contrario por escrito.',
+    payment_terms: '50% de seña para reservar la fecha, 50% antes de la entrega del material.',
     payment_methods: 'Transferencia o Mercado Pago.',
     validity: 15,
     itemPlaceholder: 'Ej: Cobertura de evento · 4 horas'
-  },
-  {
-    key: 'tecnologia',
-    group: 'Tecnología y digital',
-    label: 'Soporte técnico, redes y hardware',
-    fields: ['Equipo / modelo', 'Falla reportada', 'Dirección', 'Garantía'],
-    terms:
-      'Presupuesto válido por 15 días. Incluye el diagnóstico detallado. Los repuestos quedan sujetos a disponibilidad y a variación de precio. Garantía de 90 días sobre el trabajo; no cubre daños por mal uso.',
-    payment_terms: 'Se abona al finalizar el trabajo.',
-    payment_methods: 'Efectivo, transferencia o Mercado Pago.',
-    validity: 15,
-    itemPlaceholder: 'Ej: Cableado de red · 8 puestos'
   },
 
   // ── Profesionales ─────────────────────────────────────────
@@ -367,8 +375,10 @@ export function getRubro(key) {
 // Agrupados para los <select>: con esta cantidad, una lista plana no hay
 // forma de recorrerla. Respeta el orden en que están escritos arriba.
 export const RUBRO_GROUPS = RUBROS.reduce((acc, rubro) => {
-  const ultimo = acc[acc.length - 1]
-  if (ultimo && ultimo.group === rubro.group) ultimo.rubros.push(rubro)
+  // Por nombre de grupo, no por posición: si mañana movemos un rubro de
+  // lugar, no aparecen dos veces el mismo encabezado en el desplegable.
+  const grupo = acc.find((g) => g.group === rubro.group)
+  if (grupo) grupo.rubros.push(rubro)
   else acc.push({ group: rubro.group, rubros: [rubro] })
   return acc
 }, [])

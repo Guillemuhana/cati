@@ -12,6 +12,8 @@ import {
 import { supabase } from '../lib/supabaseClient'
 import Spinner from '../components/Spinner'
 import { cleanDetails } from '../components/BudgetDetails'
+import { canalesDe } from '../lib/redes'
+import RedIcon from '../components/RedIcon'
 import {
   formatMoney,
   formatDate,
@@ -147,8 +149,6 @@ export default function PublicBudget() {
                 </p>
                 <div className="mt-0.5 space-y-px text-xs leading-relaxed text-ink-soft">
                   {business?.tax_id && <p className="break-words tabular-nums">{business.tax_id}</p>}
-                  {business?.email && <p className="break-all">{business.email}</p>}
-                  {business?.phone && <p className="tabular-nums">{business.phone}</p>}
                 </div>
               </div>
               <div className="shrink-0">
@@ -163,6 +163,32 @@ export default function PublicBudget() {
                 )}
               </div>
             </motion.header>
+
+            {/* Contacto y redes del emisor: a un toque desde el celular */}
+            {canalesDe(business).length > 0 && (
+              <motion.div variants={reveal} className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+                {canalesDe(business).map((c) =>
+                  c.href ? (
+                    <a
+                      key={c.key}
+                      href={c.href}
+                      target={c.href.startsWith('http') ? '_blank' : undefined}
+                      rel="noopener noreferrer"
+                      title={c.label}
+                      className="inline-flex items-center gap-1.5 text-xs text-ink-soft transition hover:text-ink"
+                    >
+                      <RedIcon canal={c} color={c.color} />
+                      <span className="break-all">{c.texto}</span>
+                    </a>
+                  ) : (
+                    <span key={c.key} title={c.label} className="inline-flex items-center gap-1.5 text-xs text-ink-soft">
+                      <RedIcon canal={c} />
+                      <span className="break-words">{c.texto}</span>
+                    </span>
+                  )
+                )}
+              </motion.div>
+            )}
 
             {/* Meta: franja de papel con las fechas y el sello de estado */}
             <motion.div

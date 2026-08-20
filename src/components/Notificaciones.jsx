@@ -9,6 +9,9 @@ import { formatDate } from '../lib/utils'
  * vistos. Un regalo de meses premium aparece además como cartelito
  * grande la primera vez, para que no pase desapercibido.
  */
+// Avisos que además se muestran en grande la primera vez.
+const DESTACABLES = ['regalo', 'presupuesto']
+
 export default function Notificaciones() {
   const { user, refreshProfile } = useAuth()
   const [items, setItems] = useState([])
@@ -30,18 +33,43 @@ export default function Notificaciones() {
         // Si falta la migración 14, la campanita simplemente no aparece.
         if (!activo || error) return
         setItems(data || [])
-        // Un regalo sin leer se muestra en grande una sola vez.
-        const regalo = (data || []).find((n) => !n.read_at && n.tipo === 'regalo')
-        if (regalo) {
-          setDestacado(regalo)
+        // Lo que no puede pasar desapercibido se muestra en grande una
+        // sola vez: un regalo de meses, y que el cliente haya respondido
+        // un presupuesto.
+        const fuerte = (data || []).find((n) => !n.read_at && DESTACABLES.includes(n.tipo))
+        if (fuerte) {
+          setDestacado(fuerte)
           // El premium recién otorgado tiene que reflejarse en el plan.
-          refreshProfile()
+          if (fuerte.tipo === 'regalo') refreshProfile()
         }
       })
     return () => {
       activo = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
+
+  // Que el aviso llegue solo, sin recargar: cuando el cliente acepta el
+  // presupuesto, el que lo mandó suele tener la app abierta esperando.
+  // La migración 23 pone la tabla en la publicación de realtime; si en
+  // el proyecto no está habilitada, esto simplemente no dispara nunca y
+  // el aviso aparece igual al recargar.
+  useEffect(() => {
+    if (!user) return
+    const canal = supabase
+      .channel('avisos-' + user.id)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        ({ new: aviso }) => {
+          setItems((prev) => (prev.some((n) => n.id === aviso.id) ? prev : [aviso, ...prev]))
+          if (DESTACABLES.includes(aviso.tipo)) setDestacado(aviso)
+        }
+      )
+      .subscribe()
+    return () => {
+      supabase.removeChannel(canal)
+    }
   }, [user])
 
   // Cerrar al hacer clic afuera.
@@ -79,7 +107,11 @@ export default function Notificaciones() {
       {destacado && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-ink/40" onClick={cerrarDestacado} />
-          <div className="relative w-full max-w-sm rounded-xl2 border border-teal-500/30 bg-surface p-6 text-center shadow-soft">
+          <div
+            className={`relative w-full max-w-sm rounded-xl2 border bg-surface p-6 text-center shadow-soft ${
+              destacado.icono === '❌' ? 'border-line' : 'border-teal-500/30'
+            }`}
+          >
             <p className="text-5xl">{destacado.icono || '🎁'}</p>
             <h2 className="mt-3 font-display text-xl font-medium text-ink">{destacado.titulo}</h2>
             {destacado.cuerpo && <p className="mt-2 text-sm text-ink-soft">{destacado.cuerpo}</p>}
@@ -87,7 +119,7 @@ export default function Notificaciones() {
               onClick={cerrarDestacado}
               className="btn-primary mt-5 w-full rounded-md py-2.5 text-sm font-semibold"
             >
-              ¡Gracias!
+              {destacado.tipo === 'regalo' ? '¡Gracias!' : 'Buenísimo'}
             </button>
           </div>
         </div>

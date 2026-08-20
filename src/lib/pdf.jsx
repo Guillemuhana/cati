@@ -1,6 +1,7 @@
-import { Document, Page, Text, View, StyleSheet, Image, Font, pdf } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet, Image, Font, Svg, Path, pdf } from '@react-pdf/renderer'
 import { formatMoney, formatDate, formatNumero, STATUS, safeImages } from './utils'
 import { cleanDetails } from '../components/BudgetDetails'
+import { canalesDe } from './redes'
 
 // Fuentes: usamos Helvetica (nativa de react-pdf) para asegurar que el PDF
 // se genere sin depender de carga de red en tiempo de export.
@@ -35,6 +36,33 @@ const styles = StyleSheet.create({
     borderRightColor: LINE
   },
   logo: { width: 134, height: 62, objectFit: 'contain' },
+
+  // Imágenes que el usuario adjuntó al presupuesto (opcionales)
+  imagesBlock: { marginTop: 10 },
+  imagesRow: { flexDirection: 'row', flexWrap: 'wrap' },
+  budgetImage: {
+    width: 124,
+    height: 92,
+    objectFit: 'cover',
+    borderWidth: 1,
+    borderColor: LINE,
+    marginRight: 6,
+    marginBottom: 6
+  },
+
+  // Contacto y redes del emisor, arriba de la firma
+  contactRow: {
+    marginTop: 12,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: LINE,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center'
+  },
+  contactItem: { flexDirection: 'row', alignItems: 'center', marginRight: 14, marginBottom: 3 },
+  contactText: { fontSize: 8, color: '#333333', marginLeft: 3 },
+
   logoFallback: { fontSize: 13, fontFamily: 'Helvetica-Bold', textAlign: 'center' },
   headerEmitterCell: { flex: 1, padding: 8, justifyContent: 'center', alignItems: 'center' },
   businessName: { fontSize: 12, fontFamily: 'Helvetica-Bold', textAlign: 'center' },
@@ -164,6 +192,20 @@ function normalizeItems(raw) {
 // Campo "ETIQUETA: valor" dentro de los recuadros de datos.
 // Se muestra siempre (aunque esté vacío) cuando `always` es true, igual que
 // los comprobantes impresos, donde el renglón queda en blanco.
+// lucide dibuja con varios trazos (líneas, círculos) y el PDF necesita un
+// path solo, así que para los cuatro datos de siempre usamos una silueta
+// equivalente, en la misma caja de 24×24.
+const SILUETAS = {
+  phone:
+    'M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z',
+  email:
+    'M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z',
+  address:
+    'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z',
+  website:
+    'M12 2a10 10 0 100 20 10 10 0 000-20zm6.93 6h-2.95a15.65 15.65 0 00-1.38-3.56A8.03 8.03 0 0118.93 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14a7.9 7.9 0 010-4h3.38a16.5 16.5 0 000 4H4.26zm.81 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.99 7.99 0 015.07 16zm2.95-8H5.07a7.99 7.99 0 014.33-3.56A15.65 15.65 0 008.02 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66a14.72 14.72 0 010-4h4.68a14.72 14.72 0 010 4zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 01-4.33 3.56zM16.36 14a16.5 16.5 0 000-4h3.38a7.9 7.9 0 010 4h-3.38z'
+}
+
 function Field({ label, value, always = false }) {
   if (!value && !always) return null
   return (
@@ -351,6 +393,20 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
                 <Text style={styles.notesText}>{budget.terms}</Text>
               </>
             )}
+          </View>
+        )}
+
+        {/* Contacto y redes: cada ícono se dibuja con su trazo */}
+        {canalesDe(profile).length > 0 && (
+          <View style={styles.contactRow} wrap={false}>
+            {canalesDe(profile).map((c) => (
+              <View key={c.key} style={styles.contactItem}>
+                <Svg width={8} height={8} viewBox="0 0 24 24">
+                  <Path d={c.path || SILUETAS[c.key]} fill={c.color || '#555555'} />
+                </Svg>
+                <Text style={styles.contactText}>{c.texto}</Text>
+              </View>
+            ))}
           </View>
         )}
 

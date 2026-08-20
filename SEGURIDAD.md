@@ -21,6 +21,8 @@ En orden, en Supabase Dashboard → SQL Editor → New query → pegar → Run:
 | `migration_18_sin_borrador_y_logo_cliente.sql` | Se saca el estado «borrador» y los clientes pueden tener logo | Sí |
 | `migration_19_rubro.sql` | Rubro del negocio, para arrancar con textos propios | Sí |
 | `migration_20_imagenes_presupuesto.sql` | Hasta 4 imágenes por presupuesto (bucket `adjuntos`) | Sí |
+| `migration_22_datos_del_trabajo.sql` | Datos del trabajo por rubro (fecha del evento, patente, medidas) | Sí |
+| `migration_23_contacto_y_aviso.sql` | Web y redes del negocio + aviso cuando el cliente responde | Sí |
 | `migration_21_seguridad_adjuntos.sql` | Cierra el listado del Storage y valida las URLs de las imágenes | **No, si corriste la 20.** Ver la sección 8 |
 
 Detalle de la 14: el usuario **no puede insertar avisos** (`revoke all`, solo

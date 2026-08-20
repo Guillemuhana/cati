@@ -5,6 +5,8 @@ import { usePlan } from '../hooks/usePlan'
 import { supabase } from '../lib/supabaseClient'
 import { CURRENCIES, missingColumnError } from '../lib/utils'
 import { RUBRO_GROUPS, getRubro } from '../lib/rubros'
+import { CANALES } from '../lib/redes'
+import RedIcon from '../components/RedIcon'
 
 export default function Perfil() {
   const { profile, user, updateProfile, refreshProfile } = useAuth()
@@ -17,6 +19,13 @@ export default function Perfil() {
     address: profile?.address || '',
     currency: profile?.currency || 'ARS',
     rubro: profile?.rubro || '',
+    website: profile?.website || '',
+    whatsapp: profile?.whatsapp || '',
+    instagram: profile?.instagram || '',
+    facebook: profile?.facebook || '',
+    tiktok: profile?.tiktok || '',
+    youtube: profile?.youtube || '',
+    x: profile?.x || '',
     default_terms: profile?.default_terms || '',
     default_payment_terms: profile?.default_payment_terms || '',
     default_payment_methods: profile?.default_payment_methods || '',
@@ -153,6 +162,32 @@ export default function Perfil() {
               ))}
             </select>
           </Field>
+        </div>
+
+        <div className="rounded-xl2 border border-line bg-paper/50 p-4">
+          <p className="text-sm font-semibold text-ink">Contacto y redes</p>
+          <p className="mt-0.5 text-xs text-ink-faint">
+            Lo que cargues acá aparece en el PDF y en el enlace que ve el cliente, con su ícono y a un toque desde el
+            celular. Todo opcional: lo que dejes vacío no se muestra.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {CANALES.map((canal) => (
+              <label key={canal.key} className="block">
+                <span className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-ink">
+                  <RedIcon canal={canal} color={canal.color} />
+                  {canal.label}
+                </span>
+                <input
+                  type="text"
+                  value={form[canal.key]}
+                  onChange={(e) => setForm({ ...form, [canal.key]: e.target.value })}
+                  placeholder={canal.placeholder}
+                  className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+                />
+                {canal.ayuda && <span className="mt-1 block text-xs text-ink-faint">{canal.ayuda}</span>}
+              </label>
+            ))}
+          </div>
         </div>
 
         <Field label="Rubro">

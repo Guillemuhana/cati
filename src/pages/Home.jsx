@@ -1,9 +1,29 @@
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { FREE_FOR_ALL, PROMO_LABEL, FREE_UNTIL_LABEL } from '../lib/config'
 import { useSeo } from '../lib/seo'
 
 export default function Home() {
   useSeo()
+  const video = useRef(null)
+
+  // El video tiene que arrancar solo, sin que nadie apriete nada.
+  // `muted` + `playsInline` es lo que exigen los navegadores para dejar
+  // reproducir sin permiso; igual algunos (iPhone en ahorro de energía)
+  // lo frenan, así que si eso pasa se reintenta al primer toque en la
+  // pantalla, y ahí arranca sin que el usuario se entere de por qué.
+  useEffect(() => {
+    const v = video.current
+    if (!v) return
+    const arrancar = () => v.play().catch(() => {})
+    arrancar()
+    document.addEventListener('touchstart', arrancar, { once: true })
+    document.addEventListener('click', arrancar, { once: true })
+    return () => {
+      document.removeEventListener('touchstart', arrancar)
+      document.removeEventListener('click', arrancar)
+    }
+  }, [])
 
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-paper">
@@ -44,6 +64,28 @@ export default function Home() {
         <span className="stamp mb-6 inline-flex items-center rounded-md border-2 border-brand-500/40 bg-brand-500/[0.08] px-3 py-1 font-display text-xs font-semibold uppercase tracking-wider text-brand-700">
           Presupuestos, sin vueltas
         </span>
+
+        {/* El logo animado, solo en celular y de borde a borde. El
+            `left-1/2 w-screen -translate-x-1/2` es para salirse del
+            ancho del contenido y de su padding: sin eso queda metido en
+            la columna de texto. */}
+        <div className="relative left-1/2 mb-8 w-screen -translate-x-1/2 sm:hidden">
+          {/* El alto se reserva con la proporción real del archivo
+              (1280×720): sin eso la página pega un salto cuando el video
+              termina de cargar y se acomoda. */}
+          <video
+            ref={video}
+            src="/logoanimado.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            disablePictureInPicture
+            aria-hidden="true"
+            className="block aspect-[16/9] w-full object-cover"
+          />
+        </div>
         <h1 className="font-display text-4xl font-medium leading-tight text-ink sm:text-5xl">
           Armá presupuestos prolijos y compartilos en PDF en minutos
         </h1>

@@ -55,6 +55,11 @@ const FAQS = [
     keywords: 'cliente nuevo cargar alta obligatorio'
   },
   {
+    q: '¿Para qué sirve el rubro?',
+    a: 'Lo elegís al crear la cuenta y lo cambiás cuando quieras en «Mi negocio». Sirve para que un presupuesto nuevo arranque con las condiciones, las formas de pago y la validez que se usan en tu rubro, en vez de nacer vacío. Es solo un punto de partida: lo que vos hayas escrito en «Mi negocio» siempre manda, y en cada presupuesto podés editar todo. No te limita ninguna función de la app.',
+    keywords: 'rubro actividad oficio profesion profesión sugerencias condiciones defecto'
+  },
+  {
     q: '¿Puedo ponerle el logo a un cliente?',
     a: 'Sí. En Clientes, al crear o editar uno, arriba de todo tenés «Subir logo». Es opcional: solo si ese cliente tiene logo propio. Queda visible en la lista de clientes y en el presupuesto.',
     keywords: 'logo cliente imagen marca subir foto isotipo'

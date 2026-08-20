@@ -4,11 +4,12 @@ import { useAuth } from '../context/AuthContext'
 import AuthLayout from '../components/AuthLayout'
 import { Field, traducirError } from './Login'
 import { getStoredReferral, clearStoredReferral } from '../lib/referral'
+import { RUBROS } from '../lib/rubros'
 
 export default function Register() {
   const { signUp } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ businessName: '', email: '', password: '' })
+  const [form, setForm] = useState({ businessName: '', email: '', password: '', rubro: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
@@ -66,6 +67,24 @@ export default function Register() {
             className="w-full rounded-md border border-line px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none"
             placeholder="Ej: Estudio Martínez"
           />
+        </Field>
+        <Field label="¿A qué te dedicás?">
+          <select
+            value={form.rubro}
+            onChange={(e) => setForm({ ...form, rubro: e.target.value })}
+            className="w-full rounded-md border border-line px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none"
+          >
+            <option value="">Elegir rubro (opcional)</option>
+            {RUBROS.map((r) => (
+              <option key={r.key} value={r.key}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-ink-faint">
+            Con esto tus presupuestos arrancan con las condiciones y formas de pago típicas de tu rubro. Después las
+            cambiás cuando quieras.
+          </p>
         </Field>
         <Field label="Email">
           <input

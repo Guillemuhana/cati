@@ -22,6 +22,7 @@ import {
   addDays,
   getBudgetErrors
 } from '../lib/utils'
+import { getRubro } from '../lib/rubros'
 
 const emptyBudget = {
   client_id: '',
@@ -177,16 +178,20 @@ export default function PresupuestoForm() {
     }
   }, [id, isEdit, user])
 
-  // Prefill de defaults del negocio (solo presupuesto nuevo, una vez)
+  // Prefill de defaults del negocio (solo presupuesto nuevo, una vez).
+  // Orden de prioridad: lo que el usuario cargó en «Mi negocio» primero;
+  // si lo dejó vacío, la sugerencia de su rubro; recién ahí el genérico.
   useEffect(() => {
     if (isEdit || prefilledRef.current || !profile) return
     prefilledRef.current = true
+    const r = getRubro(profile.rubro)
     setBudget((b) => ({
       ...b,
       currency: profile.currency || b.currency,
-      terms: profile.default_terms || b.terms,
-      payment_terms: profile.default_payment_terms || '',
-      payment_methods: profile.default_payment_methods || ''
+      terms: profile.default_terms || r.terms || b.terms,
+      payment_terms: profile.default_payment_terms || r.payment_terms || '',
+      payment_methods: profile.default_payment_methods || r.payment_methods || '',
+      due_date: b.due_date || addDays(b.issue_date, r.validity)
     }))
   }, [profile, isEdit])
 
@@ -491,7 +496,12 @@ export default function PresupuestoForm() {
             title="Productos o servicios"
             action={isPremium ? <ProductPicker products={products} currency={budget.currency} onPick={pickProduct} /> : null}
           >
-            <ItemsTable items={items} onChange={handleItems} currency={budget.currency} />
+            <ItemsTable
+              items={items}
+              onChange={handleItems}
+              currency={budget.currency}
+              placeholder={getRubro(profile?.rubro).itemPlaceholder}
+            />
             {errors.items && <FieldError>{errors.items}</FieldError>}
           </Card>
 

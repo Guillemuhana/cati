@@ -40,13 +40,15 @@ export function AuthProvider({ children }) {
     return () => listener.subscription.unsubscribe()
   }, [loadProfile])
 
-  const signUp = async ({ email, password, businessName, referralCode }) => {
+  const signUp = async ({ email, password, businessName, rubro, referralCode }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           business_name: businessName,
+          // El rubro lo copia al perfil el mismo trigger (migración 19).
+          rubro: rubro || '',
           // Código de quien invitó. Lo valida y lo acredita el trigger
           // (migración 10): mandar un código inventado no hace nada.
           referral_code: referralCode || ''
@@ -83,6 +85,7 @@ export function AuthProvider({ children }) {
     'tax_id',
     'address',
     'logo_url',
+    'rubro',
     'currency',
     'default_terms',
     'default_payment_terms',

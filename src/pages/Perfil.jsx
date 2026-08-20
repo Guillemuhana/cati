@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { usePlan } from '../hooks/usePlan'
 import { supabase } from '../lib/supabaseClient'
 import { CURRENCIES } from '../lib/utils'
+import { RUBROS, getRubro } from '../lib/rubros'
 
 export default function Perfil() {
   const { profile, user, updateProfile, refreshProfile } = useAuth()
@@ -15,6 +16,7 @@ export default function Perfil() {
     tax_id: profile?.tax_id || '',
     address: profile?.address || '',
     currency: profile?.currency || 'ARS',
+    rubro: profile?.rubro || '',
     default_terms: profile?.default_terms || '',
     default_payment_terms: profile?.default_payment_terms || '',
     default_payment_methods: profile?.default_payment_methods || '',
@@ -29,6 +31,9 @@ export default function Perfil() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+
+  // Textos que se van a usar si estos campos quedan vacíos.
+  const sugerido = getRubro(form.rubro)
 
   const handleLogoChange = (e) => {
     const file = e.target.files?.[0]
@@ -60,7 +65,12 @@ export default function Perfil() {
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (err) {
-      setError(err.message)
+      const msg = `${err?.message || ''} ${err?.code || ''}`.toLowerCase()
+      setError(
+        msg.includes('rubro') || err?.code === 'PGRST204' || err?.code === '42703'
+          ? 'Ejecutá la migración supabase/migration_19 en Supabase para guardar el rubro.'
+          : err.message
+      )
     } finally {
       setSaving(false)
     }
@@ -150,11 +160,30 @@ export default function Perfil() {
           </Field>
         </div>
 
+        <Field label="Rubro">
+          <select
+            value={form.rubro}
+            onChange={(e) => setForm({ ...form, rubro: e.target.value })}
+            className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+          >
+            <option value="">Sin especificar</option>
+            {RUBROS.map((r) => (
+              <option key={r.key} value={r.key}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-ink-faint">
+            Solo se usa para sugerirte los textos de abajo cuando los dejás vacíos. No cambia nada de lo que ya cargaste.
+          </p>
+        </Field>
+
         <Field label="Condiciones por defecto para nuevos presupuestos">
           <textarea
             rows={3}
             value={form.default_terms}
             onChange={(e) => setForm({ ...form, default_terms: e.target.value })}
+            placeholder={sugerido.terms}
             className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           />
         </Field>
@@ -165,7 +194,7 @@ export default function Perfil() {
               rows={2}
               value={form.default_payment_terms}
               onChange={(e) => setForm({ ...form, default_payment_terms: e.target.value })}
-              placeholder="Ej: 50% al aprobar, 50% contra entrega."
+              placeholder={sugerido.payment_terms || 'Ej: 50% al aprobar, 50% contra entrega.'}
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
@@ -174,7 +203,7 @@ export default function Perfil() {
               rows={2}
               value={form.default_payment_methods}
               onChange={(e) => setForm({ ...form, default_payment_methods: e.target.value })}
-              placeholder="Ej: Transferencia, efectivo, Mercado Pago."
+              placeholder={sugerido.payment_methods || 'Ej: Transferencia, efectivo, Mercado Pago.'}
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>

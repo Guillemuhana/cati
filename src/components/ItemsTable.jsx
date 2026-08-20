@@ -17,7 +17,7 @@ export function lineAmount(item) {
 
 const COLS = 'sm:grid-cols-[minmax(0,1fr)_84px_120px_84px_120px_40px]'
 
-export default function ItemsTable({ items, onChange, currency }) {
+export default function ItemsTable({ items, onChange, currency, placeholder = 'Ej: Diseño de landing page' }) {
   const update = (index, field, value) => {
     const next = items.slice()
     next[index] = { ...next[index], [field]: value }
@@ -61,7 +61,7 @@ export default function ItemsTable({ items, onChange, currency }) {
                 </span>
                 <input
                   type="text"
-                  placeholder="Ej: Diseño de landing page"
+                  placeholder={placeholder}
                   value={item.description}
                   onChange={(e) => update(index, 'description', e.target.value)}
                   className="w-full rounded-md border border-line bg-transparent px-2.5 py-2 text-sm text-ink transition placeholder:text-ink-faint focus:border-brand-500 focus:bg-white focus:outline-none sm:border-transparent sm:hover:border-line"

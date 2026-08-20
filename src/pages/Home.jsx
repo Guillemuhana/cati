@@ -1,9 +1,29 @@
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { FREE_FOR_ALL, PROMO_LABEL, FREE_UNTIL_LABEL } from '../lib/config'
 import { useSeo } from '../lib/seo'
 
 export default function Home() {
   useSeo()
+  const video = useRef(null)
+
+  // Empujón para que arranque solo. `muted` y `playsInline` es lo que
+  // piden los navegadores para dejar reproducir sin permiso; si aun así
+  // lo frenan (iPhone en Modo de bajo consumo), se reintenta al primer
+  // toque en la pantalla.
+  useEffect(() => {
+    const v = video.current
+    if (!v) return
+    const arrancar = () => v.play().catch(() => {})
+    arrancar()
+    document.addEventListener('touchstart', arrancar, { once: true })
+    document.addEventListener('click', arrancar, { once: true })
+    return () => {
+      document.removeEventListener('touchstart', arrancar)
+      document.removeEventListener('click', arrancar)
+    }
+  }, [])
+
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-paper">
       {/* Foto de fondo del hero, velada para que el texto siga legible */}
@@ -44,34 +64,23 @@ export default function Home() {
       {/* Solo en celular: el logo animado ocupa todo el ancho, arriba de
           todo, y abajo el botón que queremos que toquen. */}
       <div className="relative sm:hidden">
-        {/* IMAGEN ANIMADA, NUNCA UN <video>.
-            Un video puede negarse a arrancar solo —el iPhone en Modo de
-            bajo consumo lo bloquea siempre— y entonces el visitante ve un
-            botón de play sobre el logo. Eso no puede pasar. Un WebP
-            animado es una imagen: se reproduce solo, siempre, en todos
-            lados, sin controles y sin que nadie toque nada.
+        {/* El logo animado tal cual vino: 10 s, 1280×720, sin recortar
+            ni acelerar. El alto se reserva con esa proporción para que la
+            página no salte cuando el archivo termina de cargar.
 
-            Va a 24 fps, los mismos del original, porque a 15 se notaba el
-            tironeo. A 600 px de ancho son 350 KB y el teléfono los dibuja
-            sin esfuerzo; más resolución era más peso y menos fluidez.
-
-            Se reproduce una vez y queda fija en el cierre con el logo.
-            El alto se reserva con la proporción del archivo (600×338)
-            para que la página no salte al terminar de cargar.
-
-            Se arma desde el original (commit 7d9a5e2) con:
-              ffmpeg -ss 0.55 -to 8.30 -i logoanimado.mp4
-                     -vf "setpts=PTS/2.4,fps=24,scale=600:-2"
-                     -c:v libwebp -q:v 58 -compression_level 6
-                     -loop 1 -an logoanimado.webp
-            El `setpts=PTS/2.4` lo acelera: los 7,8 s originales quedan
-            en 3,3, que es lo que aguanta un logo de entrada. */}
-        <img
-          src="/logoanimado.webp"
-          alt="Numera"
-          width={600}
-          height={338}
-          className="block w-full"
+            Si alguna vez hay que aligerarlo o acortarlo, la versión
+            recortada y acelerada está en el commit 74fcb4b. */}
+        <video
+          ref={video}
+          src="/logoanimado.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          disablePictureInPicture
+          aria-hidden="true"
+          className="block aspect-[16/9] w-full object-cover"
         />
 
         <div className="px-6 pb-2 pt-5">

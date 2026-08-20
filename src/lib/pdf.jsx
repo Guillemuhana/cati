@@ -340,6 +340,18 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
           </View>
         )}
 
+        {/* Imágenes del presupuesto (opcionales) */}
+        {Array.isArray(budget.images) && budget.images.length > 0 && (
+          <View style={styles.imagesBlock} wrap={false}>
+            <Text style={styles.notesTitle}>Imágenes</Text>
+            <View style={[styles.imagesRow, { marginTop: 4 }]}>
+              {budget.images.slice(0, 4).map((url) => (
+                <Image key={url} src={url} style={styles.budgetImage} />
+              ))}
+            </View>
+          </View>
+        )}
+
         <View style={styles.signRow} wrap={false}>
           <View style={styles.signBox}>
             <View style={styles.signLine} />

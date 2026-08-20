@@ -436,6 +436,19 @@ export default function PresupuestoDetail() {
             </div>
           </div>
 
+          {Array.isArray(budget.images) && budget.images.length > 0 && (
+            <div className="rounded-xl2 border border-line bg-surface p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Imágenes</p>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {budget.images.map((url) => (
+                  <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                    <img src={url} alt="" loading="lazy" className="aspect-square w-full rounded-lg border border-line object-cover" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           {client && (
             <div className="rounded-xl2 border border-line bg-surface p-5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Cliente</p>

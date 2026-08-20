@@ -263,6 +263,25 @@ export default function PublicBudget() {
               </div>
             </motion.div>
 
+            {/* Imágenes que adjuntó el emisor (opcionales) */}
+            {Array.isArray(budget.images) && budget.images.length > 0 && (
+              <motion.div variants={reveal} className="mt-8 border-t border-line pt-6">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-faint">Imágenes</p>
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {budget.images.map((url) => (
+                    <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="block">
+                      <img
+                        src={url}
+                        alt=""
+                        loading="lazy"
+                        className="aspect-[4/3] w-full rounded-lg border border-line object-cover transition hover:opacity-90"
+                      />
+                    </a>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
             {/* Pago / notas */}
             {(budget.payment_terms || budget.payment_methods || business?.bank_alias || budget.delivery_time || budget.notes || budget.terms) && (
               <motion.div variants={reveal} className="mt-8 grid gap-x-8 gap-y-5 border-t border-line pt-6 text-sm sm:grid-cols-2">

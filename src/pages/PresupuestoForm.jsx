@@ -8,6 +8,7 @@ import ProductPicker from '../components/ProductPicker'
 import { usePlan } from '../hooks/usePlan'
 import Card from '../components/Card'
 import PreviewModal from '../components/PreviewModal'
+import BudgetImages from '../components/BudgetImages'
 import Spinner from '../components/Spinner'
 import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
 import {
@@ -40,7 +41,8 @@ const emptyBudget = {
   terms: 'Presupuesto válido por 15 días. Los precios no incluyen posibles ajustes por cambios de alcance.',
   payment_terms: '',
   payment_methods: '',
-  delivery_time: ''
+  delivery_time: '',
+  images: []
 }
 
 export default function PresupuestoForm() {
@@ -266,6 +268,7 @@ export default function PresupuestoForm() {
         payment_terms: budget.payment_terms || '',
         payment_methods: budget.payment_methods || '',
         delivery_time: budget.delivery_time || '',
+        images: Array.isArray(budget.images) ? budget.images : [],
         subtotal: totals.subtotal,
         discount_amount: totals.discountAmount,
         tax_amount: totals.taxAmount,
@@ -503,6 +506,14 @@ export default function PresupuestoForm() {
               placeholder={getRubro(profile?.rubro).itemPlaceholder}
             />
             {errors.items && <FieldError>{errors.items}</FieldError>}
+          </Card>
+
+          <Card title="Imágenes" desc="Una foto del trabajo, un plano o una referencia. No es obligatorio.">
+            <BudgetImages
+              userId={user.id}
+              value={budget.images}
+              onChange={(images) => patchBudget({ images })}
+            />
           </Card>
 
           <Card title="Descuentos e impuestos">

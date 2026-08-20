@@ -31,13 +31,44 @@ export const TRIAL_DAYS = 30
 export const TRIAL_HOURS = TRIAL_DAYS * 24
 export const PROMO_LABEL = '30 días'
 export const TRIAL_LABEL = `${PROMO_LABEL} gratis`
+// ⚠ Si cobrás con Mercado Pago Argentina, el plan se crea en PESOS:
+// poné acá el mismo número que pusiste en el plan (ej: '$ 2.000') o el
+// usuario ve un precio y le aparece otro en el checkout.
 export const PREMIUM_PRICE = 'USD 2'
 export const PREMIUM_PERIOD = 'por mes' // suscripción mensual
 export const PREMIUM_PRICE_FULL = `${PREMIUM_PRICE}/mes`
 
-// Link de SUSCRIPCIÓN mensual de Stripe (Payment Link con precio recurrente).
-// Se crea en: Stripe Dashboard → Payment Links → New → precio "recurrente / mensual" USD 2.
-// Queda como 'https://buy.stripe.com/xxxxxxxx'. Si está vacío, el botón muestra "Próximamente".
+// ------------------------------------------------------------
+// COBRO · Link de SUSCRIPCIÓN mensual (Mercado Pago)
+//
+// CÓMO SE SACA
+//   Panel de Mercado Pago → «Suscripciones» (según la versión del panel
+//   puede decir «Cobros recurrentes») → crear un plan mensual con el
+//   precio de abajo → copiar el link de suscripción.
+//   Queda algo así:
+//     https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=XXXXXXXX
+//   Ese link es PÚBLICO: puede vivir acá sin problema.
+//
+// ⚠ LO QUE NO VA ACÁ NI EN NINGÚN ARCHIVO DEL REPO
+//   El ACCESS TOKEN (APP_USR-...) y el CLIENT SECRET de Mercado Pago son
+//   secretos. Todo lo que está en src/ se compila y viaja al navegador:
+//   cualquiera puede leerlo con F12. Con ese token se cobra y se
+//   reembolsa en tu nombre. Si alguna vez lo pegaste en el código,
+//   revocalo y generá uno nuevo antes de publicar.
+//   (Además el CSP de vercel.json solo deja hablar con Supabase, así que
+//   una llamada a la API de MP desde el navegador ni siquiera saldría.)
+//
+// MIENTRAS TANTO: LA ALTA ES A MANO Y ESTÁ LISTA
+//   Con este link el cliente se suscribe, pero nadie le marca «premium»
+//   en la base. Eso lo hacés vos desde /admin → usuario → «Dar premium»
+//   (función admin_grant_premium, migración 12). Con pocos suscriptores
+//   alcanza y sobra, y es a prueba de errores de webhook.
+//   Para que se active solo hace falta un webhook en el servidor: se
+//   puede hacer con una Edge Function de Supabase, guardando el token
+//   como secret de la función. Es el siguiente paso, no este.
+//
+// Si queda vacío, el botón muestra «Próximamente».
+// ------------------------------------------------------------
 export const PAYMENT_URL = ''
 
 // Lista de beneficios premium (se muestran en el paywall / página /premium).

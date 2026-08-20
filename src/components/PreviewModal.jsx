@@ -138,6 +138,18 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
             </div>
           )}
 
+          {/* Imágenes adjuntas */}
+          {Array.isArray(budget.images) && budget.images.length > 0 && (
+            <div className="mt-6">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-faint">Imágenes</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {budget.images.map((url) => (
+                  <img key={url} src={url} alt="" className="h-24 w-32 rounded border border-line object-cover" />
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Espacio de aceptación / firma */}
           <div className="mt-10 grid grid-cols-2 gap-8 pt-6">
             <Signature label="Firma del cliente" />

@@ -19,6 +19,7 @@ import {
   resolveAccent
 } from '../lib/utils'
 import { lineAmount } from '../components/ItemsTable'
+import { useSeo } from '../lib/seo'
 
 // Entrada en cascada: cada bloque del documento aparece apenas después del anterior.
 const reveal = {
@@ -32,6 +33,9 @@ const stagger = {
 }
 
 export default function PublicBudget() {
+  // Datos de un cliente real: fuera de los buscadores.
+  useSeo({ title: 'Presupuesto', noindex: true })
+
   const { token } = useParams()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)

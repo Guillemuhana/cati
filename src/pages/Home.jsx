@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom'
 import { FREE_FOR_ALL, PROMO_LABEL, FREE_UNTIL_LABEL } from '../lib/config'
+import { useSeo } from '../lib/seo'
 
 export default function Home() {
+  useSeo()
+
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-paper">
       {/* Foto de fondo del hero, velada para que el texto siga legible */}

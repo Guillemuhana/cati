@@ -5,8 +5,14 @@ import AuthLayout from '../components/AuthLayout'
 import { Field, traducirError } from './Login'
 import { getStoredReferral, clearStoredReferral } from '../lib/referral'
 import { RUBROS } from '../lib/rubros'
+import { useSeo } from '../lib/seo'
 
 export default function Register() {
+  useSeo({
+    title: 'Crear cuenta gratis',
+    description: 'Creá tu cuenta de Numera y hacé tu primer presupuesto en minutos. Gratis, sin tarjeta.'
+  })
+
   const { signUp } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ businessName: '', email: '', password: '', rubro: '' })

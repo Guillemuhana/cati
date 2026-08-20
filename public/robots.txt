@@ -1,0 +1,27 @@
+# Numera
+# Lo único que queremos en Google es la portada y el alta. Todo lo
+# demás es privado: presupuestos, clientes, reportes y, sobre todo,
+# /p/<token>, que es el presupuesto de un cliente con sus precios y
+# sus datos.
+#
+# Ojo: robots.txt es un pedido, no una cerradura. La cerradura es el
+# login y las políticas RLS de Supabase; esto solo evita que el link
+# termine listado en un buscador.
+
+User-agent: *
+Allow: /$
+Allow: /ingresar
+Allow: /registro
+
+Disallow: /p/
+Disallow: /panel
+Disallow: /presupuestos
+Disallow: /clientes
+Disallow: /catalogo
+Disallow: /reportes
+Disallow: /facturas
+Disallow: /perfil
+Disallow: /invitar
+Disallow: /admin
+Disallow: /ayuda
+Disallow: /premium

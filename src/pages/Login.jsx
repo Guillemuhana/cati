@@ -2,8 +2,14 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import AuthLayout from '../components/AuthLayout'
+import { useSeo } from '../lib/seo'
 
 export default function Login() {
+  useSeo({
+    title: 'Ingresar',
+    description: 'Entrá a tu cuenta de Numera para ver y armar tus presupuestos.'
+  })
+
   const { signIn } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '' })

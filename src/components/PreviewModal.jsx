@@ -55,7 +55,7 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
                   className="h-[83px] w-auto max-w-[143px] object-contain object-right sm:h-[125px] sm:max-w-[260px]"
                 />
               ) : (
-                <img src="/numera-icon.svg" alt="Logo" className="h-[73px] w-[73px] sm:h-[104px] sm:w-[104px]" />
+                <img src="/numera-icon.png" alt="Logo" className="h-[73px] w-[73px] sm:h-[104px] sm:w-[104px]" />
               )}
             </div>
           </header>

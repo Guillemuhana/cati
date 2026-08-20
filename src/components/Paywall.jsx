@@ -13,7 +13,7 @@ export function PremiumGate({ children, title }) {
 export default function Paywall({ title = 'Función premium' }) {
   return (
     <div className="mx-auto max-w-lg rounded-xl2 border border-line bg-surface p-8 text-center shadow-soft">
-      <img src="/numera-icon.svg" alt="" className="mx-auto mb-4 h-14 w-14" />
+      <img src="/numera-icon.png" alt="" className="mx-auto mb-4 h-14 w-14" />
       <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-500/10 px-3 py-1 text-xs font-semibold text-brand-700">
         🔒 {title}
       </span>

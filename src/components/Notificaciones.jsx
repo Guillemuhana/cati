@@ -63,19 +63,27 @@ export default function Notificaciones() {
   // el aviso aparece igual al recargar.
   useEffect(() => {
     if (!user) return
-    const canal = supabase
-      .channel(`avisos-${user.id}-${++nroDeCanal}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-        ({ new: aviso }) => {
-          setItems((prev) => (prev.some((n) => n.id === aviso.id) ? prev : [aviso, ...prev]))
-          if (DESTACABLES.includes(aviso.tipo)) setDestacado(aviso)
-        }
-      )
-      .subscribe()
+    let canal
+    // Si armar el canal falla, que se pierda el aviso en vivo y nada más:
+    // esto es una comodidad, y una excepción acá se lleva puesta la
+    // pantalla entera porque cae en el ErrorBoundary.
+    try {
+      canal = supabase
+        .channel(`avisos-${user.id}-${++nroDeCanal}`)
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+          ({ new: aviso }) => {
+            setItems((prev) => (prev.some((n) => n.id === aviso.id) ? prev : [aviso, ...prev]))
+            if (DESTACABLES.includes(aviso.tipo)) setDestacado(aviso)
+          }
+        )
+        .subscribe()
+    } catch (e) {
+      console.warn('Avisos en vivo desactivados:', e?.message || e)
+    }
     return () => {
-      supabase.removeChannel(canal)
+      if (canal) supabase.removeChannel(canal)
     }
   }, [user])
 

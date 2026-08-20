@@ -9,6 +9,7 @@ import { usePlan } from '../hooks/usePlan'
 import Card from '../components/Card'
 import PreviewModal from '../components/PreviewModal'
 import BudgetImages from '../components/BudgetImages'
+import BudgetPdfPropio from '../components/BudgetPdfPropio'
 import BudgetDetails, { cleanDetails } from '../components/BudgetDetails'
 import Spinner from '../components/Spinner'
 import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
@@ -24,6 +25,7 @@ import {
   addDays,
   getBudgetErrors,
   safeImages,
+  safePdfUrl,
   storagePathFromUrl
 } from '../lib/utils'
 import { getRubro } from '../lib/rubros'
@@ -46,6 +48,7 @@ const emptyBudget = {
   payment_methods: '',
   delivery_time: '',
   images: [],
+  pdf_url: '',
   details: []
 }
 
@@ -75,6 +78,7 @@ export default function PresupuestoForm() {
   // tocar la ✕ y después cancela, el presupuesto quedaría apuntando a
   // un archivo que ya no existe.
   const initialImagesRef = useRef([])
+  const initialPdfRef = useRef('')
 
   const markDirty = () => {
     dirtyRef.current = true
@@ -182,6 +186,7 @@ export default function PresupuestoForm() {
       if (b) {
         setBudget({ ...emptyBudget, ...b })
         initialImagesRef.current = safeImages(b.images)
+        initialPdfRef.current = safePdfUrl(b.pdf_url)
       }
       setItems(its && its.length ? its : [newItem()])
       prefilledRef.current = true
@@ -281,6 +286,7 @@ export default function PresupuestoForm() {
         payment_methods: budget.payment_methods || '',
         delivery_time: budget.delivery_time || '',
         images: Array.isArray(budget.images) ? budget.images : [],
+        pdf_url: safePdfUrl(budget.pdf_url) || null,
         details: cleanDetails(budget.details),
         subtotal: totals.subtotal,
         discount_amount: totals.discountAmount,
@@ -325,8 +331,14 @@ export default function PresupuestoForm() {
       // (Si esto falla, el presupuesto igual quedó guardado bien.)
       const quitadas = initialImagesRef.current.filter((u) => !payload.images.includes(u))
       const paths = quitadas.map((u) => storagePathFromUrl(u, 'adjuntos')).filter(Boolean)
+      // Y el PDF anterior, si lo cambió o lo sacó.
+      if (initialPdfRef.current && initialPdfRef.current !== payload.pdf_url) {
+        const viejo = storagePathFromUrl(initialPdfRef.current, 'adjuntos')
+        if (viejo) paths.push(viejo)
+      }
       if (paths.length) await supabase.storage.from('adjuntos').remove(paths)
       initialImagesRef.current = payload.images
+      initialPdfRef.current = payload.pdf_url || ''
 
       dirtyRef.current = false
 
@@ -534,6 +546,20 @@ export default function PresupuestoForm() {
               placeholder={getRubro(profile?.rubro).itemPlaceholder}
             />
             {errors.items && <FieldError>{errors.items}</FieldError>}
+          </Card>
+
+          <Card
+            title="Tu propio PDF"
+            desc={
+              getRubro(profile?.rubro).pdfPropio ||
+              '¿Ya tenés la propuesta armada en PDF? Subila y el cliente la abre desde el mismo enlace.'
+            }
+          >
+            <BudgetPdfPropio
+              userId={user.id}
+              value={budget.pdf_url}
+              onChange={(pdf_url) => patchBudget({ pdf_url })}
+            />
           </Card>
 
           <Card title="Imágenes" desc="Una foto del trabajo, un plano o una referencia. No es obligatorio.">

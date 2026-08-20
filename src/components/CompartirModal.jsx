@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Download, Link2, Mail, QrCode, Send, Check } from 'lucide-react'
+import { Download, FileText, Link2, Mail, QrCode, Send, Check } from 'lucide-react'
 import { trazo } from '../lib/brandPaths'
 import { urlDeWhatsapp } from '../lib/redes'
 
@@ -26,6 +26,7 @@ export default function CompartirModal({
   esPremium,
   onDescargarPdf,
   onEnviarPdf,
+  pdfPropio,
   ocupado
 }) {
   const [copiado, setCopiado] = useState(false)
@@ -171,6 +172,21 @@ export default function CompartirModal({
             <p className="px-1 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
               El documento
             </p>
+            {/* Si subió el suyo, ese manda: es el que armó para este
+                cliente. El de Numera queda abajo, por las dudas. */}
+            {pdfPropio && (
+              <Opcion
+                as="a"
+                href={pdfPropio}
+                target="_blank"
+                rel="noreferrer"
+                color="#B4441F"
+                Icono={FileText}
+                titulo="Abrir tu PDF"
+                detalle="El que subiste vos. Ya viaja en el enlace del cliente"
+                className="mb-2"
+              />
+            )}
             {puedeCompartirArchivo && (
               <Opcion
                 as="button"
@@ -188,7 +204,7 @@ export default function CompartirModal({
               disabled={ocupado}
               color="#5B6570"
               Icono={Download}
-              titulo="Descargar el PDF"
+              titulo={pdfPropio ? 'Descargar el PDF de Numera' : 'Descargar el PDF'}
               detalle="Para guardarlo o imprimirlo"
               className={puedeCompartirArchivo ? 'mt-2' : ''}
             />

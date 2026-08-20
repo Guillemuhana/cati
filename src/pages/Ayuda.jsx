@@ -60,6 +60,11 @@ const FAQS = [
     keywords: 'datos campos extra personalizado fecha evento patente medidas superficie dato propio'
   },
   {
+    q: '¿Puedo mandar mi propio PDF en vez del que arma la app?',
+    a: 'Sí. En el formulario, en «Tu propio PDF», subís el archivo (hasta 15 MB) y viaja con el presupuesto: el cliente lo abre desde el mismo enlace, arriba de todo, y al compartir es lo primero que se ofrece. Es lo que hacen los fotógrafos, que arman la propuesta con la selección de fotos y los packs ya diseñada. El presupuesto de Numera se sigue generando igual, así que tenés los dos.',
+    keywords: 'pdf propio subir adjuntar archivo fotografo fotógrafo propuesta packs diseño book'
+  },
+  {
     q: '¿Para qué sirve el rubro?',
     a: 'Lo elegís al crear la cuenta y lo cambiás cuando quieras en «Mi negocio». Sirve para que un presupuesto nuevo arranque con las condiciones, las formas de pago y la validez que se usan en tu rubro, en vez de nacer vacío. Es solo un punto de partida: lo que vos hayas escrito en «Mi negocio» siempre manda, y en cada presupuesto podés editar todo. No te limita ninguna función de la app.',
     keywords: 'rubro actividad oficio profesion profesión sugerencias condiciones defecto'

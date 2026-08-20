@@ -219,6 +219,12 @@ export function safeImages(images) {
   return Array.isArray(images) ? images.filter(isSafeImageUrl) : []
 }
 
+// El PDF que sube el usuario sale del mismo Storage que las imágenes, y
+// se filtra igual: lo que no venga de ahí no se muestra ni se enlaza.
+export function safePdfUrl(url) {
+  return isSafeImageUrl(url) ? url : ''
+}
+
 // Path dentro del bucket a partir de la URL pública, para poder borrar
 // el archivo cuando el usuario saca la imagen. Devuelve '' si la URL no
 // es del bucket esperado.
@@ -241,6 +247,7 @@ export function storagePathFromUrl(url, bucket) {
 // nombre de la columna del error y se dice el archivo exacto.
 // ------------------------------------------------------------
 const MIGRACION_POR_COLUMNA = {
+  pdf_url: 'migration_25_pdf_propio.sql',
   legal_terms: 'migration_15_terminos_condiciones.sql',
   logo_url: 'migration_18_sin_borrador_y_logo_cliente.sql',
   rubro: 'migration_19_rubro.sql',

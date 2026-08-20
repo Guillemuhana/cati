@@ -20,7 +20,8 @@ import {
   formatNumero,
   readableAccent,
   resolveAccent,
-  safeImages
+  safeImages,
+  safePdfUrl
 } from '../lib/utils'
 import { lineAmount } from '../components/ItemsTable'
 import { useSeo } from '../lib/seo'
@@ -211,6 +212,34 @@ export default function PublicBudget() {
                 </div>
               )}
             </motion.div>
+
+            {/* La propuesta en PDF que armó el emisor. Va antes de las
+                imágenes y bien visible: en los rubros que la usan, ESA
+                es la propuesta y el detalle de acá es el resumen. */}
+            {safePdfUrl(budget.pdf_url) && (
+              <motion.div variants={reveal} className="mt-8">
+                <a
+                  href={safePdfUrl(budget.pdf_url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 rounded-xl2 border border-line bg-paper/60 px-4 py-3.5 transition hover:border-ink-faint"
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rust-500/10 text-rust-500">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" width="18" height="18">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" strokeLinejoin="round" />
+                      <path d="M14 2v6h6" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold text-ink">Ver la propuesta completa</span>
+                    <span className="block text-xs text-ink-soft">Se abre el PDF en otra pestaña</span>
+                  </span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16" className="shrink-0 text-ink-faint">
+                    <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </a>
+              </motion.div>
+            )}
 
             {/* Ítems */}
             <motion.div variants={reveal} className="mt-8 overflow-hidden rounded-lg border border-line">

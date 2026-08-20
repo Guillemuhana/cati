@@ -9,6 +9,11 @@
 // A propósito NO sugerimos IVA: mucho usuario es monotributista y
 // meterle 21% por defecto le mete un error en el PDF del cliente.
 //
+// `pdfPropio` no habilita nada: subir tu propio PDF lo puede hacer
+// cualquiera. Solo dice en qué rubros eso es lo habitual, para ponerlo
+// adelante en el formulario en vez de esconderlo. Misma regla de
+// siempre: punto de partida, nunca límite.
+//
 // Si agregás uno nuevo: la `key` no se cambia nunca (queda guardada en
 // los perfiles), y 'otro' se queda último.
 // ------------------------------------------------------------
@@ -29,6 +34,7 @@ export const RUBROS = [
   },
   {
     key: 'arquitectura',
+    pdfPropio: 'Si tenés la carpeta o los planos en PDF, subilos.',
     group: 'Obra y oficios',
     label: 'Arquitectura e ingeniería',
     fields: ['Ubicación del proyecto', 'Superficie (m²)', 'Etapa', 'Municipio'],
@@ -158,6 +164,7 @@ export const RUBROS = [
   },
   {
     key: 'diseno',
+    pdfPropio: 'Si armaste la propuesta en PDF con las piezas y las opciones, subila.',
     group: 'Creativos y comunicación',
     label: 'Diseño gráfico y branding',
     fields: ['Piezas incluidas', 'Formatos de entrega', 'Fecha de entrega'],
@@ -170,6 +177,7 @@ export const RUBROS = [
   },
   {
     key: 'marketing',
+    pdfPropio: 'Si tenés el plan en PDF con las opciones y los alcances, subilo.',
     group: 'Creativos y comunicación',
     label: 'Marketing digital y publicidad',
     fields: ['Período del abono', 'Redes incluidas', 'Inversión en pauta'],
@@ -182,6 +190,7 @@ export const RUBROS = [
   },
   {
     key: 'audiovisual',
+    pdfPropio: 'Muchos fotógrafos y realizadores arman la propuesta en PDF, con la selección de fotos y los packs. Si ya la tenés hecha, subila.',
     group: 'Creativos y comunicación',
     label: 'Fotografía y video',
     fields: [
@@ -327,6 +336,7 @@ export const RUBROS = [
   },
   {
     key: 'eventos',
+    pdfPropio: 'Si tenés la propuesta en PDF con las fotos del salón y los menús, subila.',
     group: 'Personas y eventos',
     label: 'Eventos, música y espectáculos',
     fields: ['Fecha del evento', 'Lugar', 'Horario', 'Duración'],

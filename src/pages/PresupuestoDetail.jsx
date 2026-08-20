@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { Send } from 'lucide-react'
+import { FileText, Send } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { usePlan } from '../hooks/usePlan'
@@ -10,7 +10,7 @@ import Spinner from '../components/Spinner'
 import { cleanDetails } from '../components/BudgetDetails'
 import CompartirModal from '../components/CompartirModal'
 import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
-import { formatDate, formatMoney, formatNumero, STATUS_OPTIONS, safeImages, storagePathFromUrl } from '../lib/utils'
+import { formatDate, formatMoney, formatNumero, STATUS_OPTIONS, safeImages, safePdfUrl, storagePathFromUrl } from '../lib/utils'
 import { CLAVES, marcar } from '../lib/onboarding'
 
 export default function PresupuestoDetail() {
@@ -216,7 +216,8 @@ export default function PresupuestoDetail() {
     setBusy(true)
     // Las imágenes adjuntas no se borran solas: sin esto, una foto que el
     // usuario cree eliminada sigue online para cualquiera que tenga la URL.
-    const paths = safeImages(budget.images)
+    const paths = [...safeImages(budget.images), safePdfUrl(budget.pdf_url)]
+      .filter(Boolean)
       .map((u) => storagePathFromUrl(u, 'adjuntos'))
       .filter(Boolean)
     if (paths.length) await supabase.storage.from('adjuntos').remove(paths)
@@ -436,6 +437,25 @@ export default function PresupuestoDetail() {
             </div>
           )}
 
+          {safePdfUrl(budget.pdf_url) && (
+            <a
+              href={safePdfUrl(budget.pdf_url)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-3 rounded-xl2 border border-line bg-surface p-5 transition hover:border-ink-faint"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rust-500/10 text-rust-500">
+                <FileText size={18} aria-hidden="true" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-ink">Tu PDF</span>
+                <span className="block text-xs text-ink-soft">
+                  El cliente lo abre desde el enlace. Tocá para verlo.
+                </span>
+              </span>
+            </a>
+          )}
+
           {safeImages(budget.images).length > 0 && (
             <div className="rounded-xl2 border border-line bg-surface p-5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Imágenes</p>
@@ -482,6 +502,7 @@ export default function PresupuestoDetail() {
           asunto={asunto}
           cliente={client}
           esPremium={isPremium}
+          pdfPropio={safePdfUrl(budget.pdf_url)}
           ocupado={busy}
           onDescargarPdf={async () => {
             setCompartiendo(false)

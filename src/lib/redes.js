@@ -1,5 +1,5 @@
 import { Globe, Mail, Phone, MapPin } from 'lucide-react'
-import { siWhatsapp, siInstagram, siFacebook, siTiktok, siYoutube, siX } from 'simple-icons'
+import { trazo } from './brandPaths'
 
 // ------------------------------------------------------------
 // Contacto y redes del negocio.
@@ -15,9 +15,10 @@ import { siWhatsapp, siInstagram, siFacebook, siTiktok, siYoutube, siX } from 's
 // letras, números, punto, guion y guion bajo, eso no puede pasar.
 // Es el mismo criterio que isSafeImageUrl() en utils.js.
 //
-// Los íconos de marca salen de simple-icons (CC0) y los de interfaz de
-// lucide-react. Se guardan como `path` para poder dibujarlos igual en
-// el HTML y en el PDF, que usan motores distintos.
+// Los íconos de interfaz son de lucide-react y los de marca son trazos
+// de Simple Icons copiados al repo (ver brandPaths.js: importar el
+// paquete entero triplicaba el bundle). Se guardan como `path` para
+// dibujarlos igual en el HTML y en el PDF, que usan motores distintos.
 // ------------------------------------------------------------
 
 const limpiarUsuario = (v) =>
@@ -64,7 +65,7 @@ export const CANALES = [
     label: 'WhatsApp',
     placeholder: '11 5555-4444',
     ayuda: 'Con característica, sin el 0 ni el 15. Ej: 11 5555-4444',
-    path: siWhatsapp.path,
+    path: trazo('whatsapp'),
     color: '#25D366',
     // wa.me quiere el número con código de país y sin signos. Si no lo
     // puso, asumimos Argentina: es el 99% de los usuarios.
@@ -79,7 +80,7 @@ export const CANALES = [
     key: 'instagram',
     label: 'Instagram',
     placeholder: '@minegocio',
-    path: siInstagram.path,
+    path: trazo('instagram'),
     color: '#E1306C',
     url: (v) => (limpiarUsuario(v) ? `https://instagram.com/${limpiarUsuario(v)}` : ''),
     texto: (v) => (limpiarUsuario(v) ? `@${limpiarUsuario(v)}` : '')
@@ -88,7 +89,7 @@ export const CANALES = [
     key: 'facebook',
     label: 'Facebook',
     placeholder: 'minegocio',
-    path: siFacebook.path,
+    path: trazo('facebook'),
     color: '#0866FF',
     url: (v) => (limpiarUsuario(v) ? `https://facebook.com/${limpiarUsuario(v)}` : ''),
     texto: (v) => limpiarUsuario(v)
@@ -97,7 +98,7 @@ export const CANALES = [
     key: 'tiktok',
     label: 'TikTok',
     placeholder: '@minegocio',
-    path: siTiktok.path,
+    path: trazo('tiktok'),
     color: '#111111',
     url: (v) => (limpiarUsuario(v) ? `https://tiktok.com/@${limpiarUsuario(v)}` : ''),
     texto: (v) => (limpiarUsuario(v) ? `@${limpiarUsuario(v)}` : '')
@@ -106,7 +107,7 @@ export const CANALES = [
     key: 'youtube',
     label: 'YouTube',
     placeholder: '@micanal',
-    path: siYoutube.path,
+    path: trazo('youtube'),
     color: '#FF0000',
     url: (v) => (limpiarUsuario(v) ? `https://youtube.com/@${limpiarUsuario(v)}` : ''),
     texto: (v) => (limpiarUsuario(v) ? `@${limpiarUsuario(v)}` : '')
@@ -115,7 +116,7 @@ export const CANALES = [
     key: 'x',
     label: 'X (Twitter)',
     placeholder: '@minegocio',
-    path: siX.path,
+    path: trazo('x'),
     color: '#111111',
     url: (v) => (limpiarUsuario(v) ? `https://x.com/${limpiarUsuario(v)}` : ''),
     texto: (v) => (limpiarUsuario(v) ? `@${limpiarUsuario(v)}` : '')

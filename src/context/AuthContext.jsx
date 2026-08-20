@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { getStoredReferral, clearStoredReferral } from '../lib/referral'
 
 const AuthContext = createContext(null)
 
@@ -26,19 +27,37 @@ export function AuthProvider({ children }) {
     setIsAdmin(admin === true)
   }, [])
 
+  // Si la visita vino por un link de invitación, el código viaja en los
+  // metadatos del alta por email. Con Google eso no se puede, así que se
+  // acredita acá, apenas vuelve. La base pone los candados: solo para uno
+  // mismo, solo si no tiene ya quién lo invitó y solo en la primera hora
+  // de vida de la cuenta.
+  const acreditarInvitacion = useCallback(async () => {
+    const code = getStoredReferral()
+    if (!code) return
+    try {
+      await supabase.rpc('claim_referral', { p_code: code })
+      clearStoredReferral()
+    } catch {
+      // Sin la migración 26 la función no existe: no pasa nada, el alta
+      // por email sigue acreditando como siempre.
+    }
+  }, [])
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       loadProfile(session?.user?.id).finally(() => setLoading(false))
     })
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((evento, session) => {
       setSession(session)
       loadProfile(session?.user?.id)
+      if (evento === 'SIGNED_IN' && session?.user) acreditarInvitacion()
     })
 
     return () => listener.subscription.unsubscribe()
-  }, [loadProfile])
+  }, [loadProfile, acreditarInvitacion])
 
   const signUp = async ({ email, password, businessName, rubro, referralCode }) => {
     const { data, error } = await supabase.auth.signUp({
@@ -61,6 +80,23 @@ export function AuthProvider({ children }) {
     // (handle_new_user, migración 07). No se crean desde el navegador: si no,
     // cualquiera podría auto-asignarse plan premium o una prueba infinita.
     return data
+  }
+
+  // Entrar con Google. El alta la hace Google, así que no pasa por
+  // nuestro formulario: el perfil lo crea igual el trigger de la base
+  // (migración 26), pero sin nombre del negocio ni rubro. Esos dos los
+  // pide después la pantalla de bienvenida del panel.
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/panel`,
+        // Que muestre el selector de cuentas: mucha gente tiene la
+        // personal y la del negocio en el mismo teléfono.
+        queryParams: { prompt: 'select_account' }
+      }
+    })
+    if (error) throw error
   }
 
   const signIn = async ({ email, password }) => {
@@ -128,6 +164,7 @@ export function AuthProvider({ children }) {
     isAdmin,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut,
     refreshProfile,
     updateProfile

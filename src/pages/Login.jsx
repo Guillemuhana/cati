@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import AuthLayout from '../components/AuthLayout'
+import BotonGoogle from '../components/BotonGoogle'
 import { useSeo } from '../lib/seo'
 
 export default function Login() {
@@ -35,6 +36,16 @@ export default function Login() {
       title="Bienvenido de nuevo"
       subtitle="Ingresá para seguir armando tus presupuestos."
     >
+      {/* Arriba del formulario a propósito: es el camino más corto y el
+          que más gente usa. */}
+      <BotonGoogle>Ingresar con Google</BotonGoogle>
+
+      <div className="my-5 flex items-center gap-3">
+        <span className="h-px flex-1 bg-line" />
+        <span className="text-xs text-ink-faint">o</span>
+        <span className="h-px flex-1 bg-line" />
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label="Email">
           <input

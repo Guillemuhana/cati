@@ -108,11 +108,11 @@ export default function Home() {
 
       <main className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-6 pt-6 text-center sm:pt-0">
         <h1 className="font-display text-4xl font-medium leading-tight text-ink sm:text-5xl">
-          Armá presupuestos prolijos y compartilos en PDF en minutos
+          Presupuestá como una empresa grande, sin dejar de ser vos
         </h1>
         <p className="mt-4 max-w-xl text-base text-ink-soft">
-          Numera es el lugar donde cargás tus ítems, tus clientes y tus condiciones — y salís con un documento
-          listo para enviar por WhatsApp o email.
+          Cargás los ítems y Numera hace el resto: un PDF con tu logo, un enlace que tu cliente abre del celular
+          y acepta con un botón, y un aviso tuyo apenas lo hace. Todo desde el teléfono, en minutos.
         </p>
         <div className="mt-8 hidden flex-col gap-3 sm:flex sm:flex-row">
           <Link
@@ -134,23 +134,44 @@ export default function Home() {
             : `${PROMO_LABEL} gratis con todo desbloqueado · después USD 2/mes · cancelás cuando quieras`}
         </p>
 
-        <dl className="mt-16 grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-3">
+        <dl className="mt-16 grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-3">
           <Feature
-            title="Presupuestos completos"
-            desc="Ítems, descuentos, impuestos, moneda y condiciones — todo en un mismo lugar."
+            title="El presupuesto completo"
+            desc="Ítems, cantidades, descuentos, impuestos, anticipo y moneda. Los totales se calculan solos."
             color="from-brand-700 to-brand-500"
           />
           <Feature
-            title="PDF al instante"
-            desc="Generá y compartí un PDF con tu marca en un solo toque."
+            title="Con tu marca, no con la nuestra"
+            desc="Tu logo, tus colores y tus datos de contacto en el PDF y en todo lo que ve tu cliente."
             color="from-brand-500 to-brass-400"
           />
           <Feature
-            title="Tu panel de control"
-            desc="Seguí el estado de cada presupuesto: enviado, visto, aceptado."
+            title="Que lo acepte de una"
+            desc="Le mandás un enlace por WhatsApp: lo abre del celular y lo acepta con un botón, sin imprimir nada."
             color="from-brass-500 to-brand-600"
           />
+          <Feature
+            title="Te enterás cuando lo abre"
+            desc="Visto, aceptado o rechazado, con la fecha. Y el aviso te llega mientras tenés la app abierta."
+            color="from-brand-600 to-brand-300"
+          />
+          <Feature
+            title="Escribí una sola vez"
+            desc="Tus clientes y tus precios quedan guardados. El siguiente presupuesto sale en dos toques."
+            color="from-brass-400 to-brass-600"
+          />
+          <Feature
+            title="Y lo que viene después"
+            desc="El presupuesto aceptado se convierte en factura, y los reportes te muestran cuánto cerrás y cuánto no."
+            color="from-brand-700 to-brass-500"
+          />
         </dl>
+
+        <p className="mt-8 max-w-xl text-sm text-ink-soft">
+          Elegís tu rubro al empezar y el primer presupuesto ya nace con las condiciones, las formas de pago y
+          la validez que se usan en tu oficio. Y si armás la propuesta por tu cuenta —como hacen los
+          fotógrafos, con las fotos y los packs en un PDF— la subís y viaja con el presupuesto.
+        </p>
       </main>
 
       <footer className="py-6 text-center text-xs text-ink-faint">

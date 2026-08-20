@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import AuthLayout from '../components/AuthLayout'
+import BotonGoogle from '../components/BotonGoogle'
 import { Field, traducirError } from './Login'
 import { getStoredReferral, clearStoredReferral } from '../lib/referral'
 import { RUBRO_GROUPS } from '../lib/rubros'
@@ -62,6 +63,17 @@ export default function Register() {
           🎁 Entraste por una invitación. Creá tu cuenta y le sumás un invitado a quien te la pasó.
         </div>
       )}
+
+      {/* Con Google no hay que elegir contraseña ni confirmar el mail:
+          la cuenta queda lista de una. El nombre del negocio y el rubro
+          los pide después la bienvenida del panel. */}
+      <BotonGoogle>Crear cuenta con Google</BotonGoogle>
+
+      <div className="my-5 flex items-center gap-3">
+        <span className="h-px flex-1 bg-line" />
+        <span className="text-xs text-ink-faint">o</span>
+        <span className="h-px flex-1 bg-line" />
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label="Nombre de tu negocio">

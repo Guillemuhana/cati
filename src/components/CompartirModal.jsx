@@ -108,7 +108,7 @@ export default function CompartirModal({
                 as="a"
                 href={mailLink}
                 onClick={onClose}
-                color="#2F6BFF"
+                color="#2E5EA6"
                 Icono={Mail}
                 titulo="Enviar por email"
                 detalle={cliente?.email || 'Escribís el destinatario en tu correo'}

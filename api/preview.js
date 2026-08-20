@@ -66,7 +66,7 @@ export default async function handler(req, res) {
     ? `Presupuesto de ${negocio}. Abrí el enlace para verlo en detalle, descargarlo en PDF y responder.`
     : 'Abrí el enlace para ver el presupuesto, descargarlo en PDF y responder.'
   const imagen = meta && LOGO_OK.test(meta.logo_url || '') ? meta.logo_url : `${origen}/logo-numera.png`
-  const color = /^#[0-9a-f]{6}$/i.test((meta && meta.brand_color) || '') ? meta.brand_color : '#2F6BFF'
+  const color = /^#[0-9a-f]{6}$/i.test((meta && meta.brand_color) || '') ? meta.brand_color : '#1B3B6F'
 
   const html = `<!doctype html>
 <html lang="es">

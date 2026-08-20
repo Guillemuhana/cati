@@ -228,7 +228,7 @@ function PayCol({ title, text }) {
 
 function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuesto', numberPrefix, statusText }) {
   const statusLabel = statusText || (STATUS[budget.status] || STATUS.enviado).label
-  const accent = profile?.brand_color || '#1B2A66'
+  const accent = profile?.brand_color || '#1B3B6F'
   const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)
   const rows = normalizeItems(items)
   const qtyTotal = rows.reduce((acc, it) => acc + (Number(it.quantity) || 0), 0)
@@ -485,7 +485,7 @@ export async function downloadInvoicePdf({ invoice, client, profile }) {
 
 // ── Recibo de pago / seña ──────────────────────────────────────
 function ReciboPDF({ receipt, client, profile }) {
-  const accent = profile?.brand_color || '#1B2A66'
+  const accent = profile?.brand_color || '#1B3B6F'
   const numero = formatNumero(receipt.numero, receipt.receipt_date, 'REC')
   return (
     <Document title={numero}>

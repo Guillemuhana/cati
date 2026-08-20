@@ -90,7 +90,7 @@ export default function PrimerosPasos({ budgets = [], cargando = false }) {
   }
 
   return (
-    <section className="mb-8 overflow-hidden rounded-xl2 border border-brand-500/25 bg-gradient-to-br from-brand-500/[0.07] to-teal-500/[0.05] p-5 sm:p-6">
+    <section className="mb-8 overflow-hidden rounded-xl2 border border-brand-500/25 bg-gradient-to-br from-brand-500/[0.07] to-brass-400/[0.10] p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="font-display text-lg font-medium text-ink">Primeros pasos</h2>
@@ -116,7 +116,7 @@ export default function PrimerosPasos({ budgets = [], cargando = false }) {
 
       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ink/[0.07]">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-brand-600 to-teal-500 transition-all duration-500"
+          className="h-full rounded-full bg-gradient-to-r from-brand-700 to-brass-500 transition-all duration-500"
           style={{ width: `${(hechos / pasos.length) * 100}%` }}
         />
       </div>

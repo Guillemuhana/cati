@@ -49,7 +49,7 @@ export default function Invitar() {
 
   useEffect(() => {
     if (!url) return
-    QRCode.toDataURL(url, { width: 260, margin: 1, color: { dark: '#1B2A66', light: '#ffffff' } })
+    QRCode.toDataURL(url, { width: 260, margin: 1, color: { dark: '#1B3B6F', light: '#ffffff' } })
       .then(setQr)
       .catch(() => setQr(''))
   }, [url])

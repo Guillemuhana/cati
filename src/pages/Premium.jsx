@@ -64,7 +64,7 @@ export default function Premium() {
         </div>
 
         {/* Precio / pago */}
-        <div className="flex flex-col rounded-xl2 border-2 border-brand-500/30 bg-gradient-to-br from-brand-500/[0.06] to-teal-500/[0.06] p-6 shadow-soft">
+        <div className="flex flex-col rounded-xl2 border-2 border-brand-500/30 bg-gradient-to-br from-brand-500/[0.06] to-brass-400/[0.10] p-6 shadow-soft">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
             {FREE_FOR_ALL ? 'Precio de lanzamiento' : 'Suscripción mensual'}
           </p>
@@ -114,7 +114,9 @@ export default function Premium() {
                 ? 'Después de pagar, activamos tu cuenta a la brevedad (beta).'
                 : 'Estamos habilitando el medio de pago. Mientras tanto, escribinos.'}
           </p>
-          {user?.email && <p className="mt-2 text-[11px] text-ink-faint">Tu cuenta: {user.email}</p>}
+          {user?.email && (
+            <p className="mt-2 break-all text-[11px] text-ink-faint">Tu cuenta: {user.email}</p>
+          )}
         </div>
       </div>
 

@@ -44,10 +44,10 @@ export default function InvitarDestacado() {
   const waLink = `https://wa.me/?text=${encodeURIComponent(mensaje)}`
 
   return (
-    <section className="mt-10 overflow-hidden rounded-xl2 border border-teal-500/30 bg-gradient-to-br from-teal-500/[0.10] to-brand-500/[0.06] p-5 sm:p-6">
+    <section className="mt-10 overflow-hidden rounded-xl2 border border-brass-500/30 bg-gradient-to-br from-brass-400/[0.16] to-brand-500/[0.06] p-5 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-teal-600">
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-brass-500/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-brass-600">
             🎁 3 meses gratis
           </p>
           <h2 className="mt-2.5 font-display text-xl font-medium text-ink">
@@ -65,7 +65,7 @@ export default function InvitarDestacado() {
             {Array.from({ length: MAX_INVITADOS }).map((_, i) => (
               <span
                 key={i}
-                className={`h-1.5 w-10 rounded-full ${i < confirmados ? 'bg-teal-500' : 'bg-ink/10'}`}
+                className={`h-1.5 w-10 rounded-full ${i < confirmados ? 'bg-brass-500' : 'bg-ink/10'}`}
               />
             ))}
           </div>

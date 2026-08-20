@@ -31,7 +31,7 @@ export default function Perfil() {
     default_payment_methods: profile?.default_payment_methods || '',
     legal_terms: profile?.legal_terms || '',
     bank_alias: profile?.bank_alias || '',
-    brand_color: profile?.brand_color || '#2F6BFF',
+    brand_color: profile?.brand_color || '#1B3B6F',
     number_prefix: profile?.number_prefix || 'PRES',
     hide_branding: profile?.hide_branding || false
   })

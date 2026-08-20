@@ -1004,7 +1004,7 @@ function AltasPorDia({ datos }) {
               {d.altas}
             </span>
             <div
-              className="w-full rounded-t bg-gradient-to-t from-brand-600 to-teal-500"
+              className="w-full rounded-t bg-gradient-to-t from-brand-700 to-brass-500"
               style={{ height: `${Math.max(4, (d.altas / max) * 100)}%` }}
               title={`${d.dia}: ${d.altas}`}
             />

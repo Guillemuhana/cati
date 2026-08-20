@@ -65,7 +65,7 @@ export const CANALES = [
     label: 'Sitio web',
     placeholder: 'minegocio.com.ar',
     icon: Globe,
-    color: '#2F6BFF',
+    color: '#2E5EA6',
     url: (v) => urlDeWeb(v),
     texto: (v) => (v || '').replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '')
   },

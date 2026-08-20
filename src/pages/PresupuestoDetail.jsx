@@ -96,7 +96,7 @@ export default function PresupuestoDetail() {
 
   useEffect(() => {
     if (!publicUrl) return
-    QRCode.toDataURL(publicUrl, { width: 220, margin: 1, color: { dark: '#1B2A66', light: '#ffffff' } })
+    QRCode.toDataURL(publicUrl, { width: 220, margin: 1, color: { dark: '#1B3B6F', light: '#ffffff' } })
       .then(setQr)
       .catch(() => setQr(''))
   }, [publicUrl])
@@ -476,7 +476,7 @@ export default function PresupuestoDetail() {
                 <img src={client.logo_url} alt="" className="mt-2 h-10 max-w-[140px] object-contain" />
               )}
               <p className="mt-1.5 text-sm font-semibold text-ink">{client.name}</p>
-              {client.email && <p className="text-sm text-ink-soft">{client.email}</p>}
+              {client.email && <p className="break-all text-sm text-ink-soft">{client.email}</p>}
               {client.phone && <p className="text-sm text-ink-soft">{client.phone}</p>}
             </div>
           )}

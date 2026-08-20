@@ -12,23 +12,30 @@ export default {
           faint: '#94998F'
         },
         line: '#E4E1D9',
+        // Los azules son los del logo: el navy del wordmark y el azul de
+        // las caras del hexágono. El eléctrico que había antes (#2F6BFF)
+        // no está en ninguna parte de la marca.
         brand: {
-          50: '#EAF0FF',
-          100: '#CBD9FB',
-          300: '#6E93F2',
-          500: '#2F6BFF',
-          600: '#1E4FD6',
-          700: '#1B2A66'
+          50: '#EEF3FA',
+          100: '#D5E2F1',
+          300: '#7BA3CE',
+          500: '#2E5EA6',
+          600: '#234A85',
+          700: '#1B3B6F'
         },
+        // El turquesa se queda, pero solo con un trabajo: decir que algo
+        // salió bien (aceptado, confirmado). De adorno ya no se usa.
         teal: {
           400: '#4ADAC0',
           500: '#26D0B0',
           600: '#189B84'
         },
+        // El cobre y el dorado del hexágono. Es el segundo color de la
+        // marca: donde antes había turquesa de adorno, ahora va esto.
         brass: {
-          400: '#C9A96A',
-          500: '#B08D45',
-          600: '#8F7237'
+          400: '#E2BE8B',
+          500: '#C08A5E',
+          600: '#9A6B45'
         },
         rust: {
           400: '#C77B63',

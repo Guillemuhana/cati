@@ -136,7 +136,7 @@ function ReportesInner() {
                   <span className="w-10 shrink-0 text-xs uppercase text-ink-faint">{m.label}</span>
                   <div className="h-6 flex-1 overflow-hidden rounded-md bg-ink/[0.04]">
                     <div
-                      className="h-full rounded-md bg-gradient-to-r from-brand-600 to-teal-500"
+                      className="h-full rounded-md bg-gradient-to-r from-brand-700 to-brass-500"
                       style={{ width: `${Math.max(2, (m.monto / stats.maxMonth) * 100)}%` }}
                     />
                   </div>

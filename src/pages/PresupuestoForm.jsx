@@ -839,13 +839,15 @@ function Chip({ active, onClick, children }) {
   )
 }
 
+// Sin `whitespace-nowrap` «Guardar y seguir» se parte en dos líneas y deja
+// esa fila más alta que la de arriba: la botonera queda torcida.
 function SecondaryBtn({ onClick, disabled, children }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="rounded-md border border-line px-3 py-2 text-sm font-medium text-ink transition hover:border-ink-faint hover:bg-ink/[0.02] disabled:opacity-50"
+      className="whitespace-nowrap rounded-md border border-line px-2 py-2 text-[13px] font-medium text-ink transition hover:border-ink-faint hover:bg-ink/[0.02] disabled:opacity-50"
     >
       {children}
     </button>

@@ -153,7 +153,7 @@ function NavItem({ to, label, icon: Icon, onClick, badge }) {
       <Icon className="h-[18px] w-[18px]" />
       <span className="flex-1">{label}</span>
       {badge && (
-        <span className="shrink-0 rounded-full bg-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-teal-600">
+        <span className="shrink-0 rounded-full bg-brass-500/15 px-2 py-0.5 text-[10px] font-semibold text-brass-600">
           {badge}
         </span>
       )}
@@ -191,7 +191,7 @@ function TrialBanner() {
     return (
       <Link
         to="/premium"
-        className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brand-500/25 bg-gradient-to-r from-brand-500/[0.07] to-teal-500/[0.07] px-4 py-2.5 text-sm transition hover:from-brand-500/[0.12]"
+        className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brand-500/25 bg-gradient-to-r from-brand-500/[0.07] to-brass-400/[0.10] px-4 py-2.5 text-sm transition hover:from-brand-500/[0.12]"
       >
         <span className="text-ink-soft">
           ✨ {PROMO_LABEL} gratis · te quedan <b className="text-brand-700">{trialLeftLabel}</b> con todo desbloqueado

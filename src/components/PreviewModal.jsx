@@ -64,7 +64,7 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Para</p>
               <p className="mt-1 font-semibold text-ink">{client?.name || 'Cliente sin asignar'}</p>
-              {client?.email && <p className="text-ink-soft">{client.email}</p>}
+              {client?.email && <p className="break-all text-ink-soft">{client.email}</p>}
               {client?.phone && <p className="text-ink-soft">{client.phone}</p>}
               {client?.tax_id && <p className="text-ink-soft">{client.tax_id}</p>}
             </div>

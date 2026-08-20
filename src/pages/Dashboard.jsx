@@ -71,7 +71,7 @@ export default function Dashboard() {
         <h1 className="font-display text-3xl font-medium text-ink">
           Hola
           {firstName && (
-            <span className="bg-gradient-to-r from-brand-600 to-teal-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand-700 to-brass-500 bg-clip-text text-transparent">
               , {firstName}
             </span>
           )}

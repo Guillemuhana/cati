@@ -61,10 +61,12 @@ export default function ClientPicker({ clients, value, onChange, onCreateClient 
                       onChange(c.id)
                       setOpen(false)
                     }}
-                    className="block w-full px-3 py-2 text-left text-sm text-ink hover:bg-brand-500/[0.06]"
+                    className="block w-full min-w-0 px-3 py-2 text-left text-sm text-ink hover:bg-brand-500/[0.06]"
                   >
-                    {c.name}
-                    {c.email && <span className="ml-1.5 text-xs text-ink-faint">{c.email}</span>}
+                    <span className="block truncate">{c.name}</span>
+                    {c.email && (
+                      <span className="block truncate text-xs text-ink-faint">{c.email}</span>
+                    )}
                   </button>
                 ))}
                 {filtered.length === 0 && <p className="px-3 py-2 text-sm text-ink-faint">Sin resultados.</p>}

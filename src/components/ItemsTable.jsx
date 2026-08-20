@@ -15,7 +15,14 @@ export function lineAmount(item) {
   return base - base * (disc / 100)
 }
 
-const COLS = 'sm:grid-cols-[minmax(0,1fr)_84px_120px_84px_120px_40px]'
+// Las columnas de números tienen un ancho MÍNIMO y uno máximo, no uno
+// fijo. Con anchos fijos sumaban 448 px + 60 de separación: en el
+// formulario, que en una pantalla normal deja unos 550 px para la tabla,
+// la descripción se quedaba con 40 px y no se leía lo que uno escribía.
+// El `sm:` mira el ancho de la ventana, no el de esta columna, así que
+// el problema no aparece achicando el navegador: aparece en el escritorio.
+const COLS =
+  'sm:grid-cols-[minmax(120px,1fr)_minmax(52px,68px)_minmax(80px,104px)_minmax(48px,64px)_minmax(80px,104px)_28px]'
 
 export default function ItemsTable({ items, onChange, currency, placeholder = 'Ej: Diseño de landing page' }) {
   const update = (index, field, value) => {
@@ -35,7 +42,7 @@ export default function ItemsTable({ items, onChange, currency, placeholder = 'E
     <div className="overflow-hidden rounded-xl2 border border-line bg-surface">
       {/* Cabecera (solo desktop) */}
       <div
-        className={`hidden gap-3 border-b border-line px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-faint sm:grid ${COLS}`}
+        className={`hidden gap-3 border-b border-line px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-faint sm:grid sm:gap-2 ${COLS}`}
       >
         <span>Descripción</span>
         <span className="text-right">Cant.</span>
@@ -52,7 +59,7 @@ export default function ItemsTable({ items, onChange, currency, placeholder = 'E
           return (
             <div
               key={item._key || item.id}
-              className={`grid gap-3 px-4 py-3 sm:items-center ${COLS}`}
+              className={`grid gap-3 px-4 py-3 sm:items-center sm:gap-2 ${COLS}`}
             >
               {/* Descripción */}
               <div className="min-w-0">
@@ -69,7 +76,7 @@ export default function ItemsTable({ items, onChange, currency, placeholder = 'E
               </div>
 
               {/* En móvil: cantidad / precio / descuento en grilla de 3 */}
-              <div className="grid grid-cols-3 gap-3 sm:contents">
+              <div className="grid min-w-0 grid-cols-3 gap-3 sm:contents">
                 <NumField
                   label="Cant."
                   value={item.quantity}
@@ -156,7 +163,7 @@ function NumField({ label, value, min, max, step, onChange }) {
           if (max != null) n = Math.min(max, n)
           onChange(String(n))
         }}
-        className="w-full rounded-md border border-line bg-transparent px-2.5 py-2 text-right font-mono text-sm text-ink focus:border-brand-500 focus:bg-white focus:outline-none"
+        className="w-full min-w-0 rounded-md border border-line bg-transparent px-2 py-2 text-right font-mono text-sm text-ink focus:border-brand-500 focus:bg-white focus:outline-none"
       />
     </div>
   )

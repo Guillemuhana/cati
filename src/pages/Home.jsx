@@ -80,12 +80,12 @@ export default function Home() {
           <Feature
             title="PDF al instante"
             desc="Generá y compartí un PDF con tu marca en un solo toque."
-            color="from-brand-500 to-teal-500"
+            color="from-brand-500 to-brass-400"
           />
           <Feature
             title="Tu panel de control"
             desc="Seguí el estado de cada presupuesto: enviado, visto, aceptado."
-            color="from-teal-500 to-brand-500"
+            color="from-brass-500 to-brand-600"
           />
         </dl>
       </main>

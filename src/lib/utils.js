@@ -179,7 +179,7 @@ function contrast(a, b) {
 // El color de marca sale de la base y puede ser cualquier cosa: vacio, un
 // 'white', un rgb(...) o basura de una carga vieja. Todo lo que sigue asume
 // #rrggbb, asi que lo normalizamos una sola vez acá.
-export function resolveAccent(hex, fallback = '#2F6BFF') {
+export function resolveAccent(hex, fallback = '#1B3B6F') {
   return toRgb(hex) ? (String(hex).trim().startsWith('#') ? String(hex).trim() : '#' + String(hex).trim()) : fallback
 }
 
@@ -187,7 +187,7 @@ export function resolveAccent(hex, fallback = '#2F6BFF') {
 // sobre papel blanco (títulos, el total). Los colores oscuros no cambian.
 export function readableAccent(hex, minRatio = 4.5) {
   const rgb = toRgb(hex)
-  if (!rgb) return '#2F6BFF'
+  if (!rgb) return '#1B3B6F'
   let out = rgb
   for (let i = 0; i < 24 && contrast(out, [255, 255, 255]) < minRatio; i++) {
     out = out.map((v) => v * 0.88)

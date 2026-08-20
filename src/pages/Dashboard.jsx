@@ -5,12 +5,24 @@ import { useAuth } from '../context/AuthContext'
 import StatCard from '../components/StatCard'
 import StatusBadge from '../components/StatusBadge'
 import Spinner from '../components/Spinner'
+import PrimerosPasos from '../components/PrimerosPasos'
+import InvitarDestacado from '../components/InvitarDestacado'
+import BienvenidaModal from '../components/BienvenidaModal'
 import { formatMoney, formatDate, formatNumero } from '../lib/utils'
+import { CLAVES, marcar, estaMarcado } from '../lib/onboarding'
 
 export default function Dashboard() {
   const { user, profile } = useAuth()
   const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)
+  // Si lo saltó, no se lo volvemos a poner adelante en cada recarga: la
+  // tarjeta de primeros pasos ya lo lleva al mismo lugar.
+  const [saltoBienvenida, setSaltoBienvenida] = useState(() =>
+    estaMarcado(CLAVES.bienvenidaSaltada)
+  )
+
+  // Primera vez: el negocio todavía no tiene nombre.
+  const mostrarBienvenida = !!profile && !profile.business_name && !saltoBienvenida
 
   useEffect(() => {
     if (!user) return
@@ -45,6 +57,16 @@ export default function Dashboard() {
 
   return (
     <div>
+      {mostrarBienvenida && (
+        <BienvenidaModal
+          onListo={() => setSaltoBienvenida(true)}
+          onSaltar={() => {
+            marcar(CLAVES.bienvenidaSaltada)
+            setSaltoBienvenida(true)
+          }}
+        />
+      )}
+
       <header className="mb-8">
         <h1 className="font-display text-3xl font-medium text-ink">
           Hola
@@ -56,6 +78,8 @@ export default function Dashboard() {
         </h1>
         <p className="mt-1 text-sm text-ink-soft">Así viene tu actividad con Numera.</p>
       </header>
+
+      <PrimerosPasos budgets={budgets} cargando={loading} />
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard label="Presupuestos" value={stats.total} tone="navy" />
@@ -104,6 +128,8 @@ export default function Dashboard() {
           </ul>
         )}
       </div>
+
+      <InvitarDestacado />
     </div>
   )
 }

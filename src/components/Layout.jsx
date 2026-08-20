@@ -14,7 +14,8 @@ const NAV_ITEMS = [
   { to: '/clientes', label: 'Clientes', icon: IconUsers },
   { to: '/reportes', label: 'Reportes', icon: IconChart },
   { to: '/perfil', label: 'Mi negocio', icon: IconBuilding },
-  { to: '/invitar', label: 'Invitar y ganar', icon: IconGift },
+  // El premio va escrito en el menú: si no dice qué se gana, nadie entra.
+  { to: '/invitar', label: 'Invitar y ganar', icon: IconGift, badge: '3 meses' },
   { to: '/ayuda', label: 'Ayuda', icon: IconHelp }
 ]
 
@@ -137,7 +138,7 @@ export default function Layout({ children }) {
   )
 }
 
-function NavItem({ to, label, icon: Icon, onClick }) {
+function NavItem({ to, label, icon: Icon, onClick, badge }) {
   return (
     <NavLink
       to={to}
@@ -150,7 +151,12 @@ function NavItem({ to, label, icon: Icon, onClick }) {
       }
     >
       <Icon className="h-[18px] w-[18px]" />
-      {label}
+      <span className="flex-1">{label}</span>
+      {badge && (
+        <span className="shrink-0 rounded-full bg-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-teal-600">
+          {badge}
+        </span>
+      )}
     </NavLink>
   )
 }

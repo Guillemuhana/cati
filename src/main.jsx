@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { supabaseConfigured } from './lib/supabaseClient.js'
 import { captureReferralFromUrl } from './lib/referral.js'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+import IntroLogo from './components/IntroLogo.jsx'
 import './index.css'
 
 // Si la visita llegó por un link de invitación (?ref=), lo guardamos antes
@@ -43,6 +44,9 @@ if (!supabaseConfigured) {
   root.render(
     <React.StrictMode>
       <ErrorBoundary>
+        {/* Va afuera del router y de la sesión: es lo primero que se ve,
+            antes del login y sin esperar a que cargue nada. */}
+        <IntroLogo />
         <BrowserRouter>
           <AuthProvider>
             <App />

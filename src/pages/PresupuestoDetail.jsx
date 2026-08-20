@@ -313,7 +313,7 @@ export default function PresupuestoDetail() {
                 const lineTotal = lineBase - lineBase * ((it.discount || 0) / 100)
                 return (
                   <div key={it.id} className="flex items-center justify-between gap-3 px-5 py-3 sm:grid sm:grid-cols-[1fr_80px_120px_120px]">
-                    <span className="flex-1 text-sm text-ink">
+                    <span className="min-w-0 flex-1 break-words text-sm text-ink">
                       {it.description}
                       {it.discount > 0 && <span className="ml-1.5 text-xs text-brass-600">-{it.discount}%</span>}
                     </span>
@@ -321,7 +321,7 @@ export default function PresupuestoDetail() {
                     <span className="hidden text-right font-mono text-sm text-ink-soft sm:block">
                       {formatMoney(it.unit_price, budget.currency)}
                     </span>
-                    <span className="text-right font-mono text-sm font-medium text-ink">
+                    <span className="shrink-0 whitespace-nowrap text-right font-mono text-sm font-medium text-ink">
                       {formatMoney(lineTotal, budget.currency)}
                     </span>
                   </div>

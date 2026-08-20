@@ -82,21 +82,42 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
 
           {/* Tabla */}
           <div className="mt-8 overflow-hidden rounded-lg border border-line">
-            <div className="grid grid-cols-[1fr_60px_100px_100px] gap-2 border-b border-line bg-paper px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-ink-faint">
+            <div className="hidden grid-cols-[1fr_60px_100px_100px] gap-2 border-b border-line bg-paper px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-ink-faint sm:grid">
               <span>Descripción</span>
               <span className="text-right">Cant.</span>
               <span className="text-right">Precio</span>
               <span className="text-right">Importe</span>
             </div>
             {validItems.map((it, i) => (
-              <div key={i} className="grid grid-cols-[1fr_60px_100px_100px] gap-2 border-b border-line px-3 py-2 text-sm last:border-0">
-                <span className="text-ink">
+              <div
+                key={i}
+                className="border-b border-line px-3 py-3 text-sm last:border-0 sm:grid sm:grid-cols-[1fr_60px_100px_100px] sm:items-start sm:gap-2 sm:py-2"
+              >
+                <span className="block min-w-0 break-words leading-relaxed text-ink">
                   {it.description || 'Ítem'}
                   {Number(it.discount) > 0 && <span className="ml-1 text-xs text-brass-600">-{it.discount}%</span>}
                 </span>
-                <span className="text-right font-mono text-ink-soft">{it.quantity}</span>
-                <span className="text-right font-mono text-ink-soft">{formatMoney(it.unit_price, currency)}</span>
-                <span className="text-right font-mono font-medium text-ink">{formatMoney(lineAmount(it), currency)}</span>
+
+                {/* Móvil: cantidad × precio en una línea, importe a la derecha.
+                    En celular no entran cuatro columnas: la descripción quedaba
+                    tan angosta que caía una palabra por renglón. */}
+                <div className="mt-2 flex items-baseline justify-between gap-3 border-t border-dashed border-line pt-2 sm:hidden">
+                  <span className="font-mono text-xs tabular-nums text-ink-faint">
+                    {it.quantity} × {formatMoney(it.unit_price, currency)}
+                  </span>
+                  <span className="whitespace-nowrap font-mono font-medium tabular-nums text-ink">
+                    {formatMoney(lineAmount(it), currency)}
+                  </span>
+                </div>
+
+                {/* Escritorio: columnas */}
+                <span className="hidden text-right font-mono tabular-nums text-ink-soft sm:block">{it.quantity}</span>
+                <span className="hidden whitespace-nowrap text-right font-mono tabular-nums text-ink-soft sm:block">
+                  {formatMoney(it.unit_price, currency)}
+                </span>
+                <span className="hidden whitespace-nowrap text-right font-mono font-medium tabular-nums text-ink sm:block">
+                  {formatMoney(lineAmount(it), currency)}
+                </span>
               </div>
             ))}
           </div>

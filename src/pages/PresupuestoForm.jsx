@@ -27,7 +27,7 @@ const emptyBudget = {
   client_id: '',
   title: '',
   reference: '',
-  status: 'borrador',
+  status: 'enviado', // un presupuesto nace listo para mandar: no hay borradores
   issue_date: new Date().toISOString().slice(0, 10),
   due_date: '',
   currency: 'ARS',
@@ -325,7 +325,7 @@ export default function PresupuestoForm() {
 
       if (after === 'editar' && !isEdit) {
         navigate(`/presupuestos/${budgetId}/editar`, { replace: true })
-        setSavedMsg('Borrador guardado')
+        setSavedMsg('Guardado')
       } else if (after === 'editar') {
         setSavedMsg('Cambios guardados')
       } else {
@@ -649,8 +649,8 @@ export default function PresupuestoForm() {
                   <SecondaryBtn onClick={() => handleSave({ status: 'enviado', mode: 'final', after: 'share' })} disabled={saving}>
                     Crear + enviar
                   </SecondaryBtn>
-                  <SecondaryBtn onClick={() => handleSave({ status: 'borrador', mode: 'draft', after: 'editar' })} disabled={saving}>
-                    Guardar borrador
+                  <SecondaryBtn onClick={() => handleSave({ status: budget.status, mode: 'draft', after: 'editar' })} disabled={saving}>
+                    Guardar y seguir
                   </SecondaryBtn>
                 </div>
                 <button onClick={handleCancel} disabled={saving} className="w-full rounded-md px-4 py-2 text-sm font-medium text-ink-soft transition hover:text-rust-500">

@@ -81,7 +81,7 @@ export default function Home() {
           />
           <Feature
             title="Tu panel de control"
-            desc="Seguí el estado de cada presupuesto: borrador, enviado, aprobado."
+            desc="Seguí el estado de cada presupuesto: enviado, visto, aceptado."
             color="from-teal-500 to-brand-500"
           />
         </dl>

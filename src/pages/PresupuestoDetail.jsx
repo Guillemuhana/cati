@@ -200,7 +200,7 @@ export default function PresupuestoDetail() {
       } = budget
       const { data: newBudget, error } = await supabase
         .from('budgets')
-        .insert({ ...rest, status: 'borrador', numero: (count || 0) + 1 })
+        .insert({ ...rest, status: 'enviado', numero: (count || 0) + 1 })
         .select()
         .single()
       if (error) throw error
@@ -439,6 +439,9 @@ export default function PresupuestoDetail() {
           {client && (
             <div className="rounded-xl2 border border-line bg-surface p-5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Cliente</p>
+              {client.logo_url && (
+                <img src={client.logo_url} alt="" className="mt-2 h-10 max-w-[140px] object-contain" />
+              )}
               <p className="mt-1.5 text-sm font-semibold text-ink">{client.name}</p>
               {client.email && <p className="text-sm text-ink-soft">{client.email}</p>}
               {client.phone && <p className="text-sm text-ink-soft">{client.phone}</p>}

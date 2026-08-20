@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import Spinner from '../components/Spinner'
 
-const emptyClient = { name: '', email: '', phone: '', tax_id: '', address: '', notes: '' }
+const emptyClient = { name: '', email: '', phone: '', tax_id: '', address: '', notes: '', logo_url: '' }
 
 export default function Clientes() {
   const { user } = useAuth()
@@ -28,13 +28,14 @@ export default function Clientes() {
   })
 
   const handleSave = async (form) => {
-    if (editing === 'new') {
-      await supabase.from('clients').insert({ ...form, user_id: user.id })
-    } else {
-      await supabase.from('clients').update(form).eq('id', editing.id)
-    }
+    const { error } =
+      editing === 'new'
+        ? await supabase.from('clients').insert({ ...form, user_id: user.id })
+        : await supabase.from('clients').update(form).eq('id', editing.id)
+    if (error) return error
     setEditing(null)
     load()
+    return null
   }
 
   const handleDelete = async (client) => {
@@ -77,11 +78,14 @@ export default function Clientes() {
           <ul className="divide-y divide-line">
             {filtered.map((c) => (
               <li key={c.id} className="flex items-center justify-between gap-4 px-5 py-4">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-ink">{c.name}</p>
-                  <p className="mt-0.5 truncate text-xs text-ink-soft">
-                    {[c.email, c.phone].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
-                  </p>
+                <div className="flex min-w-0 items-center gap-3">
+                  <ClientAvatar client={c} />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-ink">{c.name}</p>
+                    <p className="mt-0.5 truncate text-xs text-ink-soft">
+                      {[c.email, c.phone].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex shrink-0 gap-3">
                   <button onClick={() => setEditing(c)} className="text-sm font-medium text-ink-soft hover:text-ink">
@@ -102,15 +106,72 @@ export default function Clientes() {
   )
 }
 
+// Iniciales del cliente cuando todavía no subió logo.
+function ClientAvatar({ client, size = 'h-10 w-10' }) {
+  return (
+    <div className={`flex ${size} shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-paper`}>
+      {client.logo_url ? (
+        <img src={client.logo_url} alt="" className="h-full w-full object-contain" />
+      ) : (
+        <span className="font-display text-sm text-ink-faint">{client.name?.[0]?.toUpperCase() || 'C'}</span>
+      )}
+    </div>
+  )
+}
+
 function ClientModal({ client, onClose, onSave }) {
+  const { user } = useAuth()
   const [form, setForm] = useState(client)
+  const [logoFile, setLogoFile] = useState(null)
+  const [preview, setPreview] = useState(client.logo_url || '')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setLogoFile(file)
+    setPreview(URL.createObjectURL(file))
+  }
+
+  const removeLogo = () => {
+    setLogoFile(null)
+    setPreview('')
+    setForm((f) => ({ ...f, logo_url: '' }))
+  }
 
   const submit = async (e) => {
     e.preventDefault()
     setSaving(true)
-    await onSave(form)
-    setSaving(false)
+    setError('')
+    try {
+      let logo_url = form.logo_url || null
+
+      if (logoFile) {
+        // Mismo bucket que el logo del negocio: la primera carpeta tiene
+        // que ser el id del usuario para pasar las policies de storage.
+        const ext = (logoFile.name.split('.').pop() || 'png').toLowerCase()
+        const path = `${user.id}/clientes/${client.id || crypto.randomUUID()}.${ext}`
+        const { error: uploadError } = await supabase.storage
+          .from('logos')
+          .upload(path, logoFile, { upsert: true, cacheControl: '3600' })
+        if (uploadError) throw uploadError
+        const { data } = supabase.storage.from('logos').getPublicUrl(path)
+        logo_url = `${data.publicUrl}?t=${Date.now()}`
+      }
+
+      const err = await onSave({ ...form, logo_url })
+      if (err) throw err
+    } catch (err) {
+      const msg = `${err?.message || ''} ${err?.code || ''}`.toLowerCase()
+      setError(
+        msg.includes('logo_url') || err?.code === 'PGRST204' || err?.code === '42703'
+          ? 'Ejecutá la migración supabase/migration_18 en Supabase para guardar el logo del cliente.'
+          : err?.message || 'No se pudo guardar.'
+      )
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -121,6 +182,23 @@ function ClientModal({ client, onClose, onSave }) {
         className="relative w-full max-w-md rounded-t-xl2 border border-line bg-surface p-6 shadow-soft sm:rounded-xl2"
       >
         <h2 className="font-display text-xl font-medium text-ink">{client.name ? 'Editar cliente' : 'Nuevo cliente'}</h2>
+
+        <div className="mt-4 flex items-center gap-4">
+          <ClientAvatar client={{ ...form, logo_url: preview }} size="h-14 w-14" />
+          <div>
+            <label className="cursor-pointer text-sm font-medium text-brand-600 hover:underline">
+              {preview ? 'Cambiar logo' : 'Subir logo'}
+              <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+            </label>
+            {preview && (
+              <button type="button" onClick={removeLogo} className="ml-3 text-sm font-medium text-ink-soft hover:text-rust-500">
+                Quitar
+              </button>
+            )}
+            <p className="text-xs text-ink-faint">Opcional. Solo si ese cliente tiene logo propio.</p>
+          </div>
+        </div>
+
         <div className="mt-4 space-y-3">
           <Field label="Nombre *">
             <input
@@ -166,6 +244,8 @@ function ClientModal({ client, onClose, onSave }) {
             />
           </Field>
         </div>
+        {error && <p className="mt-4 rounded-md bg-rust-500/10 px-3 py-2 text-sm text-rust-500">{error}</p>}
+
         <div className="mt-5 flex gap-2">
           <button
             type="submit"

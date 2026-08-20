@@ -8,7 +8,6 @@ import { classNames, formatDate, formatMoney, formatNumero } from '../lib/utils'
 
 const FILTERS = [
   { key: 'todos', label: 'Todos' },
-  { key: 'borrador', label: 'Borrador' },
   { key: 'enviado', label: 'Enviado' },
   { key: 'visto', label: 'Visto' },
   { key: 'aceptado', label: 'Aceptado' },

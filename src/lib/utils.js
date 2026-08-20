@@ -138,8 +138,10 @@ export const STATUS = {
   vencido: { label: 'Vencido', color: 'rust' }
 }
 
-// Estados ofrecidos en los selectores (excluye el legacy 'aprobado').
-export const STATUS_OPTIONS = ['borrador', 'enviado', 'visto', 'aceptado', 'rechazado', 'vencido']
+// Estados ofrecidos en los selectores. No incluye 'borrador' (se sacó: un
+// presupuesto nace 'enviado') ni el legacy 'aprobado'. STATUS sí los conserva
+// para poder mostrar presupuestos viejos que quedaron en esos estados.
+export const STATUS_OPTIONS = ['enviado', 'visto', 'aceptado', 'rechazado', 'vencido']
 
 export function classNames(...list) {
   return list.filter(Boolean).join(' ')

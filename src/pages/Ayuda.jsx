@@ -55,6 +55,11 @@ const FAQS = [
     keywords: 'cliente nuevo cargar alta obligatorio'
   },
   {
+    q: '¿Puedo ponerle el logo a un cliente?',
+    a: 'Sí. En Clientes, al crear o editar uno, arriba de todo tenés «Subir logo». Es opcional: solo si ese cliente tiene logo propio. Queda visible en la lista de clientes y en el presupuesto.',
+    keywords: 'logo cliente imagen marca subir foto isotipo'
+  },
+  {
     q: '¿Cómo le mando el presupuesto al cliente?',
     a: 'Abrí el presupuesto guardado. Tenés tres formas: «Descargar PDF» (te lo baja al dispositivo), «Compartir PDF» (abre el menú de compartir del celular: WhatsApp, mail, lo que tengas) y el enlace público con QR, que le permite al cliente verlo online desde el navegador sin instalar nada.',
     keywords: 'enviar mandar compartir whatsapp mail email pdf link enlace qr'
@@ -66,8 +71,8 @@ const FAQS = [
   },
   {
     q: '¿Qué significa cada estado?',
-    a: 'Borrador: lo estás armando, todavía no lo mandaste. Enviado: se lo mandaste al cliente. Visto: el cliente abrió el enlace público. Aceptado: te dijo que sí. Rechazado: te dijo que no. Vencido: pasó la fecha de validez sin respuesta. Podés cambiarlo a mano desde el presupuesto, en «Cambiar estado».',
-    keywords: 'estado estados borrador enviado visto aceptado rechazado vencido significa'
+    a: 'Enviado: es el estado con el que nace todo presupuesto, listo para mandarle al cliente. Visto: el cliente abrió el enlace público. Aceptado: te dijo que sí. Rechazado: te dijo que no. Vencido: pasó la fecha de validez sin respuesta. Podés cambiarlo a mano desde el presupuesto, en «Cambiar estado».',
+    keywords: 'estado estados enviado visto aceptado rechazado vencido significa'
   },
   {
     q: '¿Cómo cargo el descuento, el IVA o la seña?',
@@ -76,7 +81,7 @@ const FAQS = [
   },
   {
     q: '¿Puedo reusar un presupuesto que ya hice?',
-    a: 'Sí, de dos maneras. «Duplicar» (abajo a la derecha en el presupuesto) crea una copia idéntica como borrador para editarla. Y si es algo que hacés seguido, en el formulario tenés «Guardar como plantilla»: le ponés un nombre y después la aplicás desde el desplegable «Usar plantilla…» en cualquier presupuesto nuevo.',
+    a: 'Sí, de dos maneras. «Duplicar» (abajo a la derecha en el presupuesto) crea una copia idéntica para editarla. Y si es algo que hacés seguido, en el formulario tenés «Guardar como plantilla»: le ponés un nombre y después la aplicás desde el desplegable «Usar plantilla…» en cualquier presupuesto nuevo.',
     keywords: 'duplicar copiar repetir plantilla plantillas modelo template reusar'
   },
   {

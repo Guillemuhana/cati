@@ -42,6 +42,7 @@ create table if not exists public.clients (
   tax_id text,
   address text,
   notes text,
+  logo_url text,
   created_at timestamptz not null default now()
 );
 
@@ -67,8 +68,10 @@ create table if not exists public.budgets (
   client_id uuid references public.clients(id) on delete set null,
   numero integer not null default 1,
   title text default '',
-  status text not null default 'borrador'
-    check (status in ('borrador','enviado','aprobado','rechazado','vencido')),
+  -- Un presupuesto nace 'enviado': no hay borradores (confundían).
+  -- 'borrador' y 'aprobado' siguen permitidos solo por datos viejos.
+  status text not null default 'enviado'
+    check (status in ('borrador','enviado','visto','aprobado','aceptado','rechazado','vencido')),
   issue_date date not null default current_date,
   due_date date,
   currency text not null default 'ARS',

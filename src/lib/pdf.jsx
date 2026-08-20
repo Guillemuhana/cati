@@ -184,7 +184,7 @@ function PayCol({ title, text }) {
 }
 
 function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuesto', numberPrefix, statusText }) {
-  const statusLabel = statusText || (STATUS[budget.status] || STATUS.borrador).label
+  const statusLabel = statusText || (STATUS[budget.status] || STATUS.enviado).label
   const accent = profile?.brand_color || '#1B2A66'
   const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)
   const rows = normalizeItems(items)

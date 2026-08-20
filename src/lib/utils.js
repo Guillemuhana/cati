@@ -194,3 +194,38 @@ export function readableAccent(hex, minRatio = 4.5) {
   }
   return toHex(out)
 }
+
+
+// ------------------------------------------------------------
+// Imágenes adjuntas: nunca confiar en la URL guardada.
+//
+// budget.images es una columna que el dueño del presupuesto puede
+// escribir por la API con cualquier contenido, no solo desde el
+// formulario. Si alguien guardara ahí un "javascript:..." y le pasara
+// el enlace público a un cliente, ese texto terminaría dentro de un
+// <a href> en NUESTRO dominio. Por eso solo se muestran URLs https
+// del Storage de Supabase, que es el único lugar del que salen.
+//
+// Está repetido en la base (migración 21) y acá: el de la base es el
+// que manda, este evita mostrar basura vieja que ya esté guardada.
+// ------------------------------------------------------------
+const STORAGE_URL = /^https:\/\/[a-z0-9-]+\.supabase\.co\//i
+
+export function isSafeImageUrl(url) {
+  return typeof url === 'string' && STORAGE_URL.test(url)
+}
+
+export function safeImages(images) {
+  return Array.isArray(images) ? images.filter(isSafeImageUrl) : []
+}
+
+// Path dentro del bucket a partir de la URL pública, para poder borrar
+// el archivo cuando el usuario saca la imagen. Devuelve '' si la URL no
+// es del bucket esperado.
+export function storagePathFromUrl(url, bucket) {
+  if (!isSafeImageUrl(url)) return ''
+  const marca = `/object/public/${bucket}/`
+  const i = url.indexOf(marca)
+  if (i === -1) return ''
+  return decodeURIComponent(url.slice(i + marca.length).split('?')[0])
+}

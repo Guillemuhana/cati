@@ -1,4 +1,4 @@
-import { formatMoney, formatDate, formatNumero } from '../lib/utils'
+import { formatMoney, formatDate, formatNumero, safeImages } from '../lib/utils'
 import { lineAmount } from './ItemsTable'
 
 /**
@@ -139,11 +139,11 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
           )}
 
           {/* Imágenes adjuntas */}
-          {Array.isArray(budget.images) && budget.images.length > 0 && (
+          {safeImages(budget.images).length > 0 && (
             <div className="mt-6">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-faint">Imágenes</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {budget.images.map((url) => (
+                {safeImages(budget.images).map((url) => (
                   <img key={url} src={url} alt="" className="h-24 w-32 rounded border border-line object-cover" />
                 ))}
               </div>

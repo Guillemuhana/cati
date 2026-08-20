@@ -7,7 +7,7 @@ import { usePlan } from '../hooks/usePlan'
 import StatusBadge from '../components/StatusBadge'
 import Spinner from '../components/Spinner'
 import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
-import { formatDate, formatMoney, formatNumero, STATUS_OPTIONS } from '../lib/utils'
+import { formatDate, formatMoney, formatNumero, STATUS_OPTIONS, safeImages, storagePathFromUrl } from '../lib/utils'
 
 export default function PresupuestoDetail() {
   const { id } = useParams()
@@ -200,7 +200,10 @@ export default function PresupuestoDetail() {
       } = budget
       const { data: newBudget, error } = await supabase
         .from('budgets')
-        .insert({ ...rest, status: 'enviado', numero: (count || 0) + 1 })
+        // La copia no se lleva las imágenes: son el mismo archivo en el
+        // Storage y, si después borrás una de las dos copias, la foto
+        // desaparecería también de la otra.
+        .insert({ ...rest, images: [], status: 'enviado', numero: (count || 0) + 1 })
         .select()
         .single()
       if (error) throw error
@@ -222,6 +225,12 @@ export default function PresupuestoDetail() {
   const handleDelete = async () => {
     if (!window.confirm('¿Eliminar este presupuesto? Esta acción no se puede deshacer.')) return
     setBusy(true)
+    // Las imágenes adjuntas no se borran solas: sin esto, una foto que el
+    // usuario cree eliminada sigue online para cualquiera que tenga la URL.
+    const paths = safeImages(budget.images)
+      .map((u) => storagePathFromUrl(u, 'adjuntos'))
+      .filter(Boolean)
+    if (paths.length) await supabase.storage.from('adjuntos').remove(paths)
     await supabase.from('budgets').delete().eq('id', id)
     navigate('/presupuestos')
   }
@@ -436,11 +445,11 @@ export default function PresupuestoDetail() {
             </div>
           </div>
 
-          {Array.isArray(budget.images) && budget.images.length > 0 && (
+          {safeImages(budget.images).length > 0 && (
             <div className="rounded-xl2 border border-line bg-surface p-5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Imágenes</p>
               <div className="mt-3 grid grid-cols-3 gap-2">
-                {budget.images.map((url) => (
+                {safeImages(budget.images).map((url) => (
                   <a key={url} href={url} target="_blank" rel="noopener noreferrer">
                     <img src={url} alt="" loading="lazy" className="aspect-square w-full rounded-lg border border-line object-cover" />
                   </a>

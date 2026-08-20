@@ -21,7 +21,9 @@ import {
   formatMoney,
   formatNumero,
   addDays,
-  getBudgetErrors
+  getBudgetErrors,
+  safeImages,
+  storagePathFromUrl
 } from '../lib/utils'
 import { getRubro } from '../lib/rubros'
 
@@ -66,6 +68,11 @@ export default function PresupuestoForm() {
 
   const dirtyRef = useRef(false)
   const prefilledRef = useRef(false)
+  // Imágenes que tenía el presupuesto al abrirlo. Las que el usuario
+  // saque se borran del Storage recién cuando guarda: si borráramos al
+  // tocar la ✕ y después cancela, el presupuesto quedaría apuntando a
+  // un archivo que ya no existe.
+  const initialImagesRef = useRef([])
 
   const markDirty = () => {
     dirtyRef.current = true
@@ -170,7 +177,10 @@ export default function PresupuestoForm() {
         supabase.from('budget_items').select('*').eq('budget_id', id).order('position')
       ])
       if (!active) return
-      if (b) setBudget({ ...emptyBudget, ...b })
+      if (b) {
+        setBudget({ ...emptyBudget, ...b })
+        initialImagesRef.current = safeImages(b.images)
+      }
       setItems(its && its.length ? its : [newItem()])
       prefilledRef.current = true
       setLoading(false)
@@ -307,6 +317,13 @@ export default function PresupuestoForm() {
         const { error: itErr } = await supabase.from('budget_items').insert(itemsPayload)
         if (itErr) throw itErr
       }
+
+      // Las imágenes que sacó ya no las referencia nadie: fuera del Storage.
+      // (Si esto falla, el presupuesto igual quedó guardado bien.)
+      const quitadas = initialImagesRef.current.filter((u) => !payload.images.includes(u))
+      const paths = quitadas.map((u) => storagePathFromUrl(u, 'adjuntos')).filter(Boolean)
+      if (paths.length) await supabase.storage.from('adjuntos').remove(paths)
+      initialImagesRef.current = payload.images
 
       dirtyRef.current = false
 

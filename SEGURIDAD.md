@@ -17,6 +17,10 @@ En orden, en Supabase Dashboard → SQL Editor → New query → pegar → Run:
 | `migration_12_admin.sql` | Panel de administrador en `/admin` | Sí, pero el panel no muestra nada hasta que la corras |
 | `migration_13_admin_detalle.sql` | Ficha de usuario, regalos con motivo **y arregla un cerrojo que no funcionaba** | Correla: ver abajo |
 | `migration_14_notificaciones.sql` | Avisos en la app: al usuario le llega la campanita cuando le regalás meses | Sí, pero los regalos pasan desapercibidos |
+| `migration_18_sin_borrador_y_logo_cliente.sql` | Se saca el estado «borrador» y los clientes pueden tener logo | Sí |
+| `migration_19_rubro.sql` | Rubro del negocio, para arrancar con textos propios | Sí |
+| `migration_20_imagenes_presupuesto.sql` | Hasta 4 imágenes por presupuesto (bucket `adjuntos`) | Sí |
+| `migration_21_seguridad_adjuntos.sql` | Cierra el listado del Storage y valida las URLs de las imágenes | **No, si corriste la 20.** Ver la sección 8 |
 
 Detalle de la 14: el usuario **no puede insertar avisos** (`revoke all`, solo
 `select` y `update (read_at)`). Si pudiera, cualquiera se fabricaría un «te
@@ -257,3 +261,79 @@ con la consola abierta y dos líneas de JavaScript.
   `USING (true)`**, o sea cualquier usuario logueado lee y escribe los datos de
   todos. Es otra app, pero si tiene datos reales de clientes conviene mirarlo
   aparte.
+
+
+---
+
+## 8. Revisión previa a producción (20/08/2026)
+
+Repaso completo antes de publicar. Lo que ya estaba bien, comprobado
+**contra el proyecto real con la anon key** (la misma que cualquiera lee
+en el navegador):
+
+- Las tablas no filtran nada sin login: `profiles`, `budgets`, `clients`,
+  `budget_items`, `products`, `budget_templates`, `invoices` y `receipts`
+  devuelven vacío; `admins`, `admin_actions`, `notifications` y `referrals`
+  ni siquiera dan permiso.
+- `admin_users()` sin ser admin responde `permission denied`.
+- `get_public_budget()` con un token inventado devuelve `null`.
+- `set_budget_response()` solo acepta `aceptado` / `rechazado` y congela la
+  respuesta: con el link no se puede ir y venir entre sí y no.
+- No hay ningún secreto en el repo, ni `dangerouslySetInnerHTML`, ni `eval`.
+  `.env` no está versionado.
+
+### 8.1 · El Storage se podía listar entero (arreglado en la 21)
+
+Con la anon key, sin cuenta:
+
+```js
+await supabase.storage.from('logos').list('')
+// → las carpetas, que son los user_id de todos tus usuarios
+await supabase.storage.from('logos').list('<user_id>')
+// → 'logo.png' → y con eso se arma la URL pública
+```
+
+Con los logos el daño es bajo (un logo es marca, y ya viaja en cada
+presupuesto compartido). Pero el bucket `adjuntos` de la migración 20 guarda
+**fotos de trabajos y de casas de clientes**, y se podrían haber recorrido
+todas. La culpa era de la policy `lectura pública`, que da SELECT sobre el
+bucket entero. No hace falta: un bucket público sirve el archivo por su URL
+sin pasar por RLS; la policy solo habilitaba el listado por API.
+
+La migración 21 la reemplaza por una de dueño. **Después de correrla, probá
+en incógnito que el logo se siga viendo en un `/p/<token>` y en el PDF**; si
+no se ve, adentro del archivo está el rollback.
+
+### 8.2 · La URL de una imagen no se validaba (arreglado en la 21)
+
+`budgets.images` lo escribe el dueño del presupuesto, y no solo desde el
+formulario: con su token puede mandar cualquier texto por la API REST. Un
+`javascript:...` guardado ahí terminaba dentro de un `<a href>` del enlace
+público — en nuestro dominio y en el navegador del cliente que abre el link.
+
+Ahora se valida en los dos lados: `isSafeImageUrl()` en el navegador
+(`src/lib/utils.js`, se aplica en el PDF, la vista previa, el detalle y el
+enlace público) y el check `budgets_images_check` en la base, que es el que
+manda. Solo pasan URLs `https` del Storage de Supabase.
+
+### 8.3 · Las imágenes borradas quedaban online (arreglado en el código)
+
+Sacar una imagen del presupuesto la sacaba de la lista, pero el archivo
+seguía en el Storage y a la vista de cualquiera con la URL. Ahora se borra
+del bucket al guardar, y al eliminar un presupuesto se borran las suyas.
+Por eso **«Duplicar» ya no se lleva las imágenes**: eran el mismo archivo, y
+borrar una copia le hubiera hecho desaparecer la foto a la otra.
+
+### 8.4 · Lo que queda anotado, sin arreglar
+
+- **Una imagen adjunta es pública para quien tenga la URL**, aunque nunca
+  compartas el presupuesto. Es el precio de que se vea en el PDF y en el
+  link del cliente sin pedirle cuenta. Lo que la protege es que el nombre
+  del archivo es un UUID al azar y que ya no se puede listar el bucket.
+- **Mercado Pago**: el access token va como secret del servidor (una Edge
+  Function de Supabase), nunca en `src/`. Todo lo que está en `src/` se
+  compila y viaja al navegador. Y si algún día el checkout se abre dentro
+  de la app, hay que sumar los dominios de MP al CSP de `vercel.json`,
+  igual que dice la sección 3 para Stripe.
+- **El enlace público no se indexa**: `/p/` va con `noindex` y en
+  `robots.txt`. Es un pedido, no una cerradura: quien tenga el link entra.

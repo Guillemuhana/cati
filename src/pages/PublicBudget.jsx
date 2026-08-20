@@ -16,7 +16,8 @@ import {
   formatDate,
   formatNumero,
   readableAccent,
-  resolveAccent
+  resolveAccent,
+  safeImages
 } from '../lib/utils'
 import { lineAmount } from '../components/ItemsTable'
 import { useSeo } from '../lib/seo'
@@ -268,11 +269,11 @@ export default function PublicBudget() {
             </motion.div>
 
             {/* Imágenes que adjuntó el emisor (opcionales) */}
-            {Array.isArray(budget.images) && budget.images.length > 0 && (
+            {safeImages(budget.images).length > 0 && (
               <motion.div variants={reveal} className="mt-8 border-t border-line pt-6">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-faint">Imágenes</p>
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {budget.images.map((url) => (
+                  {safeImages(budget.images).map((url) => (
                     <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="block">
                       <img
                         src={url}

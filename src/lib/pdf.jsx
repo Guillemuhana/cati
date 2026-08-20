@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet, Image, Font, pdf } from '@react-pdf/renderer'
-import { formatMoney, formatDate, formatNumero, STATUS } from './utils'
+import { formatMoney, formatDate, formatNumero, STATUS, safeImages } from './utils'
 
 // Fuentes: usamos Helvetica (nativa de react-pdf) para asegurar que el PDF
 // se genere sin depender de carga de red en tiempo de export.
@@ -341,11 +341,11 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
         )}
 
         {/* Imágenes del presupuesto (opcionales) */}
-        {Array.isArray(budget.images) && budget.images.length > 0 && (
+        {safeImages(budget.images).length > 0 && (
           <View style={styles.imagesBlock} wrap={false}>
             <Text style={styles.notesTitle}>Imágenes</Text>
             <View style={[styles.imagesRow, { marginTop: 4 }]}>
-              {budget.images.slice(0, 4).map((url) => (
+              {safeImages(budget.images).slice(0, 4).map((url) => (
                 <Image key={url} src={url} style={styles.budgetImage} />
               ))}
             </View>

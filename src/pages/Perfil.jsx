@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { usePlan } from '../hooks/usePlan'
 import { supabase } from '../lib/supabaseClient'
 import { CURRENCIES } from '../lib/utils'
-import { RUBROS, getRubro } from '../lib/rubros'
+import { RUBRO_GROUPS, getRubro } from '../lib/rubros'
 
 export default function Perfil() {
   const { profile, user, updateProfile, refreshProfile } = useAuth()
@@ -167,10 +167,14 @@ export default function Perfil() {
             className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           >
             <option value="">Sin especificar</option>
-            {RUBROS.map((r) => (
-              <option key={r.key} value={r.key}>
-                {r.label}
-              </option>
+            {RUBRO_GROUPS.map((g) => (
+              <optgroup key={g.group} label={g.group}>
+                {g.rubros.map((r) => (
+                  <option key={r.key} value={r.key}>
+                    {r.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
           <p className="mt-1.5 text-xs text-ink-faint">

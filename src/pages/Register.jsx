@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import AuthLayout from '../components/AuthLayout'
 import { Field, traducirError } from './Login'
 import { getStoredReferral, clearStoredReferral } from '../lib/referral'
-import { RUBROS } from '../lib/rubros'
+import { RUBRO_GROUPS } from '../lib/rubros'
 import { useSeo } from '../lib/seo'
 
 export default function Register() {
@@ -81,10 +81,14 @@ export default function Register() {
             className="w-full rounded-md border border-line px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none"
           >
             <option value="">Elegir rubro (opcional)</option>
-            {RUBROS.map((r) => (
-              <option key={r.key} value={r.key}>
-                {r.label}
-              </option>
+            {RUBRO_GROUPS.map((g) => (
+              <optgroup key={g.group} label={g.group}>
+                {g.rubros.map((r) => (
+                  <option key={r.key} value={r.key}>
+                    {r.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
           <p className="mt-1.5 text-xs text-ink-faint">

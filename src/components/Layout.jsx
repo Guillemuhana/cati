@@ -215,7 +215,7 @@ function TrialBanner() {
 function Brand({ compact = false }) {
   return (
     <div className="flex items-center gap-2.5">
-      <img src="/numera-icon.png" alt="Numera" className="h-8 w-8" />
+      <img src="/numera-icon.png" alt="Numera" className="h-11 w-11" />
       {!compact && (
         <span className="font-display text-xl font-medium tracking-tight text-ink">Numera</span>
       )}

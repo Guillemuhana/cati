@@ -1,30 +1,9 @@
-import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { FREE_FOR_ALL, PROMO_LABEL, FREE_UNTIL_LABEL } from '../lib/config'
 import { useSeo } from '../lib/seo'
 
 export default function Home() {
   useSeo()
-  const video = useRef(null)
-
-  // El video tiene que arrancar solo, sin que nadie apriete nada.
-  // `muted` + `playsInline` es lo que exigen los navegadores para dejar
-  // reproducir sin permiso; igual algunos (iPhone en ahorro de energía)
-  // lo frenan, así que si eso pasa se reintenta al primer toque en la
-  // pantalla, y ahí arranca sin que el usuario se entere de por qué.
-  useEffect(() => {
-    const v = video.current
-    if (!v) return
-    const arrancar = () => v.play().catch(() => {})
-    arrancar()
-    document.addEventListener('touchstart', arrancar, { once: true })
-    document.addEventListener('click', arrancar, { once: true })
-    return () => {
-      document.removeEventListener('touchstart', arrancar)
-      document.removeEventListener('click', arrancar)
-    }
-  }, [])
-
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-paper">
       {/* Foto de fondo del hero, velada para que el texto siga legible */}
@@ -44,8 +23,10 @@ export default function Home() {
         <div className="absolute bottom-0 left-[-4rem] h-64 w-64 rounded-full bg-brand-700/[0.06] blur-3xl" />
       </div>
 
-      <header className="relative mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
-        <img src="/logo-numera.png" alt="Numera" className="h-9 w-auto object-contain sm:h-14" />
+      {/* En celular el header no existe: arriba de todo va el video, y el
+          botón de crear cuenta queda abajo suyo. */}
+      <header className="relative mx-auto hidden w-full max-w-5xl items-center justify-between px-6 py-6 sm:flex">
+        <img src="/logo-numera.png" alt="Numera" className="h-12 w-auto object-contain sm:h-20" />
         <div className="flex items-center gap-3">
           {/* En mobile no entra junto al logo, y el hero ya ofrece "Ya tengo cuenta" */}
           <Link to="/ingresar" className="hidden text-sm font-medium text-ink-soft hover:text-ink sm:inline">
@@ -60,32 +41,45 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-6 text-center">
+      {/* Solo en celular: el logo animado ocupa todo el ancho, arriba de
+          todo, y abajo el botón que queremos que toquen. */}
+      <div className="relative sm:hidden">
+        {/* Imagen animada, no video, y no es un capricho: iOS en Modo de
+            bajo consumo NO deja arrancar solo ningún <video>, ni siquiera
+            silenciado, y aparece el botón de play. Un WebP animado no pasa
+            por esa regla: se reproduce siempre, sin controles y sin que
+            nadie toque nada. Encima pesa menos que el mp4 (665 KB contra
+            2,4 MB). Se reproduce una vez y queda fija en el cierre.
+            El archivo se arma con:
+              ffmpeg -ss 0.55 -to 8.30 -i logoanimado.mp4                 -vf "fps=15,scale=720:-2" -c:v libwebp -q:v 62                 -compression_level 6 -loop 1 -an logoanimado.webp */}
+        <img
+          src="/logoanimado.webp"
+          alt="Numera"
+          width={720}
+          height={406}
+          className="block w-full"
+        />
+        <div className="px-6 pb-2 pt-5">
+          <Link
+            to="/registro"
+            className="block w-full rounded-xl2 bg-gradient-to-r from-brand-700 to-brand-500 px-6 py-3.5 text-center text-base font-semibold text-white shadow-soft transition active:from-brand-700 active:to-brand-600"
+          >
+            Crear cuenta
+          </Link>
+          <Link
+            to="/ingresar"
+            className="mt-2.5 block text-center text-sm font-medium text-ink-soft"
+          >
+            Ya tengo cuenta
+          </Link>
+        </div>
+      </div>
+
+      <main className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-6 pt-6 text-center sm:pt-0">
         <span className="stamp mb-6 inline-flex items-center rounded-md border-2 border-brand-500/40 bg-brand-500/[0.08] px-3 py-1 font-display text-xs font-semibold uppercase tracking-wider text-brand-700">
           Presupuestos, sin vueltas
         </span>
 
-        {/* El logo animado, solo en celular y de borde a borde. El
-            `left-1/2 w-screen -translate-x-1/2` es para salirse del
-            ancho del contenido y de su padding: sin eso queda metido en
-            la columna de texto. */}
-        <div className="relative left-1/2 mb-8 w-screen -translate-x-1/2 sm:hidden">
-          {/* El alto se reserva con la proporción real del archivo
-              (1280×720): sin eso la página pega un salto cuando el video
-              termina de cargar y se acomoda. */}
-          <video
-            ref={video}
-            src="/logoanimado.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            disablePictureInPicture
-            aria-hidden="true"
-            className="block aspect-[16/9] w-full object-cover"
-          />
-        </div>
         <h1 className="font-display text-4xl font-medium leading-tight text-ink sm:text-5xl">
           Armá presupuestos prolijos y compartilos en PDF en minutos
         </h1>
@@ -93,7 +87,7 @@ export default function Home() {
           Numera es el lugar donde cargás tus ítems, tus clientes y tus condiciones — y salís con un documento
           listo para enviar por WhatsApp o email.
         </p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-8 hidden flex-col gap-3 sm:flex sm:flex-row">
           <Link
             to="/registro"
             className="rounded-md bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:from-brand-700 hover:to-brand-600"

@@ -96,7 +96,7 @@ export default function PublicBudget() {
   if (notFound) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center bg-paper px-6 text-center">
-        <img src="/numera-icon.png" alt="Numera" className="mb-4 h-12 w-12" />
+        <img src="/numera-icon.png" alt="Numera" className="mb-4 h-16 w-16" />
         <h1 className="font-display text-xl font-medium text-ink">Presupuesto no encontrado</h1>
         <p className="mt-1 text-sm text-ink-soft">El enlace puede haber cambiado o ya no está disponible.</p>
       </div>
@@ -160,7 +160,7 @@ export default function PublicBudget() {
                     className="h-[83px] w-auto max-w-[143px] object-contain object-right sm:h-[125px] sm:max-w-[260px]"
                   />
                 ) : (
-                  <img src="/numera-icon.png" alt="" className="h-[73px] w-[73px] sm:h-[104px] sm:w-[104px]" />
+                  <img src="/numera-icon.png" alt="" className="h-[83px] w-[83px] sm:h-[125px] sm:w-[125px]" />
                 )}
               </div>
             </motion.header>

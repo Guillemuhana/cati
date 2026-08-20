@@ -20,7 +20,7 @@ export default function AuthLayout({ title, subtitle, children }) {
       <div className="flex w-full items-center justify-center px-4 py-10 lg:w-1/2">
         <div className="w-full max-w-sm">
           <div className="mb-8 flex flex-col items-center text-center">
-            <img src="/logo-numera.png" alt="Numera" className="mb-5 h-14 w-auto object-contain" />
+            <img src="/logo-numera.png" alt="Numera" className="mb-5 h-20 w-auto object-contain" />
             <h1 className="font-display text-2xl font-medium text-ink">{title}</h1>
             {subtitle && <p className="mt-1.5 text-sm text-ink-soft">{subtitle}</p>}
           </div>

@@ -17,6 +17,7 @@ En orden, en Supabase Dashboard → SQL Editor → New query → pegar → Run:
 | `migration_12_admin.sql` | Panel de administrador en `/admin` | Sí, pero el panel no muestra nada hasta que la corras |
 | `migration_13_admin_detalle.sql` | Ficha de usuario, regalos con motivo **y arregla un cerrojo que no funcionaba** | Correla: ver abajo |
 | `migration_14_notificaciones.sql` | Avisos en la app: al usuario le llega la campanita cuando le regalás meses | Sí, pero los regalos pasan desapercibidos |
+| `migration_15_terminos_condiciones.sql` | Texto legal propio al final del PDF | **No.** Sin ella no se puede guardar «Mi negocio»: el UPDATE manda `legal_terms` y la columna no existe |
 | `migration_18_sin_borrador_y_logo_cliente.sql` | Se saca el estado «borrador» y los clientes pueden tener logo | Sí |
 | `migration_19_rubro.sql` | Rubro del negocio, para arrancar con textos propios | Sí |
 | `migration_20_imagenes_presupuesto.sql` | Hasta 4 imágenes por presupuesto (bucket `adjuntos`) | Sí |

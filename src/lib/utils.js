@@ -229,3 +229,42 @@ export function storagePathFromUrl(url, bucket) {
   if (i === -1) return ''
   return decodeURIComponent(url.slice(i + marca.length).split('?')[0])
 }
+
+
+// ------------------------------------------------------------
+// Errores por columna que todavía no existe en la base.
+//
+// Guardar «Mi negocio» manda todos los campos juntos: si falta UNA
+// columna, Postgres rechaza el UPDATE entero. Antes cada pantalla
+// adivinaba de qué migración se trataba y le erraba (el cartel decía
+// «corré la 19» cuando la que faltaba era la 15). Ahora se lee el
+// nombre de la columna del error y se dice el archivo exacto.
+// ------------------------------------------------------------
+const MIGRACION_POR_COLUMNA = {
+  legal_terms: 'migration_15_terminos_condiciones.sql',
+  logo_url: 'migration_18_sin_borrador_y_logo_cliente.sql',
+  rubro: 'migration_19_rubro.sql',
+  images: 'migration_20_imagenes_presupuesto.sql'
+}
+
+// Nombre de la columna que falta, o '' si el error es de otra cosa.
+// Postgres dice: column profiles.legal_terms does not exist
+// PostgREST dice: Could not find the 'legal_terms' column of 'profiles'
+export function missingColumn(err) {
+  const msg = err?.message || ''
+  const m =
+    msg.match(/column\s+(?:[a-z_]+\.)?"?([a-z_]+)"?\s+does not exist/i) ||
+    msg.match(/Could not find the '([a-z_]+)' column/i)
+  return m ? m[1] : ''
+}
+
+// Mensaje listo para mostrar, o '' si el error no es de columna.
+export function missingColumnError(err) {
+  const col = missingColumn(err)
+  if (!col && err?.code !== 'PGRST204' && err?.code !== '42703') return ''
+  const archivo = MIGRACION_POR_COLUMNA[col]
+  if (archivo) return `Falta la columna «${col}» en la base: corré supabase/${archivo} en Supabase.`
+  return col
+    ? `Falta la columna «${col}» en la base. Fijate qué migración de supabase/ la crea y correla.`
+    : 'Falta una columna nueva en la base. Corré las migraciones pendientes de supabase/.'
+}

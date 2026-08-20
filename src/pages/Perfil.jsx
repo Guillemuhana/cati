@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { usePlan } from '../hooks/usePlan'
 import { supabase } from '../lib/supabaseClient'
-import { CURRENCIES } from '../lib/utils'
+import { CURRENCIES, missingColumnError } from '../lib/utils'
 import { RUBRO_GROUPS, getRubro } from '../lib/rubros'
 
 export default function Perfil() {
@@ -65,12 +65,7 @@ export default function Perfil() {
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (err) {
-      const msg = `${err?.message || ''} ${err?.code || ''}`.toLowerCase()
-      setError(
-        msg.includes('rubro') || err?.code === 'PGRST204' || err?.code === '42703'
-          ? 'Ejecutá la migración supabase/migration_19 en Supabase para guardar el rubro.'
-          : err.message
-      )
+      setError(missingColumnError(err) || err.message)
     } finally {
       setSaving(false)
     }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import Spinner from '../components/Spinner'
+import { missingColumnError } from '../lib/utils'
 
 const emptyClient = { name: '', email: '', phone: '', tax_id: '', address: '', notes: '', logo_url: '' }
 
@@ -163,12 +164,7 @@ function ClientModal({ client, onClose, onSave }) {
       const err = await onSave({ ...form, logo_url })
       if (err) throw err
     } catch (err) {
-      const msg = `${err?.message || ''} ${err?.code || ''}`.toLowerCase()
-      setError(
-        msg.includes('logo_url') || err?.code === 'PGRST204' || err?.code === '42703'
-          ? 'Ejecutá la migración supabase/migration_18 en Supabase para guardar el logo del cliente.'
-          : err?.message || 'No se pudo guardar.'
-      )
+      setError(missingColumnError(err) || err?.message || 'No se pudo guardar.')
     } finally {
       setSaving(false)
     }

@@ -12,6 +12,13 @@ import { formatDate } from '../lib/utils'
 // Avisos que además se muestran en grande la primera vez.
 const DESTACABLES = ['regalo', 'presupuesto']
 
+// El canal necesita un nombre distinto en cada suscripción: supabase
+// reutiliza el canal si el nombre ya existe, y agregarle un listener a uno
+// que ya está suscrito explota. Pasa siempre, porque la campanita se dibuja
+// dos veces (sidebar y topbar), y también en el remonte de StrictMode,
+// donde el canal viejo todavía no terminó de irse.
+let nroDeCanal = 0
+
 export default function Notificaciones() {
   const { user, refreshProfile } = useAuth()
   const [items, setItems] = useState([])
@@ -57,7 +64,7 @@ export default function Notificaciones() {
   useEffect(() => {
     if (!user) return
     const canal = supabase
-      .channel('avisos-' + user.id)
+      .channel(`avisos-${user.id}-${++nroDeCanal}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },

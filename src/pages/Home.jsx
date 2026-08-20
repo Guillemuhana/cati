@@ -1,28 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FREE_FOR_ALL, PROMO_LABEL, FREE_UNTIL_LABEL } from '../lib/config'
 import { useSeo } from '../lib/seo'
 
 export default function Home() {
   useSeo()
-  const video = useRef(null)
-  const [sinVideo, setSinVideo] = useState(false)
-
-  // El video es lo que mejor se ve: lo decodifica el hardware y sale
-  // fluido a 24 fps. Lo único que no puede es arrancar solo cuando el
-  // iPhone está en Modo de bajo consumo, y ahí aparece el botón de play.
-  // Cuando pasa eso —se nota porque a los 900 ms el video sigue en cero—
-  // se cambia por la imagen animada, que ninguna política frena. Así el
-  // que puede lo ve fluido, y el que no, lo ve igual.
-  useEffect(() => {
-    const v = video.current
-    if (!v) return
-    v.play().catch(() => {})
-    const control = setTimeout(() => {
-      if (!v.currentTime) setSinVideo(true)
-    }, 900)
-    return () => clearTimeout(control)
-  }, [])
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-paper">
       {/* Foto de fondo del hero, velada para que el texto siga legible */}
@@ -63,42 +44,35 @@ export default function Home() {
       {/* Solo en celular: el logo animado ocupa todo el ancho, arriba de
           todo, y abajo el botón que queremos que toquen. */}
       <div className="relative sm:hidden">
-        {/* El alto se reserva con la proporción del archivo (720×406)
-            para que la página no salte cuando termina de cargar.
+        {/* IMAGEN ANIMADA, NUNCA UN <video>.
+            Un video puede negarse a arrancar solo —el iPhone en Modo de
+            bajo consumo lo bloquea siempre— y entonces el visitante ve un
+            botón de play sobre el logo. Eso no puede pasar. Un WebP
+            animado es una imagen: se reproduce solo, siempre, en todos
+            lados, sin controles y sin que nadie toque nada.
 
-            Los dos archivos se arman desde el original (que está en el
-            commit 7d9a5e2, ya no viaja en el repo) con:
+            Va a 24 fps, los mismos del original, porque a 15 se notaba el
+            tironeo. A 600 px de ancho son 350 KB y el teléfono los dibuja
+            sin esfuerzo; más resolución era más peso y menos fluidez.
+
+            Se reproduce una vez y queda fija en el cierre con el logo.
+            El alto se reserva con la proporción del archivo (600×338)
+            para que la página no salte al terminar de cargar.
+
+            Se arma desde el original (commit 7d9a5e2) con:
               ffmpeg -ss 0.55 -to 8.30 -i logoanimado.mp4
-                     -vf "setpts=PTS/2,fps=24,scale=720:-2"
-                     -c:v libx264 -crf 27 -preset slow -movflags +faststart
-                     -an logoanimado.mp4
-              ffmpeg -ss 0.55 -to 8.30 -i logoanimado.mp4
-                     -vf "setpts=PTS/2,fps=24,scale=640:-2"
+                     -vf "setpts=PTS/2.4,fps=24,scale=600:-2"
                      -c:v libwebp -q:v 58 -compression_level 6
                      -loop 1 -an logoanimado.webp
-            El `setpts=PTS/2` es el que lo pone al doble de velocidad:
-            para un logo de entrada, ocho segundos se hacen eternos. */}
-        <div className="relative aspect-[720/406] w-full overflow-hidden">
-          {sinVideo ? (
-            <img
-              src="/logoanimado.webp"
-              alt="Numera"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : (
-            <video
-              ref={video}
-              src="/logoanimado.mp4"
-              autoPlay
-              muted
-              playsInline
-              preload="auto"
-              disablePictureInPicture
-              aria-hidden="true"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          )}
-        </div>
+            El `setpts=PTS/2.4` lo acelera: los 7,8 s originales quedan
+            en 3,3, que es lo que aguanta un logo de entrada. */}
+        <img
+          src="/logoanimado.webp"
+          alt="Numera"
+          width={600}
+          height={338}
+          className="block w-full"
+        />
 
         <div className="px-6 pb-2 pt-5">
           <Link

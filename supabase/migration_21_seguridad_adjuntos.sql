@@ -28,6 +28,25 @@
 -- ============================================================
 
 -- ------------------------------------------------------------
+-- 0) Freno: esta migración toca `budgets.images`, que crea la 20.
+--    Sin esto el error es "column images does not exist", que no
+--    dice qué hacer.
+-- ------------------------------------------------------------
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+     where table_schema = 'public'
+       and table_name   = 'budgets'
+       and column_name  = 'images'
+  ) then
+    raise exception
+      'Falta la migración 20. Corré primero supabase/migration_20_imagenes_presupuesto.sql (y antes la 19 si no la corriste).';
+  end if;
+end
+$$;
+
+-- ------------------------------------------------------------
 -- 1) Que no se pueda listar el contenido de los buckets
 --    Se reemplaza el SELECT abierto por uno de dueño: cada usuario
 --    ve por API solo lo suyo. El público sigue viendo las imágenes

@@ -69,10 +69,16 @@ export default function Home() {
             página no salte cuando el archivo termina de cargar.
 
             Si alguna vez hay que aligerarlo o acortarlo, la versión
-            recortada y acelerada está en el commit 74fcb4b. */}
+            recortada y acelerada está en el commit 74fcb4b.
+
+            El póster y el gris de fondo son del propio video: hasta que
+            el archivo no dibuja su primer cuadro el elemento es
+            transparente, y por detrás se veía la foto del hero. Así
+            arriba no hay nada que ver salvo el video. */}
         <video
           ref={video}
           src="/logoanimado.mp4"
+          poster="/logoanimado-poster.jpg"
           autoPlay
           muted
           loop
@@ -80,6 +86,7 @@ export default function Home() {
           preload="auto"
           disablePictureInPicture
           aria-hidden="true"
+          style={{ backgroundColor: '#D8D8D9' }}
           className="block aspect-[16/9] w-full object-cover"
         />
 
@@ -100,10 +107,6 @@ export default function Home() {
       </div>
 
       <main className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-6 pt-6 text-center sm:pt-0">
-        <span className="stamp mb-6 inline-flex items-center rounded-md border-2 border-brand-500/40 bg-brand-500/[0.08] px-3 py-1 font-display text-xs font-semibold uppercase tracking-wider text-brand-700">
-          Presupuestos, sin vueltas
-        </span>
-
         <h1 className="font-display text-4xl font-medium leading-tight text-ink sm:text-5xl">
           Armá presupuestos prolijos y compartilos en PDF en minutos
         </h1>

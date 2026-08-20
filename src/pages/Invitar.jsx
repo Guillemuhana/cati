@@ -122,14 +122,23 @@ export default function Invitar() {
             return (
               <div
                 key={i}
-                className={`rounded-xl2 border px-3 py-4 text-center transition ${
+                className={`min-w-0 overflow-hidden rounded-xl2 border px-2 py-4 text-center transition sm:px-3 ${
                   hecho
                     ? 'border-teal-500/40 bg-teal-500/[0.08]'
                     : 'border-dashed border-line bg-paper/50'
                 }`}
               >
                 <p className={`text-xl ${hecho ? '' : 'opacity-40'}`}>{hecho ? '✅' : '👤'}</p>
-                <p className={`mt-1 text-xs font-medium ${hecho ? 'text-teal-600' : 'text-ink-faint'}`}>
+                {/* El invitado se muestra con el mail tapado (ju•••@gmail.com).
+                    Sin recortar, ese texto es más ancho que la tarjeta y se
+                    desarma la fila de tres: por eso va en una sola línea
+                    recortada, y entero en el título al pasar el mouse. */}
+                <p
+                  title={hecho ? confirmados[i].invited_masked || 'Invitado' : undefined}
+                  className={`mt-1 truncate text-[11px] font-medium sm:text-xs ${
+                    hecho ? 'text-teal-600' : 'text-ink-faint'
+                  }`}
+                >
                   {hecho ? confirmados[i].invited_masked || 'Invitado' : `Invitado ${i + 1}`}
                 </p>
               </div>

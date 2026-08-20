@@ -48,10 +48,19 @@ export default function Home() {
             bajo consumo NO deja arrancar solo ningún <video>, ni siquiera
             silenciado, y aparece el botón de play. Un WebP animado no pasa
             por esa regla: se reproduce siempre, sin controles y sin que
-            nadie toque nada. Encima pesa menos que el mp4 (665 KB contra
-            2,4 MB). Se reproduce una vez y queda fija en el cierre.
-            El archivo se arma con:
-              ffmpeg -ss 0.55 -to 8.30 -i logoanimado.mp4                 -vf "fps=15,scale=720:-2" -c:v libwebp -q:v 62                 -compression_level 6 -loop 1 -an logoanimado.webp */}
+            nadie toque nada. Encima pesa mucho menos que el mp4 (329 KB
+            contra 2,4 MB).
+
+            Se reproduce una vez, queda fija en el cierre, y va al doble de
+            velocidad que el original: 3,9 s en vez de 7,8, porque para un
+            logo de entrada ocho segundos se hacen eternos.
+
+            El archivo se arma así (el mp4 original está en el commit
+            7d9a5e2):
+              ffmpeg -ss 0.55 -to 8.30 -i logoanimado.mp4
+                     -vf "setpts=PTS/2,fps=15,scale=720:-2"
+                     -c:v libwebp -q:v 62 -compression_level 6
+                     -loop 1 -an logoanimado.webp */}
         <img
           src="/logoanimado.webp"
           alt="Numera"

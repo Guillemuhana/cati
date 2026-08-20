@@ -2,3 +2,9 @@ node_modules
 dist
 .env
 .env.local
+
+# Archivos temporales de depuracion
+*.tmp.js
+*.tmp.mjs
+*.tmp.cjs
+sesion.tmp.json

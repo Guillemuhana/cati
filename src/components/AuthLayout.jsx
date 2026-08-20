@@ -25,6 +25,9 @@ export default function AuthLayout({ title, subtitle, children }) {
             {subtitle && <p className="mt-1.5 text-sm text-ink-soft">{subtitle}</p>}
           </div>
           <div className="rounded-xl2 border border-line bg-surface p-6 shadow-soft sm:p-8">{children}</div>
+          <p className="mt-6 text-center text-xs text-ink-faint">
+            Desarrollo <span className="font-medium text-ink-soft">sTuDiO-B2B</span>
+          </p>
         </div>
       </div>
     </div>

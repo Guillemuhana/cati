@@ -126,7 +126,12 @@ export default function Home() {
         </dl>
       </main>
 
-      <footer className="py-6 text-center text-xs text-ink-faint">Numera · Hecho para vos</footer>
+      <footer className="py-6 text-center text-xs text-ink-faint">
+        <p>Numera · Hecho para vos</p>
+        <p className="mt-1">
+          Desarrollo <span className="font-medium text-ink-soft">sTuDiO-B2B</span>
+        </p>
+      </footer>
     </div>
   )
 }

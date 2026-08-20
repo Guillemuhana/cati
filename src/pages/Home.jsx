@@ -1,29 +1,9 @@
-import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { FREE_FOR_ALL, PROMO_LABEL, FREE_UNTIL_LABEL } from '../lib/config'
 import { useSeo } from '../lib/seo'
 
 export default function Home() {
   useSeo()
-  const video = useRef(null)
-
-  // Empujón para que arranque solo. `muted` y `playsInline` es lo que
-  // piden los navegadores para dejar reproducir sin permiso; si aun así
-  // lo frenan (iPhone en Modo de bajo consumo), se reintenta al primer
-  // toque en la pantalla.
-  useEffect(() => {
-    const v = video.current
-    if (!v) return
-    const arrancar = () => v.play().catch(() => {})
-    arrancar()
-    document.addEventListener('touchstart', arrancar, { once: true })
-    document.addEventListener('click', arrancar, { once: true })
-    return () => {
-      document.removeEventListener('touchstart', arrancar)
-      document.removeEventListener('click', arrancar)
-    }
-  }, [])
-
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-paper">
       {/* Foto de fondo del hero, velada para que el texto siga legible */}
@@ -64,30 +44,35 @@ export default function Home() {
       {/* Solo en celular: el logo animado ocupa todo el ancho, arriba de
           todo, y abajo el botón que queremos que toquen. */}
       <div className="relative sm:hidden">
-        {/* El logo animado tal cual vino: 10 s, 1280×720, sin recortar
-            ni acelerar. El alto se reserva con esa proporción para que la
-            página no salte cuando el archivo termina de cargar.
+        {/* IMAGEN ANIMADA, NUNCA UN <video>. NO CAMBIAR ESTO.
+            El visitante no puede ver jamás un botón de play sobre el
+            logo: es lo primero que ve un cliente y lo hace parecer roto.
+            Un <video> no lo puede garantizar — el iPhone en Modo de bajo
+            consumo bloquea el autoplay aunque esté silenciado, y Safari
+            dibuja el play encima. Detectarlo por JavaScript tampoco
+            sirve: para cuando se detecta, el botón ya se vio. Una imagen
+            no pasa por ninguna de esas políticas.
 
-            Si alguna vez hay que aligerarlo o acortarlo, la versión
-            recortada y acelerada está en el commit 74fcb4b.
+            Es la animación completa, sin recortar y a su velocidad
+            original: lo único que cambia respecto del mp4 es el envase.
+            A 24 fps, que son los del original (a 15 se nota el tironeo),
+            y 600 px de ancho: 1,07 MB, menos de la mitad que el mp4.
 
-            El póster y el gris de fondo son del propio video: hasta que
-            el archivo no dibuja su primer cuadro el elemento es
-            transparente, y por detrás se veía la foto del hero. Así
-            arriba no hay nada que ver salvo el video. */}
-        <video
-          ref={video}
-          src="/logoanimado.mp4"
-          poster="/logoanimado-poster.jpg"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          disablePictureInPicture
-          aria-hidden="true"
+            Se arma con:
+              ffmpeg -i logoanimado.mp4 -vf "fps=24,scale=600:-2"
+                     -c:v libwebp -q:v 58 -compression_level 6
+                     -loop 1 -an logoanimado.webp
+            El mp4 original está en el commit 9968488.
+
+            El gris de fondo es el del propio archivo, para que mientras
+            carga no se vea la foto del hero por detrás. */}
+        <img
+          src="/logoanimado.webp"
+          alt="Numera"
+          width={600}
+          height={338}
           style={{ backgroundColor: '#D8D8D9' }}
-          className="block aspect-[16/9] w-full object-cover"
+          className="block w-full"
         />
 
         <div className="px-6 pb-2 pt-5">

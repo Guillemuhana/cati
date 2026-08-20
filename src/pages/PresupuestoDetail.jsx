@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import QRCode from 'qrcode'
+import { Send } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { usePlan } from '../hooks/usePlan'
 import StatusBadge from '../components/StatusBadge'
 import Spinner from '../components/Spinner'
 import { cleanDetails } from '../components/BudgetDetails'
+import CompartirModal from '../components/CompartirModal'
 import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
 import { formatDate, formatMoney, formatNumero, STATUS_OPTIONS, safeImages, storagePathFromUrl } from '../lib/utils'
+import { CLAVES, marcar } from '../lib/onboarding'
 
 export default function PresupuestoDetail() {
   const { id } = useParams()
@@ -21,8 +24,7 @@ export default function PresupuestoDetail() {
   const [client, setClient] = useState(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const [linkCopied, setLinkCopied] = useState(false)
+  const [compartiendo, setCompartiendo] = useState(false)
   const [qr, setQr] = useState('')
   const [invoiceId, setInvoiceId] = useState(null)
   const [pdfError, setPdfError] = useState('')
@@ -98,27 +100,6 @@ export default function PresupuestoDetail() {
       .then(setQr)
       .catch(() => setQr(''))
   }, [publicUrl])
-
-  const copyPublicLink = async () => {
-    if (!publicUrl) return
-    await navigator.clipboard.writeText(publicUrl)
-    setLinkCopied(true)
-    setTimeout(() => setLinkCopied(false), 1800)
-  }
-
-  // El mensaje va firmado con el nombre del negocio: el cliente tiene que
-  // saber de quién es el presupuesto antes de abrir el link, y quien lo
-  // abre ve además el logo en la vista previa (api/preview.js).
-  const numeroTexto = formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)
-  const saludo = `Hola${client?.name ? ' ' + client.name : ''}, te comparto el presupuesto ${numeroTexto}${
-    profile?.business_name ? ' de ' + profile.business_name : ''
-  }: ${publicUrl}`
-  const waLink = publicUrl ? `https://wa.me/?text=${encodeURIComponent(saludo)}` : ''
-  const mailLink = publicUrl
-    ? `mailto:${client?.email || ''}?subject=${encodeURIComponent(
-        `Presupuesto ${numeroTexto}${profile?.business_name ? ' · ' + profile.business_name : ''}`
-      )}&body=${encodeURIComponent(saludo)}`
-    : ''
 
   useEffect(() => {
     if (!user) return
@@ -243,12 +224,6 @@ export default function PresupuestoDetail() {
     navigate('/presupuestos')
   }
 
-  const copyLink = async () => {
-    await navigator.clipboard.writeText(window.location.href)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1800)
-  }
-
   if (loading || !budget) {
     return (
       <div className="flex justify-center py-24">
@@ -256,6 +231,15 @@ export default function PresupuestoDetail() {
       </div>
     )
   }
+
+  // El mensaje va firmado con el nombre del negocio: el cliente tiene que
+  // saber de quién es el presupuesto antes de abrir el link, y quien lo
+  // abre ve además el logo en la vista previa (api/preview.js).
+  const numeroTexto = formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)
+  const asunto = `Presupuesto ${numeroTexto}${profile?.business_name ? ' · ' + profile.business_name : ''}`
+  const saludo = `Hola${client?.name ? ' ' + client.name : ''}, te comparto el presupuesto ${numeroTexto}${
+    profile?.business_name ? ' de ' + profile.business_name : ''
+  }: ${publicUrl}`
 
   return (
     <div>
@@ -282,13 +266,6 @@ export default function PresupuestoDetail() {
           >
             Editar
           </Link>
-          <button
-            onClick={handleDownload}
-            disabled={busy}
-            className="rounded-md border border-line px-3.5 py-2 text-sm font-medium text-ink transition hover:border-ink-faint disabled:opacity-60"
-          >
-            Descargar PDF
-          </button>
           {isPremium && (
             <button
               onClick={handleConvertInvoice}
@@ -298,12 +275,18 @@ export default function PresupuestoDetail() {
               {invoiceId ? 'Ver factura' : 'Convertir en factura'}
             </button>
           )}
+          {/* Mandarlo es lo que el usuario viene a hacer: un solo botón,
+              y adentro elige por dónde. */}
           <button
-            onClick={handleShare}
+            onClick={() => {
+              marcar(CLAVES.yaCompartio) // tacha el último paso de la guía
+              setCompartiendo(true)
+            }}
             disabled={busy}
-            className="btn-primary rounded-md px-3.5 py-2 text-sm font-semibold"
+            className="btn-primary flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold"
           >
-            Compartir PDF
+            <Send size={15} aria-hidden="true" />
+            {busy ? 'Preparando…' : 'Compartir'}
           </button>
         </div>
       </header>
@@ -389,52 +372,38 @@ export default function PresupuestoDetail() {
             </div>
           </div>
 
+          {/* Al costado ya no se comparte nada: acá solo se ve qué hizo el
+              cliente con el enlace, que es lo que uno vuelve a mirar. */}
+          {publicUrl && isPremium && (
+            <div className="rounded-xl2 border border-line bg-surface p-5">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+                Seguimiento
+              </p>
+              {budget.viewed_at || budget.accepted_at || budget.rejected_at ? (
+                <div className="space-y-1 text-sm">
+                  {budget.viewed_at && (
+                    <p className="text-ink-soft">👁 Visto el {formatDate(budget.viewed_at.slice(0, 10))}</p>
+                  )}
+                  {budget.accepted_at && (
+                    <p className="font-medium text-teal-600">✓ Aceptado el {formatDate(budget.accepted_at.slice(0, 10))}</p>
+                  )}
+                  {budget.rejected_at && (
+                    <p className="font-medium text-rust-500">✗ Rechazado el {formatDate(budget.rejected_at.slice(0, 10))}</p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-ink-soft">
+                  El cliente todavía no abrió el enlace. Te avisamos acá cuando lo vea.
+                </p>
+              )}
+            </div>
+          )}
+
           {publicUrl && !isPremium && (
             <Link to="/premium" className="block rounded-xl2 border border-dashed border-brand-500/40 bg-brand-500/[0.04] p-5 text-center transition hover:bg-brand-500/[0.07]">
               <p className="text-sm font-semibold text-brand-700">🔒 Enlace público + QR</p>
               <p className="mt-1 text-xs text-ink-soft">Compartí un link para que el cliente vea y acepte online. Función premium.</p>
             </Link>
-          )}
-
-          {publicUrl && isPremium && (
-            <div className="rounded-xl2 border border-line bg-surface p-5">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Compartir con el cliente</p>
-              <div className="flex items-center gap-3">
-                {qr && <img src={qr} alt="QR del presupuesto" className="h-24 w-24 rounded-md border border-line" />}
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-ink-soft">Enlace público para que el cliente lo vea y acepte:</p>
-                  <div className="mt-1.5 flex items-center gap-1.5">
-                    <input
-                      readOnly
-                      value={publicUrl}
-                      onFocus={(e) => e.target.select()}
-                      className="min-w-0 flex-1 rounded-md border border-line bg-paper px-2 py-1.5 font-mono text-[11px] text-ink-soft focus:outline-none"
-                    />
-                    <button onClick={copyPublicLink} className="shrink-0 rounded-md border border-line px-2.5 py-1.5 text-xs font-medium text-ink-soft hover:border-ink-faint">
-                      {linkCopied ? '✓' : 'Copiar'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <a href={waLink} target="_blank" rel="noreferrer" className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-teal-500 hover:text-teal-600">
-                  WhatsApp
-                </a>
-                <a href={mailLink} className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-brand-500 hover:text-brand-600">
-                  Email
-                </a>
-                <a href={publicUrl} target="_blank" rel="noreferrer" className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-ink-faint hover:text-ink">
-                  Abrir enlace
-                </a>
-              </div>
-              {(budget.viewed_at || budget.accepted_at || budget.rejected_at) && (
-                <div className="mt-3 space-y-0.5 border-t border-line pt-2 text-xs text-ink-faint">
-                  {budget.viewed_at && <p>👁 Visto el {formatDate(budget.viewed_at.slice(0, 10))}</p>}
-                  {budget.accepted_at && <p className="text-teal-600">✓ Aceptado el {formatDate(budget.accepted_at.slice(0, 10))}</p>}
-                  {budget.rejected_at && <p className="text-rust-500">✗ Rechazado el {formatDate(budget.rejected_at.slice(0, 10))}</p>}
-                </div>
-              )}
-            </div>
           )}
 
           <div className="rounded-xl2 border border-line bg-surface p-5">
@@ -497,16 +466,33 @@ export default function PresupuestoDetail() {
               Duplicar
             </button>
             <span className="text-ink-faint">·</span>
-            <button onClick={copyLink} className="text-sm font-medium text-ink-soft hover:text-ink">
-              {copied ? 'Enlace copiado' : 'Copiar enlace'}
-            </button>
-            <span className="text-ink-faint">·</span>
             <button onClick={handleDelete} disabled={busy} className="text-sm font-medium text-rust-500 hover:text-rust-500/80">
               Eliminar
             </button>
           </div>
         </div>
       </div>
+
+      {compartiendo && (
+        <CompartirModal
+          onClose={() => setCompartiendo(false)}
+          publicUrl={publicUrl}
+          qr={qr}
+          saludo={saludo}
+          asunto={asunto}
+          cliente={client}
+          esPremium={isPremium}
+          ocupado={busy}
+          onDescargarPdf={async () => {
+            setCompartiendo(false)
+            await handleDownload()
+          }}
+          onEnviarPdf={async () => {
+            setCompartiendo(false)
+            await handleShare()
+          }}
+        />
+      )}
     </div>
   )
 }

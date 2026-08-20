@@ -32,6 +32,15 @@ const limpiarUsuario = (v) =>
 
 const soloNumeros = (v) => (v || '').replace(/\D/g, '').slice(0, 15)
 
+// wa.me quiere el número con código de país y sin signos. Si no lo puso,
+// asumimos Argentina: es el 99% de los usuarios. Devuelve '' si lo que
+// escribió no llega a ser un teléfono.
+export function urlDeWhatsapp(valor) {
+  const n = soloNumeros(valor)
+  if (n.length < 8) return ''
+  return `https://wa.me/${n.length <= 11 ? '54' + n.replace(/^0/, '') : n}`
+}
+
 // Convierte lo que escribió en una URL https válida, o '' si no se puede.
 export function urlDeWeb(valor) {
   const v = (valor || '').trim()
@@ -67,13 +76,7 @@ export const CANALES = [
     ayuda: 'Con característica, sin el 0 ni el 15. Ej: 11 5555-4444',
     path: trazo('whatsapp'),
     color: '#25D366',
-    // wa.me quiere el número con código de país y sin signos. Si no lo
-    // puso, asumimos Argentina: es el 99% de los usuarios.
-    url: (v) => {
-      const n = soloNumeros(v)
-      if (n.length < 8) return ''
-      return `https://wa.me/${n.length <= 11 ? '54' + n.replace(/^0/, '') : n}`
-    },
+    url: (v) => urlDeWhatsapp(v),
     texto: (v) => v
   },
   {

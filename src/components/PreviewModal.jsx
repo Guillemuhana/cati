@@ -60,7 +60,7 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
             </div>
           </header>
 
-          <div className="mt-8 grid grid-cols-2 gap-6 text-sm">
+          <div className="mt-8 grid gap-6 text-sm sm:grid-cols-2">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Para</p>
               <p className="mt-1 font-semibold text-ink">{client?.name || 'Cliente sin asignar'}</p>

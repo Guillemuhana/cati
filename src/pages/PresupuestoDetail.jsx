@@ -106,11 +106,18 @@ export default function PresupuestoDetail() {
     setTimeout(() => setLinkCopied(false), 1800)
   }
 
-  const waLink = publicUrl
-    ? `https://wa.me/?text=${encodeURIComponent(`Hola${client?.name ? ' ' + client.name : ''}, te comparto el presupuesto: ${publicUrl}`)}`
-    : ''
+  // El mensaje va firmado con el nombre del negocio: el cliente tiene que
+  // saber de quién es el presupuesto antes de abrir el link, y quien lo
+  // abre ve además el logo en la vista previa (api/preview.js).
+  const numeroTexto = formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)
+  const saludo = `Hola${client?.name ? ' ' + client.name : ''}, te comparto el presupuesto ${numeroTexto}${
+    profile?.business_name ? ' de ' + profile.business_name : ''
+  }: ${publicUrl}`
+  const waLink = publicUrl ? `https://wa.me/?text=${encodeURIComponent(saludo)}` : ''
   const mailLink = publicUrl
-    ? `mailto:${client?.email || ''}?subject=${encodeURIComponent('Presupuesto ' + formatNumero(budget.numero, budget.issue_date, profile?.number_prefix))}&body=${encodeURIComponent(`Hola${client?.name ? ' ' + client.name : ''}, te comparto el presupuesto: ${publicUrl}`)}`
+    ? `mailto:${client?.email || ''}?subject=${encodeURIComponent(
+        `Presupuesto ${numeroTexto}${profile?.business_name ? ' · ' + profile.business_name : ''}`
+      )}&body=${encodeURIComponent(saludo)}`
     : ''
 
   useEffect(() => {
@@ -452,8 +459,8 @@ export default function PresupuestoDetail() {
               <dl className="mt-2 space-y-1.5">
                 {cleanDetails(budget.details).map((d) => (
                   <div key={d.label} className="flex justify-between gap-3 text-sm">
-                    <dt className="text-ink-soft">{d.label}</dt>
-                    <dd className="text-right font-medium text-ink">{d.value}</dd>
+                    <dt className="shrink-0 text-ink-soft">{d.label}</dt>
+                    <dd className="min-w-0 break-words text-right font-medium text-ink">{d.value}</dd>
                   </div>
                 ))}
               </dl>

@@ -23,6 +23,7 @@ En orden, en Supabase Dashboard → SQL Editor → New query → pegar → Run:
 | `migration_20_imagenes_presupuesto.sql` | Hasta 4 imágenes por presupuesto (bucket `adjuntos`) | Sí |
 | `migration_22_datos_del_trabajo.sql` | Datos del trabajo por rubro (fecha del evento, patente, medidas) | Sí |
 | `migration_23_contacto_y_aviso.sql` | Web y redes del negocio + aviso cuando el cliente responde | Sí |
+| `migration_24_vista_previa_del_link.sql` | El link compartido muestra el logo y el nombre del negocio | Sí |
 | `migration_21_seguridad_adjuntos.sql` | Cierra el listado del Storage y valida las URLs de las imágenes | **No, si corriste la 20.** Ver la sección 8 |
 
 Detalle de la 14: el usuario **no puede insertar avisos** (`revoke all`, solo
@@ -327,7 +328,26 @@ del bucket al guardar, y al eliminar un presupuesto se borran las suyas.
 Por eso **«Duplicar» ya no se lleva las imágenes**: eran el mismo archivo, y
 borrar una copia le hubiera hecho desaparecer la foto a la otra.
 
-### 8.4 · Lo que queda anotado, sin arreglar
+### 8.4 · La vista previa del link (migración 24)
+
+Cuando el usuario manda el enlace por WhatsApp, la miniatura ahora
+muestra el nombre y el logo de su negocio. Eso obliga a servir HTML desde
+el servidor, y ahí hay dos decisiones de seguridad:
+
+- **La previa la ve cualquiera** en el grupo donde se pegó el link, sin
+  abrirlo. Por eso `get_public_budget_meta()` devuelve solo el nombre del
+  negocio, su logo y el número: **ni el cliente, ni el total, ni los
+  ítems**. Todo eso sigue detrás del link.
+- **La función es `stable` y no marca visto.** Si la previa usara
+  `get_public_budget()`, el presupuesto figuraría «Visto» apenas se pega
+  el link, por el robot de WhatsApp y no por el cliente. El usuario
+  estaría mirando un dato falso.
+
+A la función serverless llegan solo los robots (filtro por User-Agent en
+`vercel.json`): una persona entra a la app de siempre. Si se cae, se cae
+la miniatura, nunca el presupuesto.
+
+### 8.5 · Lo que queda anotado, sin arreglar
 
 - **Una imagen adjunta es pública para quien tenga la URL**, aunque nunca
   compartas el presupuesto. Es el precio de que se vea en el PDF y en el

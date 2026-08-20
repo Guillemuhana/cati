@@ -205,7 +205,7 @@ function ClientModal({ client, onClose, onSave }) {
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Email">
               <input
                 type="email"

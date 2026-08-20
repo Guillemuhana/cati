@@ -38,7 +38,7 @@ export default function BudgetDetails({ sugeridos = [], value = [], onChange }) 
             // agregó a mano lo tienen editable.
             const propio = !sugeridos.includes(d.label)
             return (
-              <div key={i} className="flex items-end gap-2">
+              <div key={i} className="flex items-end gap-2 rounded-lg sm:gap-3">
                 <div className="grid flex-1 gap-2 sm:grid-cols-[minmax(0,180px)_minmax(0,1fr)]">
                   {propio ? (
                     <input
@@ -66,7 +66,7 @@ export default function BudgetDetails({ sugeridos = [], value = [], onChange }) 
                   type="button"
                   onClick={() => quitar(i)}
                   aria-label={`Quitar ${d.label || 'dato'}`}
-                  className="shrink-0 rounded-md px-2 py-2 text-sm text-ink-faint transition hover:text-rust-500"
+                  className="shrink-0 rounded-md px-2 py-2 text-base leading-none text-ink-faint transition hover:text-rust-500 sm:text-sm"
                 >
                   ✕
                 </button>

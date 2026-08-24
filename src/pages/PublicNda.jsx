@@ -8,12 +8,23 @@ import { formatNumero, resolveAccent, readableAccent } from '../lib/utils'
 import { useSeo } from '../lib/seo'
 import { downloadNdaPdf } from '../lib/pdfNda'
 import { completarParte, identificarParte } from '../lib/nda'
+import { canalesDe } from '../lib/redes'
+import RedIcon from '../components/RedIcon'
 
 const ERRORES = {
   ya_firmado: 'Este acuerdo ya fue firmado.',
   falta_nombre: 'Escribí tu nombre completo.',
   falta_firma: 'Dibujá tu firma en el recuadro.',
   firma_muy_grande: 'La firma no se pudo guardar. Borrala y hacela un poco más simple.'
+}
+
+function Garantia({ titulo, texto }) {
+  return (
+    <div className="rounded-lg border border-line bg-surface p-3.5">
+      <p className="text-xs font-semibold text-ink">{titulo}</p>
+      <p className="mt-1 text-xs leading-relaxed text-ink-soft">{texto}</p>
+    </div>
+  )
 }
 
 function fechaHora(iso) {
@@ -161,11 +172,15 @@ export default function PublicNda() {
   const misDatos = { nombre, doc, domicilio }
   const identificacion = identificarParte(misDatos)
   const cuerpoVisible = yaFirmo ? nda.cuerpo : completarParte(nda.cuerpo, misDatos)
+  const canales = canalesDe(business)
 
   const descargar = async () => {
     setPdfBusy(true)
     try {
-      await downloadNdaPdf({ nda, profile: business })
+      // Con el hueco ya reemplazado: si todavía no firmó, el PDF sale con
+      // la línea en blanco donde van sus datos, como un contrato de papel
+      // sin completar. Nunca con el marcador crudo a la vista.
+      await downloadNdaPdf({ nda: { ...nda, cuerpo: cuerpoVisible }, profile: business })
     } catch {
       setError('No pudimos generar el PDF.')
     }
@@ -191,11 +206,18 @@ export default function PublicNda() {
                   <p className="mt-1.5 font-mono text-sm tabular-nums tracking-tight text-ink-soft">
                     {numero}
                   </p>
+                  {/* Quién lo manda, con nombre, CUIT y domicilio. Del
+                      otro lado hay alguien que todavía no confía: los
+                      datos verificables del emisor son lo primero que
+                      mira, antes que cualquier cláusula. */}
                   <p className="mt-4 break-words text-base font-semibold tracking-tight text-ink">
                     {business?.business_name || 'Acuerdo'}
                   </p>
                   {!!business?.tax_id && (
-                    <p className="text-xs text-ink-soft">{business.tax_id}</p>
+                    <p className="text-xs tabular-nums text-ink-soft">CUIT {business.tax_id}</p>
+                  )}
+                  {!!business?.address && (
+                    <p className="break-words text-xs text-ink-soft">{business.address}</p>
                   )}
                 </div>
                 {business?.logo_url ? (
@@ -209,6 +231,30 @@ export default function PublicNda() {
                 )}
               </header>
 
+              {/* Los canales de contacto del emisor, a un toque. Un
+                  WhatsApp que contesta convence más que cualquier
+                  cláusula: el que duda quiere poder preguntar antes de
+                  firmar, no después. */}
+              {canales.length > 0 && (
+                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  {canales.map((c) =>
+                    c.href ? (
+                      <a
+                        key={c.key}
+                        href={c.href}
+                        target={c.href.startsWith('http') ? '_blank' : undefined}
+                        rel="noopener noreferrer"
+                        title={c.label}
+                        className="inline-flex items-center gap-1.5 text-xs text-ink-soft transition hover:text-ink"
+                      >
+                        <RedIcon canal={c} color={c.color} />
+                        <span className="break-all">{c.texto}</span>
+                      </a>
+                    ) : null
+                  )}
+                </div>
+              )}
+
               {/* Para qué es esto, en dos renglones y en criollo. El texto
                   legal viene después: si arranca con las cláusulas, el
                   cliente cierra la pestaña. */}
@@ -219,6 +265,24 @@ export default function PublicNda() {
                   {nda.vigencia_anios} años. Podés leerlo completo más abajo y firmarlo acá mismo,
                   desde el celular.
                 </p>
+              </div>
+
+              {/* Las tres dudas que tiene cualquiera al abrir un link que
+                  le pide firmar algo, contestadas antes de que las
+                  piense. */}
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <Garantia
+                  titulo="No te pedimos nada"
+                  texto="Ni cuenta, ni contraseña, ni datos de pago. Solo firmar."
+                />
+                <Garantia
+                  titulo="Los dos por igual"
+                  texto="Es mutuo: nosotros nos obligamos con vos igual que vos con nosotros."
+                />
+                <Garantia
+                  titulo="Queda constancia"
+                  texto="Fecha, hora y una huella digital del texto firmado, en tu PDF."
+                />
               </div>
 
               {/* Que la otra parte ya firmó es lo que baja la desconfianza.
@@ -256,6 +320,20 @@ export default function PublicNda() {
                     {cuerpoVisible}
                   </p>
                 </div>
+
+                {/* Poder bajarlo ANTES de firmar es de las cosas que más
+                    tranquilizan: el que quiere mostrárselo a su abogado
+                    puede, y el que no, ya se queda tranquilo de que
+                    podría. Antes solo se podía descargar después. */}
+                {!yaFirmo && (
+                  <button
+                    onClick={descargar}
+                    disabled={pdfBusy}
+                    className="mt-3 text-xs font-medium text-ink-soft underline-offset-4 transition hover:text-ink hover:underline disabled:opacity-60"
+                  >
+                    {pdfBusy ? 'Preparando…' : 'Descargar el PDF para leerlo con calma'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -401,9 +479,24 @@ export default function PublicNda() {
             )}
           </motion.div>
 
-          <p className="mt-5 text-center text-[11px] uppercase tracking-[0.16em] text-ink-faint">
-            Numera de sTuDiO B2B
-          </p>
+          {/* El pie lo firma el emisor, no la app. En un documento que se
+              manda para generar confianza, la marca que tiene que quedar
+              es la de quien lo manda. */}
+          <div className="mt-6 text-center">
+            <p className="text-sm font-semibold tracking-tight text-ink">
+              {business?.business_name || 'Acuerdo de confidencialidad'}
+            </p>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              {[business?.tax_id && `CUIT ${business.tax_id}`, business?.email, business?.phone]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+            {!business?.hide_branding && (
+              <p className="mt-3 text-[10px] uppercase tracking-[0.16em] text-ink-faint">
+                Documento emitido con Numera
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </MotionConfig>

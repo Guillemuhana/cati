@@ -230,6 +230,13 @@ begin
     'nda', to_jsonb(n)
              - 'user_id' - 'public_token' - 'client_id'
              - 'firma_parte_ip' - 'firma_parte_agente',
+    -- Los datos del emisor van completos, con los canales de contacto.
+    -- Es a propósito: del otro lado del link hay alguien que todavía no
+    -- confía. Un nombre, un CUIT, un domicilio y un WhatsApp que
+    -- responde son lo que separa «esto es serio» de «esto es un
+    -- formulario raro que me mandaron». Campo por campo y no `to_jsonb`:
+    -- así ninguna columna nueva del perfil se cuela sin decidirlo, y la
+    -- firma guardada (firma_png) nunca sale por acá.
     'business', (
       select jsonb_build_object(
         'business_name', p.business_name,
@@ -238,7 +245,15 @@ begin
         'phone', p.phone,
         'tax_id', p.tax_id,
         'address', p.address,
-        'brand_color', p.brand_color
+        'brand_color', p.brand_color,
+        'hide_branding', p.hide_branding,
+        'website', p.website,
+        'whatsapp', p.whatsapp,
+        'instagram', p.instagram,
+        'facebook', p.facebook,
+        'tiktok', p.tiktok,
+        'youtube', p.youtube,
+        'x', p.x
       )
       from public.profiles p where p.id = n.user_id
     )

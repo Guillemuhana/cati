@@ -10,7 +10,7 @@ import { formatDate } from '../lib/utils'
  * grande la primera vez, para que no pase desapercibido.
  */
 // Avisos que además se muestran en grande la primera vez.
-const DESTACABLES = ['regalo', 'presupuesto']
+const DESTACABLES = ['regalo', 'presupuesto', 'confidencialidad']
 
 // El canal necesita un nombre distinto en cada suscripción: supabase
 // reutiliza el canal si el nombre ya existe, y agregarle un listener a uno

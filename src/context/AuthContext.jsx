@@ -137,7 +137,9 @@ export function AuthProvider({ children }) {
     'bank_alias',
     'brand_color',
     'number_prefix',
-    'hide_branding'
+    'hide_branding',
+    // La firma guardada del dueño (migración 27).
+    'firma_png'
   ]
 
   const updateProfile = async (updates) => {

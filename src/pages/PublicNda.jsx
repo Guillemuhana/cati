@@ -7,6 +7,7 @@ import FirmaCanvas from '../components/FirmaCanvas'
 import { formatNumero, resolveAccent, readableAccent } from '../lib/utils'
 import { useSeo } from '../lib/seo'
 import { downloadNdaPdf } from '../lib/pdfNda'
+import { completarParte, identificarParte } from '../lib/nda'
 
 const ERRORES = {
   ya_firmado: 'Este acuerdo ya fue firmado.',
@@ -48,6 +49,9 @@ export default function PublicNda() {
   const [firma, setFirma] = useState(null)
   const [nombre, setNombre] = useState('')
   const [doc, setDoc] = useState('')
+  const [domicilio, setDomicilio] = useState('')
+  const [email, setEmail] = useState('')
+  const [telefono, setTelefono] = useState('')
   const [firmando, setFirmando] = useState(false)
   const [pdfBusy, setPdfBusy] = useState(false)
 
@@ -59,8 +63,11 @@ export default function PublicNda() {
       if (rpcErr || !res) setNotFound(true)
       else {
         setData(res)
-        setNombre(res.nda?.firma_parte_nombre || res.nda?.parte_nombre || '')
-        setDoc(res.nda?.firma_parte_doc || res.nda?.parte_doc || '')
+        // Si ya firmó, los campos muestran lo que puso. Si no, arrancan
+        // vacíos: los datos los escribe él, no vienen puestos de antes.
+        setNombre(res.nda?.firma_parte_nombre || '')
+        setDoc(res.nda?.firma_parte_doc || '')
+        setDomicilio(res.nda?.parte_domicilio || '')
       }
       setLoading(false)
     })()
@@ -86,7 +93,10 @@ export default function PublicNda() {
       p_token: token,
       p_nombre: nombre.trim(),
       p_doc: doc.trim(),
-      p_firma: firma
+      p_firma: firma,
+      p_domicilio: domicilio.trim(),
+      p_email: email.trim(),
+      p_telefono: telefono.trim()
     })
 
     if (res?.ok) {
@@ -94,6 +104,11 @@ export default function PublicNda() {
         ...d,
         nda: {
           ...d.nda,
+          // El cuerpo y la huella vuelven ya completos con sus datos:
+          // los armó la base, no este navegador.
+          cuerpo: res.cuerpo ?? d.nda.cuerpo,
+          huella: res.huella ?? d.nda.huella,
+          parte_domicilio: domicilio.trim(),
           status: res.status,
           firmado_parte_at: res.firmado_parte_at,
           firma_parte: res.firma_parte,
@@ -138,6 +153,14 @@ export default function PublicNda() {
   const accentInk = readableAccent(accent)
   const numero = formatNumero(nda.numero, nda.created_at?.slice(0, 10), 'CONF')
   const yaFirmo = !!nda.firmado_parte_at
+
+  // El acuerdo llega con un hueco donde va la identificación de quien
+  // firma. Se completa en pantalla a medida que escribe, para que vea
+  // exactamente cómo va a quedar antes de firmar. Lo que se guarda lo
+  // arma la base: esto es solo lo que se muestra.
+  const misDatos = { nombre, doc, domicilio }
+  const identificacion = identificarParte(misDatos)
+  const cuerpoVisible = yaFirmo ? nda.cuerpo : completarParte(nda.cuerpo, misDatos)
 
   const descargar = async () => {
     setPdfBusy(true)
@@ -230,7 +253,7 @@ export default function PublicNda() {
                 </p>
                 <div className="mt-2 max-h-[45vh] overflow-y-auto rounded-lg border border-line bg-paper p-4">
                   <p className="whitespace-pre-line text-xs leading-relaxed text-ink-soft">
-                    {nda.cuerpo}
+                    {cuerpoVisible}
                   </p>
                 </div>
               </div>
@@ -268,22 +291,21 @@ export default function PublicNda() {
               </div>
             ) : (
               <>
-                <p className="mb-1 font-display text-lg text-ink">Firmá el acuerdo</p>
+                <p className="mb-1 font-display text-lg text-ink">Completá tus datos y firmá</p>
                 <p className="mb-4 text-sm text-ink-soft">
-                  Con el dedo, igual que en un papel.
+                  Los escribís vos. Se completan solos en el acuerdo de arriba.
                 </p>
 
-                <FirmaCanvas value={firma} onChange={setFirma} />
-
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
                     <label className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
-                      Tu nombre completo
+                      Nombre completo o razón social
                     </label>
                     <input
                       value={nombre}
                       onChange={(e) => setNombre(e.target.value)}
                       autoComplete="name"
+                      placeholder="Juan Pérez"
                       className="mt-1.5 w-full rounded-md border border-line bg-surface px-3 py-3 text-base focus:border-brand-500 focus:outline-none"
                     />
                   </div>
@@ -295,9 +317,65 @@ export default function PublicNda() {
                       value={doc}
                       onChange={(e) => setDoc(e.target.value)}
                       inputMode="numeric"
+                      placeholder="30.111.222"
                       className="mt-1.5 w-full rounded-md border border-line bg-surface px-3 py-3 text-base focus:border-brand-500 focus:outline-none"
                     />
                   </div>
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
+                      Domicilio
+                    </label>
+                    <input
+                      value={domicilio}
+                      onChange={(e) => setDomicilio(e.target.value)}
+                      autoComplete="street-address"
+                      placeholder="Av. Siempre Viva 742"
+                      className="mt-1.5 w-full rounded-md border border-line bg-surface px-3 py-3 text-base focus:border-brand-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
+                      Email <span className="normal-case tracking-normal">(opcional)</span>
+                    </label>
+                    <input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      type="email"
+                      autoComplete="email"
+                      className="mt-1.5 w-full rounded-md border border-line bg-surface px-3 py-3 text-base focus:border-brand-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
+                      Teléfono <span className="normal-case tracking-normal">(opcional)</span>
+                    </label>
+                    <input
+                      value={telefono}
+                      onChange={(e) => setTelefono(e.target.value)}
+                      type="tel"
+                      autoComplete="tel"
+                      className="mt-1.5 w-full rounded-md border border-line bg-surface px-3 py-3 text-base focus:border-brand-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* El texto de arriba también se completó, pero queda
+                    fuera de la vista mientras escribe. Repetirlo acá es
+                    lo que le muestra que sus datos entran al acuerdo. */}
+                {!!identificacion && (
+                  <div className="mt-4 rounded-lg border border-line bg-paper px-4 py-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-faint">
+                      Vas a figurar así en el acuerdo
+                    </p>
+                    <p className="mt-1 break-words text-sm text-ink">{identificacion}</p>
+                  </div>
+                )}
+
+                <div className="mt-5">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-faint">
+                    Tu firma
+                  </p>
+                  <FirmaCanvas value={firma} onChange={setFirma} />
                 </div>
 
                 <button

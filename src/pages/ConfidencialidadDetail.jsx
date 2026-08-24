@@ -44,6 +44,7 @@ export default function ConfidencialidadDetail() {
   const [firmaNombre, setFirmaNombre] = useState('')
   const [firmaDoc, setFirmaDoc] = useState('')
   const [firmando, setFirmando] = useState(false)
+  const [dibujar, setDibujar] = useState(false)
 
   useEffect(() => {
     let activo = true
@@ -111,7 +112,9 @@ export default function ConfidencialidadDetail() {
 
   const firmarYo = async () => {
     if (firmando) return
-    if (!firma) {
+    // La guardada manda, salvo que hayas elegido dibujarla esta vez.
+    const laFirma = dibujar ? firma : profile?.firma_png || firma
+    if (!laFirma) {
       setError('Dibujá tu firma en el recuadro antes de confirmar.')
       return
     }
@@ -123,7 +126,7 @@ export default function ConfidencialidadDetail() {
     setError('')
 
     const cambios = {
-      firma_emisor: firma,
+      firma_emisor: laFirma,
       firma_emisor_nombre: firmaNombre.trim(),
       firma_emisor_doc: firmaDoc.trim(),
       firmado_emisor_at: new Date().toISOString(),
@@ -189,7 +192,7 @@ export default function ConfidencialidadDetail() {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="font-display text-2xl font-medium text-ink sm:text-3xl">
-              {nda.parte_nombre || 'Sin nombre'}
+              {nda.parte_nombre || 'Esperando al cliente'}
             </h1>
             <span
               className={`stamp inline-flex items-center rounded-md border-2 px-2.5 py-0.5 font-display text-[11px] font-semibold uppercase tracking-wider ${
@@ -239,6 +242,20 @@ export default function ConfidencialidadDetail() {
           </div>
         </Card>
 
+        {/* Lo que dejó el cliente al firmar. Antes de eso no hay nada que
+            mostrar: los datos los pone él, no vos. */}
+        {!!nda.firmado_parte_at && (
+          <Card title="Datos que dejó el cliente" desc="Los escribió él al firmar.">
+            <dl className="grid gap-3 sm:grid-cols-2">
+              <Dato label="Nombre o razón social" valor={nda.parte_nombre} />
+              <Dato label="DNI o CUIT" valor={nda.parte_doc} />
+              <Dato label="Domicilio" valor={nda.parte_domicilio} />
+              <Dato label="Email" valor={nda.parte_email} />
+              <Dato label="Teléfono" valor={nda.parte_telefono} />
+            </dl>
+          </Card>
+        )}
+
         {/* Tu firma. Conviene firmar antes de mandar el link: el cliente
             que abre y ve el documento ya firmado de un lado se sienta a
             firmar, no a dudar. */}
@@ -247,7 +264,28 @@ export default function ConfidencialidadDetail() {
             title="Firmá vos primero"
             desc="Mandale el link ya firmado de tu lado: da mucha más confianza."
           >
-            <FirmaCanvas value={firma} onChange={setFirma} />
+            {/* Con la firma guardada esto es un botón. El lienzo aparece
+                solo si todavía no hay ninguna, o si la querés hacer a
+                mano esta vez. */}
+            {profile?.firma_png && !dibujar ? (
+              <div>
+                <div className="flex h-20 items-end border-b border-line">
+                  <img
+                    src={profile.firma_png}
+                    alt="Tu firma guardada"
+                    className="max-h-20 max-w-full object-contain"
+                  />
+                </div>
+                <button
+                  onClick={() => setDibujar(true)}
+                  className="mt-2 text-xs text-ink-faint underline-offset-4 hover:text-ink hover:underline"
+                >
+                  Prefiero dibujarla a mano esta vez
+                </button>
+              </div>
+            ) : (
+              <FirmaCanvas value={firma} onChange={setFirma} />
+            )}
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
@@ -345,6 +383,12 @@ export default function ConfidencialidadDetail() {
               jurisdicción en {nda.jurisdiccion}.
             </p>
           )}
+          {!nda.firmado_parte_at && (
+            <p className="mt-3 text-xs leading-relaxed text-ink-faint">
+              Donde dice <span className="font-mono">[[PARTE_B]]</span> van los datos del cliente:
+              los escribe él al firmar y el texto se completa solo.
+            </p>
+          )}
           {!!nda.huella && (
             <p className="mt-3 break-all font-mono text-[10px] text-ink-faint">
               Huella SHA-256: {nda.huella}
@@ -364,6 +408,18 @@ export default function ConfidencialidadDetail() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+function Dato({ label, valor }) {
+  if (!valor) return null
+  return (
+    <div>
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-faint">
+        {label}
+      </dt>
+      <dd className="mt-0.5 break-words text-sm text-ink">{valor}</dd>
     </div>
   )
 }

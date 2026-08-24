@@ -72,8 +72,10 @@ create table if not exists public.ndas (
   numero integer not null default 1,
   public_token uuid not null default gen_random_uuid(),
 
-  -- La otra parte. Se escriben a mano: casi siempre el cliente todavía
-  -- no existe en la agenda cuando se firma esto.
+  -- La otra parte. Quedan vacíos a propósito: los completa el propio
+  -- cliente cuando firma, desde el link. El que desconfía no quiere dar
+  -- ni el nombre antes de leer lo que va a firmar, y además así los
+  -- datos los pone quien firma y no un tercero por él.
   parte_nombre text not null default '',
   parte_doc text default '',
   parte_email text default '',
@@ -172,10 +174,13 @@ begin
     raise exception 'tu firma ya fue prestada y no se puede modificar';
   end if;
 
-  -- El texto firmado es intocable desde el momento en que hay una firma.
-  if (old.firmado_parte_at is not null or old.firmado_emisor_at is not null)
+  -- El texto queda intocable cuando firma la OTRA PARTE, que es la que
+  -- lo lee entero antes de firmar y la que completa sus propios datos en
+  -- el hueco. Hasta ese momento el cuerpo todavía se completa: por eso no
+  -- alcanza con mirar si ya firmó el dueño.
+  if old.firmado_parte_at is not null
      and (new.cuerpo is distinct from old.cuerpo or new.huella is distinct from old.huella) then
-    raise exception 'el acuerdo ya tiene una firma: su texto no se puede cambiar';
+    raise exception 'el acuerdo ya fue firmado: su texto no se puede cambiar';
   end if;
 
   new.updated_at := now();
@@ -246,22 +251,43 @@ $fn$;
 -- 6) El link público: firmar
 --    Congelado igual que la respuesta a un presupuesto: quien ya firmó
 --    no puede volver a firmar ni cambiar lo firmado.
+--
+--    ⚠ ACÁ SE COMPLETA EL HUECO DE LA OTRA PARTE
+--    El acuerdo se manda sin los datos del cliente: los escribe él mismo
+--    al firmar. Este es el único lugar donde se rellenan, y el texto
+--    identificatorio lo arma la base. Si lo armara el navegador y lo
+--    mandara hecho, se podría firmar un acuerdo con el cuerpo cambiado.
+--
+--    ⚠ La regla de armado está escrita dos veces: acá y en
+--      identificarParte() de src/lib/nda.js. Tienen que dar el MISMO
+--      texto: el cliente ve el de allá mientras escribe y firma el de
+--      acá. Si se toca una, se toca la otra.
 -- ------------------------------------------------------------
+drop function if exists public.sign_nda(uuid, text, text, text);
+
 create or replace function public.sign_nda(
   p_token uuid,
   p_nombre text,
   p_doc text,
-  p_firma text
+  p_firma text,
+  p_domicilio text default '',
+  p_email text default '',
+  p_telefono text default ''
 )
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+-- `extensions` va en el camino porque en Supabase pgcrypto (digest())
+-- vive en ese schema y no en public.
+set search_path = public, extensions
 as $fn$
 declare
   n public.ndas;
   v_ip text;
   v_agente text;
+  v_ident text;
+  v_cuerpo text;
+  v_huella text;
 begin
   select * into n from public.ndas where public_token = p_token;
   if not found or not public.es_admin(n.user_id) or n.status = 'anulado' then
@@ -299,8 +325,41 @@ begin
     v_agente := null;
   end;
 
+  -- El hueco del acuerdo, con los datos que acaba de escribir quien firma.
+  v_ident := btrim(p_nombre);
+  if coalesce(btrim(p_doc), '') <> '' then
+    v_ident := v_ident || ', CUIT/DNI ' || btrim(p_doc);
+  end if;
+  if coalesce(btrim(p_domicilio), '') <> '' then
+    v_ident := v_ident || ', con domicilio en ' || btrim(p_domicilio);
+  end if;
+
+  v_cuerpo := replace(n.cuerpo, '[[PARTE_B]]', v_ident);
+
+  -- La huella se recalcula sobre el texto ya completo: es el que se
+  -- firma. Se hace en la base (pgcrypto) y no en el navegador, para que
+  -- sea la base la que responda por lo que quedó escrito. Va en grupos
+  -- de a ocho para poder compararla a ojo contra el PDF.
+  begin
+    v_huella := btrim(regexp_replace(
+      encode(digest(v_cuerpo, 'sha256'), 'hex'), '(.{8})', '\1 ', 'g'
+    ));
+  exception when others then
+    -- Si pgcrypto no está a mano, se firma igual y queda la huella que
+    -- calculó el navegador al crear el acuerdo. La firma no se cae por
+    -- un dato de control.
+    v_huella := n.huella;
+  end;
+
   update public.ndas
-     set firma_parte = p_firma,
+     set cuerpo = v_cuerpo,
+         huella = v_huella,
+         parte_nombre = btrim(p_nombre),
+         parte_doc = coalesce(btrim(p_doc), ''),
+         parte_domicilio = coalesce(btrim(p_domicilio), ''),
+         parte_email = coalesce(btrim(p_email), ''),
+         parte_telefono = coalesce(btrim(p_telefono), ''),
+         firma_parte = p_firma,
          firma_parte_nombre = btrim(p_nombre),
          firma_parte_doc = coalesce(btrim(p_doc), ''),
          firmado_parte_at = now(),
@@ -310,9 +369,27 @@ begin
    where id = n.id
    returning * into n;
 
+  -- El aviso en la campanita del dueño. Llega solo, sin recargar: la
+  -- campanita ya escucha los avisos nuevos en vivo (migración 14).
+  begin
+    perform public.notify_user(
+      n.user_id,
+      'confidencialidad',
+      n.firma_parte_nombre || ' firmó el acuerdo',
+      'Ya está firmado por las dos partes. Podés bajar el PDF desde Confidencialidad.',
+      '🤝'
+    );
+  exception when others then
+    -- Sin la migración 14 no hay campanita. El acuerdo se firma igual:
+    -- el aviso es un extra, no parte de la firma.
+    null;
+  end;
+
   return jsonb_build_object(
     'ok', true,
     'status', n.status,
+    'cuerpo', n.cuerpo,
+    'huella', n.huella,
     'firmado_parte_at', n.firmado_parte_at,
     'firma_parte_nombre', n.firma_parte_nombre,
     'firma_parte_doc', n.firma_parte_doc,
@@ -323,8 +400,8 @@ $fn$;
 
 revoke execute on function public.get_public_nda(uuid) from public;
 grant execute on function public.get_public_nda(uuid) to anon, authenticated;
-revoke execute on function public.sign_nda(uuid, text, text, text) from public;
-grant execute on function public.sign_nda(uuid, text, text, text) to anon, authenticated;
+revoke execute on function public.sign_nda(uuid, text, text, text, text, text, text) from public;
+grant execute on function public.sign_nda(uuid, text, text, text, text, text, text) to anon, authenticated;
 
 
 -- ------------------------------------------------------------
@@ -354,3 +431,24 @@ $fn$;
 
 revoke execute on function public.rotate_nda_token(uuid) from public, anon;
 grant execute on function public.rotate_nda_token(uuid) to authenticated;
+
+
+-- ------------------------------------------------------------
+-- 8) Tu firma, guardada una sola vez
+--    Se sube una foto de la firma hecha en papel, la app la limpia y la
+--    deja acá. Desde entonces cada acuerdo nace ya firmado: se arma, se
+--    manda y listo.
+--
+--    ⚠ ES UN DATO SENSIBLE
+--    Una firma manuscrita se puede copiar. Por eso no va en el código ni
+--    en un archivo del repositorio: va en la fila del perfil, que solo
+--    lee su dueño (RLS de profiles, schema.sql). Los RPC públicos
+--    (get_public_budget, get_public_nda) arman el objeto `business`
+--    campo por campo y no la incluyen, así que no se filtra por un link
+--    compartido. En el acuerdo se copia recién cuando se firma, y esa
+--    copia sí la ve quien tenga el link: es justamente lo que le
+--    demuestra al cliente que la otra parte ya firmó.
+-- ------------------------------------------------------------
+alter table public.profiles add column if not exists firma_png text;
+
+grant update (firma_png) on public.profiles to authenticated;

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import Spinner from '../components/Spinner'
+import MiFirma from '../components/MiFirma'
 import { formatDate, formatNumero } from '../lib/utils'
 import {
   NDA_STATUS,
@@ -95,6 +96,8 @@ export default function Confidencialidad() {
         </button>
       </header>
 
+      <MiFirma />
+
       <div className="overflow-hidden rounded-xl2 border border-line bg-surface">
         {loading ? (
           <div className="flex justify-center py-14">
@@ -172,27 +175,24 @@ function ModalNuevo({ user, profile, onClose, onCreado }) {
   const guardar = async (e) => {
     e.preventDefault()
     if (guardando) return
-    if (!form.parte_nombre.trim()) {
-      setError('Poné al menos el nombre de la otra parte.')
-      return
-    }
     setGuardando(true)
     setError('')
 
     try {
       // El texto se arma acá y se guarda entero en la fila. A partir de
       // este momento el acuerdo es ese texto, no la plantilla.
+      //
+      // La otra parte va SIN datos: queda el hueco que completa el
+      // cliente al firmar. Aunque acá arriba se haya escrito un nombre
+      // de referencia, no entra en el acuerdo: el que vale es el que
+      // escribe quien firma.
       const cuerpo = textoAcuerdo({
         emisor: {
           nombre: profile?.business_name || 'Tu negocio',
           doc: profile?.tax_id,
           domicilio: profile?.address
         },
-        parte: {
-          nombre: form.parte_nombre.trim(),
-          doc: form.parte_doc.trim(),
-          domicilio: form.parte_domicilio.trim()
-        },
+        parte: {},
         proyecto: form.proyecto.trim(),
         vigenciaAnios: Number(form.vigencia_anios) || 3,
         jurisdiccion: form.jurisdiccion.trim() || JURISDICCION_DEFAULT
@@ -204,9 +204,22 @@ function ModalNuevo({ user, profile, onClose, onCreado }) {
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
 
+      // Si ya tenés la firma guardada, el acuerdo nace firmado por vos:
+      // se arma y se manda de una. Es el caso normal; dibujarla a mano en
+      // la ficha queda para cuando todavía no hay ninguna guardada.
+      const yaFirmado = profile?.firma_png
+        ? {
+            firma_emisor: profile.firma_png,
+            firma_emisor_nombre: profile.business_name || '',
+            firma_emisor_doc: profile.tax_id || '',
+            firmado_emisor_at: new Date().toISOString()
+          }
+        : {}
+
       const { data, error: insErr } = await supabase
         .from('ndas')
         .insert({
+          ...yaFirmado,
           user_id: user.id,
           numero: (count || 0) + 1,
           parte_nombre: form.parte_nombre.trim(),
@@ -259,21 +272,35 @@ function ModalNuevo({ user, profile, onClose, onCreado }) {
         </div>
 
         <div className="space-y-4 p-5">
+          {/* Los datos del cliente NO se piden acá. El que desconfía no
+              quiere darlos antes de leer lo que va a firmar, y encima así
+              los escribe él mismo y no hay nada que corregirle después. */}
+          <div className="rounded-lg border border-line bg-paper p-3.5">
+            <p className="text-sm leading-relaxed text-ink">
+              Vos completás lo tuyo y nada más. Los datos del cliente los escribe él mismo cuando
+              abre el link para firmar, y te llegan acá.
+            </p>
+          </div>
+
+          <div>
+            <Campo
+              label="Nombre del cliente"
+              value={form.parte_nombre}
+              onChange={set('parte_nombre')}
+              placeholder="Solo para reconocerlo en tu lista"
+            />
+            <p className="mt-1.5 text-xs text-ink-faint">
+              Opcional, y es solo para vos: no sale en el acuerdo. El nombre que vale es el que
+              escriba él al firmar.
+            </p>
+          </div>
+
           <Campo
-            label="Nombre o razón social de la otra parte"
-            required
-            value={form.parte_nombre}
-            onChange={set('parte_nombre')}
-            placeholder="Ej: Juan Pérez / Comercial del Sur S.R.L."
+            label="Teléfono"
+            value={form.parte_telefono}
+            onChange={set('parte_telefono')}
+            placeholder="11 5555-4444"
           />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Campo label="DNI o CUIT" value={form.parte_doc} onChange={set('parte_doc')} placeholder="20-30111222-4" />
-            <Campo label="Teléfono" value={form.parte_telefono} onChange={set('parte_telefono')} placeholder="11 5555-4444" />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Campo label="Email" type="email" value={form.parte_email} onChange={set('parte_email')} placeholder="cliente@mail.com" />
-            <Campo label="Domicilio" value={form.parte_domicilio} onChange={set('parte_domicilio')} placeholder="Av. Siempre Viva 742" />
-          </div>
 
           <div>
             <Campo

@@ -8,3 +8,9 @@ dist
 *.tmp.mjs
 *.tmp.cjs
 sesion.tmp.json
+
+# La foto de la firma NO va al repositorio: lo que se sirve desde public/
+# lo puede descargar cualquiera que sepa la direccion, y una firma
+# manuscrita se copia y pega. Se carga una vez desde la app (seccion
+# Confidencialidad, "Mi firma") y queda guardada en la cuenta.
+public/firma.*

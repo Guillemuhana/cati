@@ -16,11 +16,51 @@ export const VIGENCIA_PRESETS = [2, 3, 5]
 
 export const JURISDICCION_DEFAULT = 'la Ciudad Autónoma de Buenos Aires'
 
-function nombrarParte({ nombre, doc, domicilio }) {
-  const partes = [nombre || '—']
-  if (doc) partes.push(`CUIT/DNI ${doc}`)
-  if (domicilio) partes.push(`con domicilio en ${domicilio}`)
-  return partes.join(', ')
+/**
+ * Hueco que deja el acuerdo para identificar a la otra parte.
+ *
+ * ⚠ POR QUÉ EXISTE
+ *   El cliente desconfiado no quiere dar ni el nombre antes de saber qué
+ *   va a firmar. Así que el acuerdo se manda con este hueco y lo completa
+ *   él mismo, en el momento de firmar. Quien firma escribe sus propios
+ *   datos: nadie los pone por él.
+ *
+ * ⚠ QUIÉN LO REEMPLAZA
+ *   Lo reemplaza la base, dentro de sign_nda (migración 27), no el
+ *   navegador. Si el reemplazo lo hiciera el cliente y mandara el texto
+ *   ya armado, cualquiera podría firmar un acuerdo con el cuerpo
+ *   cambiado. Acá el navegador solo lo muestra en pantalla mientras
+ *   escribe; lo que queda escrito lo arma el servidor.
+ */
+export const MARCADOR_PARTE = '[[PARTE_B]]'
+
+/**
+ * Cómo se identifica una parte dentro del acuerdo.
+ *
+ * ⚠ Esta regla está escrita DOS VECES: acá y en sign_nda (migración 27).
+ *   Tienen que dar exactamente el mismo texto, porque el cliente ve la
+ *   versión de acá mientras escribe y firma la que arma la base. Si se
+ *   toca una, se toca la otra.
+ */
+export function identificarParte({ nombre, doc, domicilio } = {}) {
+  const partes = [(nombre || '').trim()]
+  if ((doc || '').trim()) partes.push(`CUIT/DNI ${doc.trim()}`)
+  if ((domicilio || '').trim()) partes.push(`con domicilio en ${domicilio.trim()}`)
+  return partes.filter(Boolean).join(', ')
+}
+
+function nombrarParte(datos) {
+  return identificarParte(datos) || MARCADOR_PARTE
+}
+
+/**
+ * El cuerpo con el hueco reemplazado, para mostrarlo en pantalla
+ * mientras el cliente completa sus datos. Solo para ver: lo que se
+ * guarda lo arma la base.
+ */
+export function completarParte(cuerpo, datos) {
+  const ident = identificarParte(datos)
+  return (cuerpo || '').split(MARCADOR_PARTE).join(ident || '________________________')
 }
 
 /**

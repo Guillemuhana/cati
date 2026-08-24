@@ -565,7 +565,9 @@ export async function downloadReceiptPdf({ receipt, client, profile }) {
   triggerDownload(blob, `${formatNumero(receipt.numero, receipt.receipt_date, 'REC')}.pdf`)
 }
 
-function triggerDownload(blob, filename) {
+// La usa también el PDF del acuerdo de confidencialidad (pdfNda.jsx):
+// las mañas de iOS y Firefox con los blobs se arreglan en un solo lugar.
+export function triggerDownload(blob, filename) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
 

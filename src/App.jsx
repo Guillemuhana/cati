@@ -13,6 +13,9 @@ import Facturas from './pages/Facturas'
 import FacturaDetail from './pages/FacturaDetail'
 import Premium from './pages/Premium'
 import PublicBudget from './pages/PublicBudget'
+import PublicNda from './pages/PublicNda'
+import Confidencialidad from './pages/Confidencialidad'
+import ConfidencialidadDetail from './pages/ConfidencialidadDetail'
 import Perfil from './pages/Perfil'
 import Ayuda from './pages/Ayuda'
 import Invitar from './pages/Invitar'
@@ -27,6 +30,9 @@ export default function App() {
       <Route path="/ingresar" element={<Login />} />
       <Route path="/registro" element={<Register />} />
       <Route path="/p/:token" element={<PublicBudget />} />
+      {/* El acuerdo de confidencialidad que firma el cliente. Sin login:
+          el que lo recibe todavía no es cliente de nadie. */}
+      <Route path="/c/:token" element={<PublicNda />} />
 
       <Route
         path="/panel"
@@ -165,6 +171,30 @@ export default function App() {
           <ProtectedRoute>
             <Layout>
               <Ayuda />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Acuerdos de confidencialidad: solo para el dueño. Igual que
+          /admin, el acceso real lo decide public.is_admin() en la base
+          (migración 27), no estas rutas. */}
+      <Route
+        path="/confidencialidad"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Confidencialidad />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/confidencialidad/:id"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ConfidencialidadDetail />
             </Layout>
           </ProtectedRoute>
         }

@@ -27,15 +27,19 @@ const MOBILE_ITEMS = [
   { to: '/clientes', label: 'Clientes', icon: IconUsers }
 ]
 
-// Solo para el dueño. Se agrega al final del menú si la base de datos
-// dice que esta cuenta es admin.
-const ADMIN_ITEM = { to: '/admin', label: 'Administración', icon: IconShield }
+// Solo para el dueño. Se agregan al final del menú si la base de datos
+// dice que esta cuenta es admin. El candado de verdad está en la base
+// (public.is_admin), no acá: esto solo decide qué se dibuja.
+const ADMIN_ITEMS = [
+  { to: '/confidencialidad', label: 'Confidencialidad', icon: IconLock },
+  { to: '/admin', label: 'Administración', icon: IconShield }
+]
 
 export default function Layout({ children }) {
   const { profile, signOut, isAdmin } = useAuth()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
-  const navItems = isAdmin ? [...NAV_ITEMS, ADMIN_ITEM] : NAV_ITEMS
+  const navItems = isAdmin ? [...NAV_ITEMS, ...ADMIN_ITEMS] : NAV_ITEMS
 
   const handleSignOut = async () => {
     await signOut()
@@ -280,6 +284,14 @@ function IconReceipt(props) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
       <path d="M5 3v18l2-1.3L9 21l2-1.3L13 21l2-1.3L17 21l2-1.3V3l-2 1.3L15 2l-2 1.3L11 2 9 3.3 7 2 5 3.3z" />
       <path d="M8 8h8M8 12h8" strokeLinecap="round" />
+    </svg>
+  )
+}
+function IconLock(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <rect x="4" y="10" width="16" height="10" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" strokeLinecap="round" />
     </svg>
   )
 }

@@ -10,6 +10,7 @@ import { downloadNdaPdf } from '../lib/pdfNda'
 import { completarParte, identificarParte } from '../lib/nda'
 import { canalesDe } from '../lib/redes'
 import RedIcon from '../components/RedIcon'
+import { TRAYECTORIA, POR_QUE_CONTAR } from '../lib/estudio'
 
 const ERRORES = {
   ya_firmado: 'Este acuerdo ya fue firmado.',
@@ -219,6 +220,14 @@ export default function PublicNda() {
                   {!!business?.address && (
                     <p className="break-words text-xs text-ink-soft">{business.address}</p>
                   )}
+                  {/* La trayectoria, pegada al nombre: es una credencial,
+                      y como tal vale al lado de quién sos, no perdida
+                      más abajo entre los textos. */}
+                  {!!TRAYECTORIA && (
+                    <p className="mt-2 text-xs font-medium" style={{ color: accentInk }}>
+                      {TRAYECTORIA}
+                    </p>
+                  )}
                 </div>
                 {business?.logo_url ? (
                   <img
@@ -266,6 +275,23 @@ export default function PublicNda() {
                   desde el celular.
                 </p>
               </div>
+
+              {/* La pregunta que el cliente se hace mientras lee: «¿y por
+                  qué tengo que contarte todo?». Contestarla acá, antes de
+                  la charla, es la mitad del trabajo de convencerlo. */}
+              {!!POR_QUE_CONTAR?.texto && (
+                <div className="mt-4 rounded-lg border-l-2 bg-paper p-4" style={{ borderLeftColor: accent }}>
+                  <p className="text-sm font-semibold text-ink">{POR_QUE_CONTAR.titulo}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
+                    {POR_QUE_CONTAR.texto}
+                  </p>
+                  {!!POR_QUE_CONTAR.cierre && (
+                    <p className="mt-2 text-sm font-medium leading-relaxed text-ink">
+                      {POR_QUE_CONTAR.cierre}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Las tres dudas que tiene cualquiera al abrir un link que
                   le pide firmar algo, contestadas antes de que las

@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet, Image, pdf } from '@react-pdf/renderer'
 import { formatNumero, formatDate } from './utils'
 import { triggerDownload } from './pdf'
+import { canalesDe } from './redes'
 
 /**
  * PDF del acuerdo de confidencialidad firmado.
@@ -33,6 +34,7 @@ const styles = StyleSheet.create({
   logo: { width: 110, height: 46, objectFit: 'contain' },
   titulo: { fontSize: 15, fontFamily: 'Helvetica-Bold', letterSpacing: 0.5 },
   subtitulo: { fontSize: 8.5, color: SOFT, marginTop: 3 },
+  contactos: { fontSize: 8, color: SOFT, marginTop: 4 },
   regla: { borderBottomWidth: 1.2, borderBottomColor: LINE, marginBottom: 16 },
 
   parrafo: { marginBottom: 8, textAlign: 'justify' },
@@ -147,6 +149,27 @@ function NdaPDF({ nda, profile }) {
   const numero = formatNumero(nda.numero, nda.created_at?.slice(0, 10), 'CONF')
   const parrafos = (nda.cuerpo || '').split(/\n{2,}/).filter((p) => p.trim())
 
+  // Los contactos del emisor en el encabezado: email, teléfono, Instagram,
+  // web. El PDF del acuerdo se reenvía y se guarda suelto, así que tiene
+  // que poder decir por sí solo cómo encontrar a quien lo emitió. Se
+  // arma con la misma lista que la web (canalesDe), para que el Instagram
+  // se escriba «@estudio» en los dos lados. El domicilio se saca: ya está
+  // en el encabezado del propio acuerdo, dentro del texto firmado.
+  //
+  // El WhatsApp se omite cuando es el mismo número que el teléfono, que
+  // es el caso normal: si no, el encabezado dice dos veces la misma
+  // línea con distinto formato («11 5555-4444 · 1155554444») y eso en un
+  // documento que se firma queda a desprolijo.
+  const soloDigitos = (v) => (v || '').replace(/\D/g, '')
+  const telDigitos = soloDigitos(profile?.phone)
+
+  const contactos = canalesDe(profile)
+    .filter((c) => c.key !== 'address')
+    .filter((c) => !(c.key === 'whatsapp' && telDigitos && soloDigitos(c.valor) === telDigitos))
+    .map((c) => c.texto)
+    .filter(Boolean)
+    .join('  ·  ')
+
   return (
     <Document title={numero}>
       <Page size="A4" style={styles.page}>
@@ -160,6 +183,7 @@ function NdaPDF({ nda, profile }) {
             <Text style={styles.subtitulo}>
               Emitido el {formatDate(nda.created_at?.slice(0, 10))}
             </Text>
+            {!!contactos && <Text style={styles.contactos}>{contactos}</Text>}
           </View>
           {!!profile?.logo_url && <Image src={profile.logo_url} style={styles.logo} />}
         </View>

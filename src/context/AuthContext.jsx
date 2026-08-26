@@ -109,6 +109,23 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
+  // Manda el mail de "olvidé mi contraseña". Supabase contesta bien aunque
+  // el email no exista: es a propósito, para que nadie use la pantalla de
+  // recupero para averiguar quién tiene cuenta.
+  const resetPassword = async (email) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/nueva-contrasena`
+    })
+    if (error) throw error
+  }
+
+  // Solo funciona con la sesión que abre el link del mail (o estando ya
+  // adentro): sin sesión, Supabase rechaza el cambio.
+  const updatePassword = async (password) => {
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) throw error
+  }
+
   const refreshProfile = () => loadProfile(session?.user?.id)
 
   // Campos del negocio que el usuario puede editar. Es la misma lista que los
@@ -168,6 +185,8 @@ export function AuthProvider({ children }) {
     signIn,
     signInWithGoogle,
     signOut,
+    resetPassword,
+    updatePassword,
     refreshProfile,
     updateProfile
   }

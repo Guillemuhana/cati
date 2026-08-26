@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import RecuperarPassword from './pages/RecuperarPassword'
+import NuevaPassword from './pages/NuevaPassword'
 import Dashboard from './pages/Dashboard'
 import Presupuestos from './pages/Presupuestos'
 import PresupuestoForm from './pages/PresupuestoForm'
@@ -29,6 +31,10 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/ingresar" element={<Login />} />
       <Route path="/registro" element={<Register />} />
+      {/* Recupero de contraseña: pedir el link y, al volver del mail,
+          elegir la nueva. Las dos van sin login, por razones obvias. */}
+      <Route path="/recuperar" element={<RecuperarPassword />} />
+      <Route path="/nueva-contrasena" element={<NuevaPassword />} />
       <Route path="/p/:token" element={<PublicBudget />} />
       {/* El acuerdo de confidencialidad que firma el cliente. Sin login:
           el que lo recibe todavía no es cliente de nadie. */}

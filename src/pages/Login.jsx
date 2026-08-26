@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import AuthLayout from '../components/AuthLayout'
 import BotonGoogle from '../components/BotonGoogle'
+import CampoPassword from '../components/CampoPassword'
 import { useSeo } from '../lib/seo'
 
 export default function Login() {
@@ -15,7 +15,6 @@ export default function Login() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '' })
-  const [verPassword, setVerPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -60,28 +59,17 @@ export default function Login() {
           />
         </Field>
         <Field label="Contraseña">
-          <div className="relative">
-            <input
-              type={verPassword ? 'text' : 'password'}
-              required
-              autoComplete="current-password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full rounded-md border border-line py-2.5 pl-3 pr-11 text-sm focus:border-brand-500 focus:outline-none"
-            />
-            {/* El ojo sirve para chequear lo que uno escribió, así que
-                arranca siempre tapado y no se acuerda de nada. */}
-            <button
-              type="button"
-              onClick={() => setVerPassword((v) => !v)}
-              aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-              title={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-              className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-ink-faint hover:text-ink-soft focus:outline-none"
-            >
-              {verPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
+          <CampoPassword
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
         </Field>
+
+        <div className="flex justify-end">
+          <Link to="/recuperar" className="text-sm text-ink-soft hover:text-brand-600 hover:underline">
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
 
         {error && <p className="text-sm text-rust-500">{error}</p>}
 

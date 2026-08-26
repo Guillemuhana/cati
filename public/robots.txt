@@ -12,8 +12,10 @@ User-agent: *
 Allow: /$
 Allow: /ingresar
 Allow: /registro
+Allow: /recuperar
 
 Disallow: /p/
+Disallow: /nueva-contrasena
 Disallow: /panel
 Disallow: /presupuestos
 Disallow: /clientes

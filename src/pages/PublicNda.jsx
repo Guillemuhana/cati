@@ -7,7 +7,7 @@ import FirmaCanvas from '../components/FirmaCanvas'
 import { formatNumero, resolveAccent, readableAccent } from '../lib/utils'
 import { useSeo } from '../lib/seo'
 import { downloadNdaPdf } from '../lib/pdfNda'
-import { completarParte, identificarParte } from '../lib/nda'
+import { completarParte, identificarParte, textoVigencia } from '../lib/nda'
 import { canalesDe } from '../lib/redes'
 import RedIcon from '../components/RedIcon'
 import { TRAYECTORIA, POR_QUE_CONTAR } from '../lib/estudio'
@@ -270,9 +270,9 @@ export default function PublicNda() {
               <div className="mt-6 rounded-lg border border-line bg-paper p-4">
                 <p className="text-sm leading-relaxed text-ink">
                   Este acuerdo protege lo que se cuenten las dos partes
-                  {nda.proyecto ? ` sobre ${nda.proyecto}` : ''}. Se obligan las dos por igual, por{' '}
-                  {nda.vigencia_anios} años. Podés leerlo completo más abajo y firmarlo acá mismo,
-                  desde el celular.
+                  {nda.proyecto ? ` sobre ${nda.proyecto}` : ''}. Se obligan las dos por igual y{' '}
+                  {textoVigencia(nda.vigencia_anios)}. Podés leerlo completo más abajo y firmarlo
+                  acá mismo, desde el celular.
                 </p>
               </div>
 
@@ -296,10 +296,14 @@ export default function PublicNda() {
               {/* Las tres dudas que tiene cualquiera al abrir un link que
                   le pide firmar algo, contestadas antes de que las
                   piense. */}
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <Garantia
-                  titulo="No te pedimos nada"
-                  texto="Ni cuenta, ni contraseña, ni datos de pago. Solo firmar."
+                  titulo="Tu idea sigue siendo tuya"
+                  texto="No buscamos ser socios ni quedarnos con un porcentaje de tu app. Desarrollamos y cobramos por el trabajo y el mantenimiento, nada más."
+                />
+                <Garantia
+                  titulo="No vence"
+                  texto="La confidencialidad no tiene fecha de corte: sigue aunque no trabajemos juntos."
                 />
                 <Garantia
                   titulo="Los dos por igual"

@@ -86,7 +86,9 @@ create table if not exists public.ndas (
   -- en el link y la puede leer cualquiera que lo reciba.
   proyecto text default '',
 
-  vigencia_anios integer not null default 3 check (vigencia_anios between 1 and 20),
+  -- 0 = sin fecha de vencimiento, que es lo que usa la app. El check se
+  -- ajusta más abajo para las bases donde esta tabla ya existía.
+  vigencia_anios integer not null default 0 check (vigencia_anios between 0 and 20),
   jurisdiccion text not null default '',
 
   -- El acuerdo congelado + su huella. Ver el encabezado.
@@ -114,6 +116,14 @@ create table if not exists public.ndas (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- `create table if not exists` no toca una tabla que ya existe, así que
+-- el plazo indefinido hay que habilitarlo aparte para quien ya corrió una
+-- versión anterior de esta migración. Correrlo dos veces no hace daño.
+alter table public.ndas drop constraint if exists ndas_vigencia_anios_check;
+alter table public.ndas
+  add constraint ndas_vigencia_anios_check check (vigencia_anios between 0 and 20);
+alter table public.ndas alter column vigencia_anios set default 0;
 
 create unique index if not exists ndas_public_token_idx on public.ndas(public_token);
 create index if not exists ndas_user_id_idx on public.ndas(user_id);

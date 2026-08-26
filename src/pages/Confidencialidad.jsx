@@ -8,7 +8,7 @@ import { formatDate, formatNumero } from '../lib/utils'
 import {
   NDA_STATUS,
   JURISDICCION_DEFAULT,
-  VIGENCIA_PRESETS,
+  VIGENCIA_INDEFINIDA,
   textoAcuerdo,
   huellaDe
 } from '../lib/nda'
@@ -26,7 +26,6 @@ const VACIO = {
   parte_telefono: '',
   parte_domicilio: '',
   proyecto: '',
-  vigencia_anios: 3,
   jurisdiccion: JURISDICCION_DEFAULT
 }
 
@@ -194,7 +193,7 @@ function ModalNuevo({ user, profile, onClose, onCreado }) {
         },
         parte: {},
         proyecto: form.proyecto.trim(),
-        vigenciaAnios: Number(form.vigencia_anios) || 3,
+        vigenciaAnios: VIGENCIA_INDEFINIDA,
         jurisdiccion: form.jurisdiccion.trim() || JURISDICCION_DEFAULT
       })
       const huella = await huellaDe(cuerpo)
@@ -228,7 +227,7 @@ function ModalNuevo({ user, profile, onClose, onCreado }) {
           parte_telefono: form.parte_telefono.trim(),
           parte_domicilio: form.parte_domicilio.trim(),
           proyecto: form.proyecto.trim(),
-          vigencia_anios: Number(form.vigencia_anios) || 3,
+          vigencia_anios: VIGENCIA_INDEFINIDA,
           jurisdiccion: form.jurisdiccion.trim() || JURISDICCION_DEFAULT,
           cuerpo,
           huella
@@ -318,25 +317,7 @@ function ModalNuevo({ user, profile, onClose, onCreado }) {
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
-                Vigencia
-              </label>
-              <select
-                value={form.vigencia_anios}
-                onChange={set('vigencia_anios')}
-                className="mt-1.5 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
-              >
-                {VIGENCIA_PRESETS.map((a) => (
-                  <option key={a} value={a}>
-                    {a} años
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Campo label="Tribunales de" value={form.jurisdiccion} onChange={set('jurisdiccion')} />
-          </div>
+          <Campo label="Tribunales de" value={form.jurisdiccion} onChange={set('jurisdiccion')} />
 
           {error && (
             <p className="rounded-md border border-rust-500/40 bg-rust-500/[0.08] px-3 py-2 text-xs text-rust-500">

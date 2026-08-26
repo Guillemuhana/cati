@@ -12,7 +12,20 @@
  *   que quedó escrito. Un NDA que se reescribe solo no prueba nada.
  */
 
-export const VIGENCIA_PRESETS = [2, 3, 5]
+/**
+ * 0 = sin fecha de vencimiento, y es lo que se usa siempre.
+ *
+ * La app ya no ofrece elegir plazo: un acuerdo que caduca en tres años
+ * deja la idea a la intemperie justo cuando el proyecto empieza a valer.
+ * El soporte para un plazo en años queda en textoAcuerdo() por si algún
+ * día hace falta, pero no hay pantalla que lo pida.
+ */
+export const VIGENCIA_INDEFINIDA = 0
+
+/** Cómo se dice el plazo en pantalla, fuera del texto legal. */
+export function textoVigencia(anios) {
+  return Number(anios) > 0 ? `por ${anios} años` : 'sin fecha de vencimiento'
+}
 
 export const JURISDICCION_DEFAULT = 'la Ciudad Autónoma de Buenos Aires'
 
@@ -93,6 +106,21 @@ export function textoAcuerdo({
     ? `del ${objeto.slice(3)}`
     : `de ${objeto}`
 
+  // Sin fecha de corte, que es lo que de verdad tranquiliza a quien va a
+  // contar una idea: un acuerdo que vence en tres años deja la idea
+  // desprotegida justo cuando el proyecto empieza a valer algo.
+  //
+  // El plazo indefinido va atado a la cláusula de excepciones: la
+  // obligación dura mientras la información siga siendo confidencial. Sin
+  // ese matiz sería una obligación eterna incluso sobre algo que ya se
+  // hizo público, y eso es lo que un juez recortaría primero.
+  const plazo =
+    Number(vigenciaAnios) > 0
+      ? `Las obligaciones de confidencialidad rigen desde la firma del presente y se mantienen por el plazo de ${vigenciaAnios} ${
+          Number(vigenciaAnios) === 1 ? 'año' : 'años'
+        }.`
+      : 'Las obligaciones de confidencialidad rigen desde la firma del presente y se mantienen sin plazo de vencimiento, mientras la información conserve carácter confidencial conforme a la cláusula CUARTA.'
+
   return `ACUERDO DE CONFIDENCIALIDAD
 
 Entre ${nombrarParte(emisor)}, en adelante «la Parte A», y ${nombrarParte(
@@ -111,13 +139,11 @@ QUINTA — NO USO EN BENEFICIO PROPIO. La Parte Receptora se obliga a no utiliza
 
 SEXTA — CONOCIMIENTO GENERAL Y ACTIVIDAD PROFESIONAL. Ninguna disposición de este acuerdo restringe el derecho de cualquiera de las Partes a seguir empleando sus conocimientos, técnicas, metodologías, herramientas y experiencia profesional de carácter general, incluidos los que conserve en la memoria, siempre que no incorpore ni divulgue información confidencial de la otra Parte. En particular, y para evitar toda duda, este acuerdo no constituye una cláusula de exclusividad ni de no competencia: cada Parte conserva plena libertad para prestar o contratar servicios con terceros, incluso dentro del mismo rubro o actividad.
 
-SÉPTIMA — PROPIEDAD Y AUSENCIA DE OBLIGACIÓN DE CONTRATAR. La información confidencial continúa siendo propiedad exclusiva de la Parte Reveladora. Este acuerdo no transfiere ni licencia derecho de propiedad intelectual alguno, no obliga a ninguna de las Partes a revelar información determinada, ni a celebrar contrato alguno entre ellas.
+SÉPTIMA — PROPIEDAD DEL PROYECTO Y AUSENCIA DE SOCIEDAD. La información confidencial continúa siendo propiedad exclusiva de la Parte Reveladora. Este acuerdo no transfiere ni licencia derecho de propiedad intelectual alguno, no obliga a ninguna de las Partes a revelar información determinada ni a celebrar contrato alguno entre ellas, y no constituye ni supone la intención de constituir sociedad, unión transitoria, emprendimiento conjunto, agencia ni relación asociativa de ninguna especie. En particular, y para evitar toda duda: el proyecto, la idea de negocio y la aplicación o desarrollo que la Parte Reveladora se proponga llevar adelante, junto con sus resultados económicos, le pertenecen en forma exclusiva. La Parte Receptora no adquiere ni reclamará por este acuerdo participación societaria, regalías, comisiones ni porcentaje alguno sobre los ingresos, las ganancias o la valuación del proyecto, y su única retribución será el precio que en su caso se pacte por sus servicios profesionales de desarrollo, mantenimiento, soporte o los que correspondan.
 
 OCTAVA — DEVOLUCIÓN O DESTRUCCIÓN. Concluida la relación entre las Partes, y a simple requerimiento escrito de la Parte Reveladora, la Parte Receptora devolverá o destruirá la información confidencial en su poder. Podrá conservar una copia de archivo al solo efecto de acreditar el cumplimiento de este acuerdo, y aquellas copias que resulten de sus sistemas automáticos de respaldo, que permanecerán sujetas a las obligaciones aquí asumidas mientras subsistan.
 
-NOVENA — PLAZO. Las obligaciones de confidencialidad rigen desde la firma del presente y se mantienen por el plazo de ${vigenciaAnios} ${
-    vigenciaAnios === 1 ? 'año' : 'años'
-  }, aun cuando no llegara a celebrarse contrato alguno entre las Partes, y con independencia del motivo por el cual finalicen las conversaciones.
+NOVENA — PLAZO. ${plazo} Subsisten aun cuando no llegara a celebrarse contrato alguno entre las Partes, aunque el proyecto no se lleve a cabo, y con independencia del motivo por el cual finalicen las conversaciones.
 
 DÉCIMA — INCUMPLIMIENTO. El incumplimiento de las obligaciones aquí asumidas hará responsable a la Parte incumplidora de los daños y perjuicios ocasionados, sin perjuicio de las acciones que correspondan conforme a la Ley 24.766 de Confidencialidad y demás normativa aplicable.
 

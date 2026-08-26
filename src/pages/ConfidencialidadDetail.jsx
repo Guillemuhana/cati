@@ -7,7 +7,7 @@ import Card from '../components/Card'
 import FirmaCanvas from '../components/FirmaCanvas'
 import { formatDate, formatNumero } from '../lib/utils'
 import { urlDeWhatsapp } from '../lib/redes'
-import { NDA_STATUS } from '../lib/nda'
+import { NDA_STATUS, textoVigencia } from '../lib/nda'
 import { downloadNdaPdf } from '../lib/pdfNda'
 
 const COLOR_MAP = {
@@ -203,7 +203,7 @@ export default function ConfidencialidadDetail() {
             </span>
           </div>
           <p className="mt-1 text-sm text-ink-soft">
-            {numero} · {formatDate(nda.created_at?.slice(0, 10))} · vigencia {nda.vigencia_anios} años
+            {numero} · {formatDate(nda.created_at?.slice(0, 10))} · {textoVigencia(nda.vigencia_anios)}
           </p>
         </div>
         <button
@@ -379,8 +379,8 @@ export default function ConfidencialidadDetail() {
           ) : (
             <p className="text-sm text-ink-soft">
               Acuerdo mutuo de confidencialidad
-              {nda.proyecto ? ` sobre ${nda.proyecto}` : ''}, por {nda.vigencia_anios} años, con
-              jurisdicción en {nda.jurisdiccion}.
+              {nda.proyecto ? ` sobre ${nda.proyecto}` : ''}, {textoVigencia(nda.vigencia_anios)},
+              con jurisdicción en {nda.jurisdiccion}.
             </p>
           )}
           {!nda.firmado_parte_at && (

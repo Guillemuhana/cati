@@ -1,5 +1,5 @@
 import { Globe, Mail, Phone, MapPin } from 'lucide-react'
-import { trazo } from './brandPaths'
+import { trazo, degradado } from './brandPaths'
 
 // ------------------------------------------------------------
 // Contacto y redes del negocio.
@@ -24,7 +24,13 @@ import { trazo } from './brandPaths'
 const limpiarUsuario = (v) =>
   (v || '')
     .trim()
-    .replace(/^https?:\/\/(www\.)?[^/]+\//i, '') // pegó la URL entera
+    .replace(/^https?:\/\//i, '') // pegó la URL entera
+    .replace(/^www\./i, '')
+    // El dominio adelante, aunque venga sin http:// — que es como lo
+    // copia la mayoría: «instagram.com/minegocio». Sin esta línea el
+    // usuario quedaba en «instagram.com» y el link terminaba en
+    // instagram.com/instagram.com, roto y sin avisar.
+    .replace(/^[^/\s]+\.[a-z]{2,}\//i, '')
     .replace(/^@/, '')
     .replace(/[/?#].*$/, '') // saca la ruta y los ?utm_...
     .replace(/[^A-Za-z0-9._-]/g, '')
@@ -85,6 +91,7 @@ export const CANALES = [
     placeholder: '@minegocio',
     path: trazo('instagram'),
     color: '#E1306C',
+    gradiente: degradado('instagram'),
     url: (v) => (limpiarUsuario(v) ? `https://instagram.com/${limpiarUsuario(v)}` : ''),
     texto: (v) => (limpiarUsuario(v) ? `@${limpiarUsuario(v)}` : '')
   },

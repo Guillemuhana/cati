@@ -184,7 +184,26 @@ export default function Perfil() {
                   placeholder={canal.placeholder}
                   className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
                 />
-                {canal.ayuda && <span className="mt-1 block text-xs text-ink-faint">{canal.ayuda}</span>}
+                {/* Cómo va a quedar, apenas lo escribe. Sin esto no hay
+                    forma de saber que algo cargado no se muestra: el
+                    canal simplemente no aparece en el enlace del cliente
+                    y uno cree que la app no lo soporta. */}
+                {form[canal.key]?.trim() ? (
+                  canal.url(form[canal.key]) ? (
+                    <span className="mt-1 block text-xs text-ink-faint">
+                      Se va a ver como{' '}
+                      <strong className="font-medium text-ink-soft">
+                        {canal.texto(form[canal.key]) || form[canal.key]}
+                      </strong>
+                    </span>
+                  ) : (
+                    <span className="mt-1 block text-xs text-rust-500">
+                      Así no se entiende y no se va a mostrar. {canal.ayuda || `Probá con ${canal.placeholder}`}
+                    </span>
+                  )
+                ) : (
+                  canal.ayuda && <span className="mt-1 block text-xs text-ink-faint">{canal.ayuda}</span>
+                )}
               </label>
             ))}
           </div>

@@ -13,7 +13,7 @@
  */
 
 /**
- * 0 = sin fecha de vencimiento, y es lo que se usa siempre.
+ * 0 = por tiempo indefinido, y es lo que se usa siempre.
  *
  * La app ya no ofrece elegir plazo: un acuerdo que caduca en tres años
  * deja la idea a la intemperie justo cuando el proyecto empieza a valer.
@@ -24,7 +24,7 @@ export const VIGENCIA_INDEFINIDA = 0
 
 /** Cómo se dice el plazo en pantalla, fuera del texto legal. */
 export function textoVigencia(anios) {
-  return Number(anios) > 0 ? `por ${anios} años` : 'sin fecha de vencimiento'
+  return Number(anios) > 0 ? `por ${anios} años` : 'por tiempo indefinido'
 }
 
 export const JURISDICCION_DEFAULT = 'la Ciudad Autónoma de Buenos Aires'
@@ -91,7 +91,7 @@ export function textoAcuerdo({
   emisor = {},
   parte = {},
   proyecto = '',
-  vigenciaAnios = 3,
+  vigenciaAnios = VIGENCIA_INDEFINIDA,
   jurisdiccion = JURISDICCION_DEFAULT
 } = {}) {
   const objeto =
@@ -119,7 +119,7 @@ export function textoAcuerdo({
       ? `Las obligaciones de confidencialidad rigen desde la firma del presente y se mantienen por el plazo de ${vigenciaAnios} ${
           Number(vigenciaAnios) === 1 ? 'año' : 'años'
         }.`
-      : 'Las obligaciones de confidencialidad rigen desde la firma del presente y se mantienen sin plazo de vencimiento, mientras la información conserve carácter confidencial conforme a la cláusula CUARTA.'
+      : 'Las obligaciones de confidencialidad rigen desde la firma del presente y se mantienen por tiempo indefinido, mientras la información conserve carácter confidencial conforme a la cláusula CUARTA.'
 
   return `ACUERDO DE CONFIDENCIALIDAD
 

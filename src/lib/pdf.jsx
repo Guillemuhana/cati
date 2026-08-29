@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet, Image, Font, Svg, Path, pdf } from '@react-pdf/renderer'
-import { formatMoney, formatDate, formatNumero, STATUS, safeImages } from './utils'
+import { formatMoney, formatDate, formatNumero, STATUS, safeImages, isSafeImageUrl } from './utils'
 import { cleanDetails } from '../components/BudgetDetails'
 import { canalesDe } from './redes'
 
@@ -99,6 +99,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   dataCol: { width: '50%', paddingRight: 8 },
+  // Cuando el cliente tiene logo, las dos columnas se reparten lo que
+  // sobra en vez de ocupar la mitad justa cada una.
+  dataColConLogo: { flex: 1, paddingRight: 8 },
+  // El logo del cliente va al lado de sus datos y bien más chico que el
+  // nuestro (134x62): la hoja la manda el que presupuesta, no el que la
+  // recibe.
+  clientLogoCell: {
+    width: 78,
+    paddingLeft: 6,
+    borderLeftWidth: 1,
+    borderLeftColor: LINE,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  clientLogo: { width: 66, height: 30, objectFit: 'contain' },
   fieldRow: { flexDirection: 'row', marginBottom: 2 },
   fieldLabel: { fontSize: 8, fontFamily: 'Helvetica-Bold' },
   fieldValue: { fontSize: 8, flex: 1 },
@@ -232,6 +247,9 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
   const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)
   const rows = normalizeItems(items)
   const qtyTotal = rows.reduce((acc, it) => acc + (Number(it.quantity) || 0), 0)
+  // Solo del Storage nuestro: si la URL no es de ahí, el PDF sale sin el
+  // logo en vez de romperse entero al no poder bajar la imagen.
+  const logoCliente = isSafeImageUrl(client?.logo_url) ? client.logo_url : ''
 
   return (
     <Document title={`${numero} - ${budget.title || client?.name || ''}`}>
@@ -263,20 +281,25 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
           </View>
         </View>
 
-        {/* Datos del cliente */}
+        {/* Datos del cliente, con su logo al costado si lo cargó */}
         <View style={styles.dataBox}>
-          <View style={styles.dataCol}>
+          <View style={logoCliente ? styles.dataColConLogo : styles.dataCol}>
             <Field label="SEÑOR/ES" value={client?.name || 'Cliente sin asignar'} />
             <Field label="DOMICILIO" value={client?.address} always />
             <Field label="CORREO ELECTRONICO" value={client?.email} always />
             <Field label="CONDICION DE PAGO" value={budget.payment_terms} always />
           </View>
-          <View style={styles.dataCol}>
+          <View style={logoCliente ? styles.dataColConLogo : styles.dataCol}>
             <Field label="CUIT / CUIL" value={client?.tax_id} always />
             <Field label="TELEFONO" value={client?.phone} always />
             <Field label="FECHA VENCIMIENTO" value={budget.due_date ? formatDate(budget.due_date) : ''} always />
             <Field label="REFERENCIA" value={budget.reference} always />
           </View>
+          {!!logoCliente && (
+            <View style={styles.clientLogoCell}>
+              <Image src={logoCliente} style={styles.clientLogo} />
+            </View>
+          )}
         </View>
 
         {/* Datos del trabajo (los que cargó el usuario, si cargó alguno) */}

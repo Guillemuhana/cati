@@ -1,4 +1,4 @@
-import { formatMoney, formatDate, formatNumero, safeImages } from '../lib/utils'
+import { formatMoney, formatDate, formatNumero, safeImages, isSafeImageUrl } from '../lib/utils'
 import { cleanDetails } from './BudgetDetails'
 import { lineAmount } from './ItemsTable'
 
@@ -9,6 +9,7 @@ import { lineAmount } from './ItemsTable'
 export default function PreviewModal({ budget, items, client, profile, totals, onClose, actions }) {
   const currency = budget.currency
   const validItems = items.filter((it) => (it.description || '').trim() !== '' || Number(it.unit_price) > 0)
+  const logoCliente = isSafeImageUrl(client?.logo_url) ? client.logo_url : ''
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/50 p-4 backdrop-blur-sm sm:p-8">
@@ -63,10 +64,23 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
           <div className="mt-8 grid gap-6 text-sm sm:grid-cols-2">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Para</p>
-              <p className="mt-1 font-semibold text-ink">{client?.name || 'Cliente sin asignar'}</p>
-              {client?.email && <p className="break-all text-ink-soft">{client.email}</p>}
-              {client?.phone && <p className="text-ink-soft">{client.phone}</p>}
-              {client?.tax_id && <p className="text-ink-soft">{client.tax_id}</p>}
+              {/* El logo del cliente al lado de sus datos, chico: la hoja la
+                  manda el que presupuesta, no el que la recibe. */}
+              <div className="mt-1 flex items-start gap-3">
+                {logoCliente && (
+                  <img
+                    src={logoCliente}
+                    alt=""
+                    className="h-8 w-auto max-w-[72px] shrink-0 object-contain object-left sm:h-10 sm:max-w-[96px]"
+                  />
+                )}
+                <div className="min-w-0">
+                  <p className="font-semibold text-ink">{client?.name || 'Cliente sin asignar'}</p>
+                  {client?.email && <p className="break-all text-ink-soft">{client.email}</p>}
+                  {client?.phone && <p className="text-ink-soft">{client.phone}</p>}
+                  {client?.tax_id && <p className="text-ink-soft">{client.tax_id}</p>}
+                </div>
+              </div>
             </div>
             <div className="text-right">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Emisión</p>

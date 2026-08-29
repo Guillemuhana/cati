@@ -7,12 +7,14 @@ import { CURRENCIES, missingColumnError } from '../lib/utils'
 import { RUBRO_GROUPS, getRubro } from '../lib/rubros'
 import { CANALES } from '../lib/redes'
 import RedIcon from '../components/RedIcon'
+import MiFirma from '../components/MiFirma'
 
 export default function Perfil() {
   const { profile, user, updateProfile, refreshProfile } = useAuth()
   const { isPremium } = usePlan()
   const [form, setForm] = useState({
     business_name: profile?.business_name || '',
+    firma_nombre: profile?.firma_nombre || '',
     email: profile?.email || user?.email || '',
     phone: profile?.phone || '',
     tax_id: profile?.tax_id || '',
@@ -116,6 +118,19 @@ export default function Perfil() {
               onChange={(e) => setForm({ ...form, business_name: e.target.value })}
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
+          </Field>
+          <Field label="Tu nombre y apellido">
+            <input
+              type="text"
+              placeholder="Ej: Guillermo Muhana"
+              value={form.firma_nombre}
+              onChange={(e) => setForm({ ...form, firma_nombre: e.target.value })}
+              className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+            />
+            <span className="mt-1 block text-xs text-ink-faint">
+              Es la aclaración que va debajo de tu firma en el presupuesto. «Estudio Martínez» no
+              firma nada: firma una persona.
+            </span>
           </Field>
           <Field label="Email de contacto">
             <input
@@ -353,6 +368,12 @@ export default function Perfil() {
           {saved && <span className="text-sm text-brand-600">Guardado ✓</span>}
         </div>
       </form>
+
+      {/* Va afuera del formulario a propósito: la firma se guarda sola,
+          apenas se sube, y no espera al botón «Guardar cambios». */}
+      <div className="mt-6">
+        <MiFirma />
+      </div>
     </div>
   )
 }

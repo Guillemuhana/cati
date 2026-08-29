@@ -177,6 +177,12 @@ const styles = StyleSheet.create({
   signBox: { width: '45%' },
   signLine: { borderTopWidth: 0.8, borderTopColor: '#999999', marginBottom: 3, marginTop: 22 },
   signLabel: { fontSize: 7.5, color: SOFT },
+  // El hueco de arriba de la raya. Mide siempre lo mismo haya firma o no:
+  // si no, las dos rayas quedan a distinta altura y se nota.
+  signCanvas: { height: 40, justifyContent: 'flex-end' },
+  signImage: { height: 38, objectFit: 'contain', objectPosition: 'bottom left' },
+  signLineFirma: { borderTopWidth: 0.8, borderTopColor: '#999999', marginTop: 2, marginBottom: 3 },
+  signName: { fontSize: 8.5, fontFamily: 'Helvetica-Bold', marginBottom: 1 },
   footer: {
     position: 'absolute',
     bottom: 26,
@@ -231,6 +237,21 @@ function Field({ label, value, always = false }) {
   )
 }
 
+// Un renglón para firmar. Si el dueño ya guardó su firma, el presupuesto
+// sale firmado; el del cliente siempre va vacío, que para eso lo imprime.
+function SignBox({ firma, nombre, label }) {
+  return (
+    <View style={styles.signBox}>
+      <View style={styles.signCanvas}>
+        {!!firma && <Image src={firma} style={styles.signImage} />}
+      </View>
+      <View style={styles.signLineFirma} />
+      {!!nombre && <Text style={styles.signName}>{nombre}</Text>}
+      <Text style={styles.signLabel}>{label}</Text>
+    </View>
+  )
+}
+
 function PayCol({ title, text }) {
   if (!text) return null
   return (
@@ -250,6 +271,12 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
   // Solo del Storage nuestro: si la URL no es de ahí, el PDF sale sin el
   // logo en vez de romperse entero al no poder bajar la imagen.
   const logoCliente = isSafeImageUrl(client?.logo_url) ? client.logo_url : ''
+  // La firma guardada en el perfil (migración 27). Viene como data URL, no
+  // como enlace: no sale a la red al armar el PDF y no viaja en ningún RPC
+  // público. Si no hay firma guardada, queda el renglón en blanco de siempre.
+  const firmaPropia = typeof profile?.firma_png === 'string' && profile.firma_png.startsWith('data:image/')
+    ? profile.firma_png
+    : ''
 
   return (
     <Document title={`${numero} - ${budget.title || client?.name || ''}`}>
@@ -445,15 +472,14 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
           </View>
         )}
 
+        {/* Las firmas no se parten entre páginas */}
         <View style={styles.signRow} wrap={false}>
-          <View style={styles.signBox}>
-            <View style={styles.signLine} />
-            <Text style={styles.signLabel}>Firma y aclaración del cliente</Text>
-          </View>
-          <View style={styles.signBox}>
-            <View style={styles.signLine} />
-            <Text style={styles.signLabel}>Por {profile?.business_name || 'la empresa'}</Text>
-          </View>
+          <SignBox label="Firma y aclaración del cliente" />
+          <SignBox
+            firma={firmaPropia}
+            nombre={profile?.firma_nombre}
+            label={`Por ${profile?.business_name || 'la empresa'}`}
+          />
         </View>
 
         {/* Términos y condiciones del negocio (opcionales, se cargan en Mi negocio) */}

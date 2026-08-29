@@ -201,7 +201,11 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
           {/* Espacio de aceptación / firma */}
           <div className="mt-10 grid grid-cols-2 gap-8 pt-6">
             <Signature label="Firma del cliente" />
-            <Signature label={`Por ${profile?.business_name || 'la empresa'}`} />
+            <Signature
+              firma={profile?.firma_png}
+              nombre={profile?.firma_nombre}
+              label={`Por ${profile?.business_name || 'la empresa'}`}
+            />
           </div>
 
           {/* Términos y condiciones del negocio */}
@@ -240,10 +244,15 @@ function PreviewBlock({ title, text }) {
   )
 }
 
-function Signature({ label }) {
+// El renglón de firmar. Si el dueño guardó su firma, el presupuesto ya
+// sale firmado; el del cliente va vacío, que para eso lo imprime.
+function Signature({ firma, nombre, label }) {
   return (
     <div>
-      <div className="h-10 border-b border-ink/40" />
+      <div className="flex h-10 items-end border-b border-ink/40">
+        {!!firma && <img src={firma} alt="" className="max-h-10 max-w-full object-contain object-left" />}
+      </div>
+      {!!nombre && <p className="mt-1.5 text-sm font-semibold text-ink">{nombre}</p>}
       <p className="mt-1.5 text-[11px] uppercase tracking-wide text-ink-faint">{label}</p>
     </div>
   )

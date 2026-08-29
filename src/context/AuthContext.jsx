@@ -155,8 +155,10 @@ export function AuthProvider({ children }) {
     'brand_color',
     'number_prefix',
     'hide_branding',
-    // La firma guardada del dueño (migración 27).
-    'firma_png'
+    // La firma guardada del dueño (migración 27) y el nombre que va
+    // debajo de la raya (migración 29).
+    'firma_png',
+    'firma_nombre'
   ]
 
   const updateProfile = async (updates) => {

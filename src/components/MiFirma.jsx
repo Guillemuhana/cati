@@ -85,12 +85,13 @@ export default function MiFirma() {
               <img src={firma} alt="Tu firma" className="max-h-20 max-w-full object-contain" />
             </div>
             <p className="mt-1.5 text-xs text-ink-soft">
-              {profile?.business_name}
+              {profile?.firma_nombre || profile?.business_name}
               {profile?.tax_id ? ` · ${profile.tax_id}` : ''}
             </p>
           </div>
           <div className="flex shrink-0 gap-3">
             <button
+              type="button"
               onClick={() => inputRef.current?.click()}
               disabled={!!busy}
               className="rounded-md border border-line px-3 py-2 text-xs font-medium text-ink transition hover:border-ink-faint disabled:opacity-60"
@@ -98,6 +99,7 @@ export default function MiFirma() {
               {busy === 'archivo' ? 'Procesando…' : 'Cambiarla'}
             </button>
             <button
+              type="button"
               onClick={borrar}
               disabled={!!busy}
               className="text-xs text-ink-faint underline-offset-4 hover:text-rust-500 hover:underline disabled:opacity-60"
@@ -114,6 +116,7 @@ export default function MiFirma() {
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <button
+              type="button"
               onClick={() => inputRef.current?.click()}
               disabled={!!busy}
               className="btn-primary rounded-md px-4 py-2.5 text-sm font-semibold disabled:opacity-60"
@@ -123,6 +126,7 @@ export default function MiFirma() {
             {/* Atajo para la foto que ya está en public/. Ver el aviso de
                 abajo: ese archivo lo puede bajar cualquiera. */}
             <button
+              type="button"
               onClick={desdePublic}
               disabled={!!busy}
               className="rounded-md border border-line px-4 py-2.5 text-sm font-medium text-ink transition hover:border-ink-faint disabled:opacity-60"

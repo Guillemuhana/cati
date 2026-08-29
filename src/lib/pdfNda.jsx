@@ -44,8 +44,11 @@ const styles = StyleSheet.create({
   // ── Firmas ────────────────────────────────────────────────
   firmas: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 26 },
   firmaCaja: { width: '46%' },
-  firmaLienzo: { height: 62, justifyContent: 'flex-end' },
-  firmaImagen: { height: 58, objectFit: 'contain', objectPosition: 'bottom left' },
+  // Alto a propósito: una firma chiquita arriba de una raya larga parece
+  // un sello mal pegado. Mide lo mismo esté firmado o no, si no las dos
+  // rayas quedan a distinta altura.
+  firmaLienzo: { height: 86, justifyContent: 'flex-end' },
+  firmaImagen: { height: 82, objectFit: 'contain', objectPosition: 'bottom left' },
   firmaVacia: { fontSize: 7.5, color: '#999999', paddingBottom: 6 },
   firmaLinea: { borderTopWidth: 0.8, borderTopColor: LINE, marginTop: 2, marginBottom: 4 },
   firmaRol: { fontSize: 7, color: SOFT, textTransform: 'uppercase', letterSpacing: 0.6 },

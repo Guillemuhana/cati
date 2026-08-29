@@ -225,3 +225,70 @@ export async function limpiarFirmaAcotada(archivo, maxBytes = 260000) {
   }
   return dataUrl
 }
+
+/**
+ * Recorta al trazo una firma DIBUJADA en pantalla.
+ *
+ * La que se dibuja con el dedo ya viene sobre transparente, así que no
+ * hay nada que limpiar: lo único que sobra son los márgenes vacíos del
+ * recuadro. Sin recortarlos, en el PDF la firma entra escalada al alto
+ * del renglón y el trazo queda diminuto en el medio de la nada.
+ *
+ * Ojo: acá NO sirve limpiarFirma(). Esa mira el color y un píxel
+ * transparente es (0,0,0,0), o sea negro: tomaría todo el fondo por
+ * tinta. Para un dibujo el dato que importa es el alfa.
+ *
+ * @param {string} dataUrl  PNG con fondo transparente
+ * @returns {Promise<string>}  el mismo PNG recortado al trazo
+ */
+export async function recortarFirmaDibujada(dataUrl, anchoMax = ANCHO_MAX) {
+  const img = await new Promise((resolve, reject) => {
+    const el = new Image()
+    el.onload = () => resolve(el)
+    el.onerror = () => reject(new Error('no se pudo leer la firma'))
+    el.src = dataUrl
+  })
+
+  const escala = Math.min(1, anchoMax / img.naturalWidth)
+  const ancho = Math.max(1, Math.round(img.naturalWidth * escala))
+  const alto = Math.max(1, Math.round(img.naturalHeight * escala))
+
+  const canvas = document.createElement('canvas')
+  canvas.width = ancho
+  canvas.height = alto
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  ctx.drawImage(img, 0, 0, ancho, alto)
+
+  const { data } = ctx.getImageData(0, 0, ancho, alto)
+  let x0 = ancho
+  let y0 = alto
+  let x1 = -1
+  let y1 = -1
+
+  for (let j = 0, p = 3; j < ancho * alto; j++, p += 4) {
+    if (data[p] < MIN_ALPHA) continue
+    const x = j % ancho
+    const y = (j / ancho) | 0
+    if (x < x0) x0 = x
+    if (x > x1) x1 = x
+    if (y < y0) y0 = y
+    if (y > y1) y1 = y
+  }
+
+  if (x1 < 0) throw new Error('el recuadro quedó vacío: firmá antes de guardar')
+
+  const margen = Math.round(Math.max(ancho, alto) * 0.02)
+  x0 = Math.max(0, x0 - margen)
+  y0 = Math.max(0, y0 - margen)
+  x1 = Math.min(ancho - 1, x1 + margen)
+  y1 = Math.min(alto - 1, y1 + margen)
+
+  const recorte = document.createElement('canvas')
+  recorte.width = x1 - x0 + 1
+  recorte.height = y1 - y0 + 1
+  recorte
+    .getContext('2d')
+    .drawImage(canvas, x0, y0, recorte.width, recorte.height, 0, 0, recorte.width, recorte.height)
+
+  return recorte.toDataURL('image/png')
+}

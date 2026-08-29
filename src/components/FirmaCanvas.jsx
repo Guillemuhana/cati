@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import SignaturePad from 'signature_pad'
 
 /**
  * Recuadro para firmar con el dedo (o con el mouse).
@@ -6,129 +7,123 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * Devuelve la firma como PNG con fondo transparente, para que en el PDF
  * el trazo caiga sobre la línea de firma y no tape nada.
  *
+ * El dibujo lo hace signature_pad: interpola los puntos con curvas de
+ * Bézier y le da grosor según la velocidad, así el trazo sale con la
+ * panza y los finos de una lapicera en vez de la línea de alambre que
+ * salía uniendo los puntos con rectas. Además maneja solo el punto de un
+ * toque seco, que antes había que dibujar a mano.
+ *
  * ⚠ DETALLES QUE PARECEN DE ADORNO Y NO LO SON
  *   · touch-action: none — sin esto, el dedo scrollea la página en vez
  *     de dibujar y en el celular es imposible firmar.
- *   · Pointer Events — un solo camino para dedo, lápiz y mouse. Con
- *     eventos de mouse y de touch por separado, en algunos Android se
- *     dispara todo dos veces y la firma sale con dobles trazos.
  *   · devicePixelRatio — el canvas se dibuja al doble de resolución y se
  *     muestra a la mitad. Si no, la firma sale con los bordes dentados.
- *   · setPointerCapture — si el dedo se va del recuadro mientras firma,
- *     el trazo se corta a mitad de camino y el usuario cree que se
- *     rompió. Con la captura el trazo se sigue hasta que suelta.
+ *     Al redimensionar hay que volver a escalar el contexto: el navegador
+ *     limpia el canvas y pierde la transformación.
+ *   · El trazo se repone después de redimensionar. Girar el teléfono no
+ *     puede borrar una firma a medio hacer.
+ *
+ * Los eventos de puntero y la captura del dedo fuera del recuadro los
+ * resuelve la librería, que era de donde salían los dobles trazos en
+ * algunos Android.
  */
 export default function FirmaCanvas({ value, onChange, disabled = false, alto = 180 }) {
   const wrapRef = useRef(null)
   const canvasRef = useRef(null)
-  const dibujando = useRef(false)
-  const ultimo = useRef(null)
+  const padRef = useRef(null)
+  const anchoRef = useRef(0)
   const [vacio, setVacio] = useState(!value)
 
-  // Espejo de `vacio` en un ref: preparar() se registra una sola vez en el
-  // ResizeObserver, así que si mirara el estado vería para siempre el
-  // valor del primer render y un giro de pantalla borraría la firma.
-  const vacioRef = useRef(true)
-  const anchoRef = useRef(0)
+  // El valor con el que se montó: se dibuja una sola vez. Si mirásemos la
+  // prop en cada render, repondría el trazo viejo arriba del que se está
+  // haciendo.
+  const inicialRef = useRef(typeof value === 'string' && value.startsWith('data:image/') ? value : null)
 
-  // Prepara el lienzo al tamaño real del contenedor. Se llama al montar y
-  // cada vez que cambia el ancho (girar el teléfono, abrir el teclado).
+  // El lienzo se arma una sola vez, así que el aviso tiene que salir por
+  // un ref: si no, avisaría para siempre al onChange del primer render.
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+
   const preparar = useCallback(() => {
     const canvas = canvasRef.current
     const wrap = wrapRef.current
-    if (!canvas || !wrap) return
+    const pad = padRef.current
+    if (!canvas || !wrap || !pad) return
 
     const ancho = wrap.clientWidth
     if (!ancho || ancho === anchoRef.current) return
     anchoRef.current = ancho
 
-    const previo = !vacioRef.current ? canvas.toDataURL('image/png') : null
+    const previo = pad.isEmpty() ? inicialRef.current : pad.toDataURL('image/png')
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
 
     canvas.width = Math.round(ancho * dpr)
     canvas.height = Math.round(alto * dpr)
     canvas.style.width = `${ancho}px`
     canvas.style.height = `${alto}px`
+    canvas.getContext('2d').scale(dpr, dpr)
 
-    const ctx = canvas.getContext('2d')
-    ctx.scale(dpr, dpr)
-    ctx.lineWidth = 2.2
-    ctx.lineCap = 'round'
-    ctx.lineJoin = 'round'
-    ctx.strokeStyle = '#14181C'
+    // Después de tocar el tamaño el canvas queda sucio para la librería:
+    // clear() la deja en hoja limpia y coherente con lo que se ve.
+    pad.clear()
 
-    // El trazo que ya había se repone estirado al lienzo nuevo: girar el
-    // teléfono no puede borrar una firma a medio hacer.
     if (previo) {
-      const img = new Image()
-      img.onload = () => ctx.drawImage(img, 0, 0, ancho, alto)
-      img.src = previo
+      // Si la imagen no carga se pierde el trazo, pero el lienzo queda
+      // usable: mejor que dejar una promesa rota dando vueltas.
+      pad.fromDataURL(previo, { width: ancho, height: alto }).catch(() => {})
+      inicialRef.current = null
     }
   }, [alto])
 
   useEffect(() => {
+    const pad = new SignaturePad(canvasRef.current, {
+      penColor: '#14181C',
+      // Fondo transparente: en el PDF el trazo cae sobre la línea de
+      // firma y no la tapa con un rectángulo blanco.
+      backgroundColor: 'rgba(0,0,0,0)',
+      minWidth: 0.7,
+      maxWidth: 2.6,
+      // Un toque seco tiene que dejar marca: es el punto de una firma corta.
+      dotSize: 1.3,
+      throttle: 8
+    })
+    padRef.current = pad
+
+    const alTrazar = () => {
+      setVacio(false)
+      onChangeRef.current?.(pad.toDataURL('image/png'))
+    }
+    pad.addEventListener('endStroke', alTrazar)
+
     preparar()
     const obs = new ResizeObserver(() => preparar())
-    if (wrapRef.current) obs.observe(wrapRef.current)
-    return () => obs.disconnect()
-    // Solo al montar: preparar() se encarga de conservar el trazo, pero
-    // no queremos rehacer el lienzo en cada trazo nuevo.
+    obs.observe(wrapRef.current)
+
+    return () => {
+      obs.disconnect()
+      pad.removeEventListener('endStroke', alTrazar)
+      pad.off()
+      padRef.current = null
+    }
+    // Solo al montar: preparar() conserva el trazo y onChange se lee del
+    // cierre más nuevo a través del pad, no hace falta rehacer el lienzo.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const puntoDe = (e) => {
-    const rect = canvasRef.current.getBoundingClientRect()
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
-  }
-
-  const empezar = (e) => {
-    if (disabled) return
-    e.preventDefault()
-    dibujando.current = true
-    ultimo.current = puntoDe(e)
-    canvasRef.current.setPointerCapture?.(e.pointerId)
-
-    // Un toque seco sin arrastrar también deja marca: si no, el punto de
-    // una firma corta no se dibuja nunca.
-    const ctx = canvasRef.current.getContext('2d')
-    ctx.beginPath()
-    ctx.arc(ultimo.current.x, ultimo.current.y, 1.1, 0, Math.PI * 2)
-    ctx.fillStyle = '#14181C'
-    ctx.fill()
-    vacioRef.current = false
-    setVacio(false)
-  }
-
-  const mover = (e) => {
-    if (!dibujando.current || disabled) return
-    e.preventDefault()
-    const ctx = canvasRef.current.getContext('2d')
-    const p = puntoDe(e)
-    ctx.beginPath()
-    ctx.moveTo(ultimo.current.x, ultimo.current.y)
-    ctx.lineTo(p.x, p.y)
-    ctx.stroke()
-    ultimo.current = p
-  }
-
-  const terminar = (e) => {
-    if (!dibujando.current) return
-    dibujando.current = false
-    try {
-      canvasRef.current.releasePointerCapture?.(e.pointerId)
-    } catch {
-      // El puntero ya se había soltado solo. No es un problema.
-    }
-    onChange?.(canvasRef.current.toDataURL('image/png'))
-  }
+  // Mientras está deshabilitado el lienzo no escucha el dedo, pero lo
+  // dibujado sigue a la vista.
+  useEffect(() => {
+    const pad = padRef.current
+    if (!pad) return
+    if (disabled) pad.off()
+    else pad.on()
+  }, [disabled])
 
   const borrar = () => {
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    vacioRef.current = true
+    padRef.current?.clear()
+    inicialRef.current = null
     setVacio(true)
-    onChange?.(null)
+    onChangeRef.current?.(null)
   }
 
   return (
@@ -141,10 +136,6 @@ export default function FirmaCanvas({ value, onChange, disabled = false, alto = 
       >
         <canvas
           ref={canvasRef}
-          onPointerDown={empezar}
-          onPointerMove={mover}
-          onPointerUp={terminar}
-          onPointerCancel={terminar}
           className="block w-full cursor-crosshair touch-none"
           style={{ touchAction: 'none' }}
         />

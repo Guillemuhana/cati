@@ -153,6 +153,10 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
                     <span className="font-sans font-semibold text-ink">Saldo pendiente</span>
                     <span className="font-semibold text-ink">{formatMoney(totals.balance, currency)}</span>
                   </div>
+                  {/* La pregunta que el cliente hace apenas lee el número. */}
+                  <p className="pt-1 text-right text-xs italic text-ink-faint">
+                    El trabajo comienza una vez recibida la seña.
+                  </p>
                 </>
               )}
             </div>
@@ -204,6 +208,7 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
             <Signature
               firma={profile?.firma_png}
               nombre={profile?.firma_nombre}
+              cargo={profile?.firma_cargo}
               label={`Por ${profile?.business_name || 'la empresa'}`}
             />
           </div>
@@ -246,13 +251,14 @@ function PreviewBlock({ title, text }) {
 
 // El renglón de firmar. Si el dueño guardó su firma, el presupuesto ya
 // sale firmado; el del cliente va vacío, que para eso lo imprime.
-function Signature({ firma, nombre, label }) {
+function Signature({ firma, nombre, cargo, label }) {
   return (
     <div>
-      <div className="flex h-10 items-end border-b border-ink/40">
-        {!!firma && <img src={firma} alt="" className="max-h-10 max-w-full object-contain object-left" />}
+      <div className="flex h-20 items-end border-b border-ink/40">
+        {!!firma && <img src={firma} alt="" className="max-h-20 max-w-full object-contain object-left" />}
       </div>
       {!!nombre && <p className="mt-1.5 text-sm font-semibold text-ink">{nombre}</p>}
+      {!!cargo && <p className="text-xs text-ink-soft">{cargo}</p>}
       <p className="mt-1.5 text-[11px] uppercase tracking-wide text-ink-faint">{label}</p>
     </div>
   )

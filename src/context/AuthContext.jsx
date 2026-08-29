@@ -155,10 +155,11 @@ export function AuthProvider({ children }) {
     'brand_color',
     'number_prefix',
     'hide_branding',
-    // La firma guardada del dueño (migración 27) y el nombre que va
-    // debajo de la raya (migración 29).
+    // La firma guardada del dueño (migración 27) y el nombre y el cargo
+    // que van debajo de la raya (migración 29).
     'firma_png',
-    'firma_nombre'
+    'firma_nombre',
+    'firma_cargo'
   ]
 
   const updateProfile = async (updates) => {

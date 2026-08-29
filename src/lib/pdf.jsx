@@ -139,6 +139,19 @@ const styles = StyleSheet.create({
   colDisc: { width: 42, textAlign: 'right' },
   colTotal: { width: 80, textAlign: 'right' },
 
+  // Debajo de la caja de totales, alineada con ella: qué pasa cuando la
+  // seña se paga. Es la pregunta que el cliente hace por WhatsApp apenas
+  // lee el número, así que mejor que esté escrita en el papel.
+  depositNote: {
+    marginTop: 5,
+    alignSelf: 'flex-end',
+    maxWidth: 260,
+    fontSize: 8,
+    color: SOFT,
+    textAlign: 'right',
+    fontFamily: 'Helvetica-Oblique'
+  },
+
   // ── Totales ───────────────────────────────────────────────
   totalsBox: {
     marginTop: 10,
@@ -178,11 +191,15 @@ const styles = StyleSheet.create({
   signLine: { borderTopWidth: 0.8, borderTopColor: '#999999', marginBottom: 3, marginTop: 22 },
   signLabel: { fontSize: 7.5, color: SOFT },
   // El hueco de arriba de la raya. Mide siempre lo mismo haya firma o no:
-  // si no, las dos rayas quedan a distinta altura y se nota.
-  signCanvas: { height: 40, justifyContent: 'flex-end' },
-  signImage: { height: 38, objectFit: 'contain', objectPosition: 'bottom left' },
+  // si no, las dos rayas quedan a distinta altura y se nota. Es alto a
+  // propósito: una firma chiquita arriba de una raya larga parece un
+  // sello mal pegado, y al cliente le tiene que quedar lugar para firmar
+  // a mano del otro lado.
+  signCanvas: { height: 72, justifyContent: 'flex-end' },
+  signImage: { height: 68, objectFit: 'contain', objectPosition: 'bottom left' },
   signLineFirma: { borderTopWidth: 0.8, borderTopColor: '#999999', marginTop: 2, marginBottom: 3 },
-  signName: { fontSize: 8.5, fontFamily: 'Helvetica-Bold', marginBottom: 1 },
+  signName: { fontSize: 9.5, fontFamily: 'Helvetica-Bold', marginBottom: 1 },
+  signRole: { fontSize: 8, color: SOFT, marginBottom: 1 },
   footer: {
     position: 'absolute',
     bottom: 26,
@@ -239,7 +256,7 @@ function Field({ label, value, always = false }) {
 
 // Un renglón para firmar. Si el dueño ya guardó su firma, el presupuesto
 // sale firmado; el del cliente siempre va vacío, que para eso lo imprime.
-function SignBox({ firma, nombre, label }) {
+function SignBox({ firma, nombre, cargo, label }) {
   return (
     <View style={styles.signBox}>
       <View style={styles.signCanvas}>
@@ -247,6 +264,7 @@ function SignBox({ firma, nombre, label }) {
       </View>
       <View style={styles.signLineFirma} />
       {!!nombre && <Text style={styles.signName}>{nombre}</Text>}
+      {!!cargo && <Text style={styles.signRole}>{cargo}</Text>}
       <Text style={styles.signLabel}>{label}</Text>
     </View>
   )
@@ -422,6 +440,12 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
           )}
         </View>
 
+        {Number(budget.deposit) > 0 && (
+          <Text style={styles.depositNote}>
+            El trabajo comienza una vez recibida la seña.
+          </Text>
+        )}
+
         {/* Condiciones, formas de pago y plazo ya van en los recuadros de arriba. */}
         {!!profile?.bank_alias && (
           <View style={styles.payGrid} wrap={false}>
@@ -478,6 +502,7 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
           <SignBox
             firma={firmaPropia}
             nombre={profile?.firma_nombre}
+            cargo={profile?.firma_cargo}
             label={`Por ${profile?.business_name || 'la empresa'}`}
           />
         </View>

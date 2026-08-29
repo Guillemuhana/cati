@@ -319,6 +319,11 @@ export default function PublicBudget() {
                         {formatMoney(balance, currency)}
                       </span>
                     </div>
+                    {/* La pregunta que hace el cliente apenas ve el número.
+                        Acá es donde más se lee: es la pantalla que abre él. */}
+                    <p className="text-xs italic leading-relaxed text-ink-faint">
+                      El trabajo comienza una vez recibida la seña.
+                    </p>
                   </div>
                 )}
               </div>

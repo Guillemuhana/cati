@@ -15,6 +15,7 @@ export default function Perfil() {
   const [form, setForm] = useState({
     business_name: profile?.business_name || '',
     firma_nombre: profile?.firma_nombre || '',
+    firma_cargo: profile?.firma_cargo || '',
     email: profile?.email || user?.email || '',
     phone: profile?.phone || '',
     tax_id: profile?.tax_id || '',
@@ -130,6 +131,19 @@ export default function Perfil() {
             <span className="mt-1 block text-xs text-ink-faint">
               Es la aclaración que va debajo de tu firma en el presupuesto. «Estudio Martínez» no
               firma nada: firma una persona.
+            </span>
+          </Field>
+          <Field label="Tu cargo">
+            <input
+              type="text"
+              placeholder="Ej: CEO y Desarrollador de sTuDiob2b"
+              value={form.firma_cargo}
+              onChange={(e) => setForm({ ...form, firma_cargo: e.target.value })}
+              className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+            />
+            <span className="mt-1 block text-xs text-ink-faint">
+              Va debajo de tu nombre, en tu renglón de firma. El del cliente no lleva nada: eso lo
+              escribe él.
             </span>
           </Field>
           <Field label="Email de contacto">

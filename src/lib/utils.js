@@ -253,7 +253,8 @@ const MIGRACION_POR_COLUMNA = {
   rubro: 'migration_19_rubro.sql',
   images: 'migration_20_imagenes_presupuesto.sql',
   firma_png: 'migration_27_confidencialidad.sql',
-  firma_nombre: 'migration_29_firma_en_presupuestos.sql'
+  firma_nombre: 'migration_29_firma_en_presupuestos.sql',
+  firma_cargo: 'migration_29_firma_en_presupuestos.sql'
 }
 
 // Nombre de la columna que falta, o '' si el error es de otra cosa.

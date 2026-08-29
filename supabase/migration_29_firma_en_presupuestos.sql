@@ -13,7 +13,15 @@
 --   columna se puede poner el nombre y apellido de quien firma, y el
 --   nombre del negocio queda abajo, donde corresponde.
 --
---   Si la dejás vacía, el presupuesto sale como salía antes.
+--   Va con un segundo campo, firma_cargo, para el "CEO y Desarrollador
+--   de sTuDiob2b" que va abajo del nombre. Solo del lado del emisor: el
+--   renglón del cliente no lleva ni nombre ni cargo, lo escribe él.
+--
+--   Si las dejás vacías, el presupuesto sale como salía antes.
+--
+-- ⚠ Se puede correr dos veces sin miedo (add column if not exists +
+--   grant): si ya corriste una versión anterior de esta migración,
+--   volvé a correrla entera y listo.
 -- ============================================================
 
 -- ------------------------------------------------------------
@@ -22,13 +30,14 @@
 --    el propio usuario quiere que se lea en el papel.
 -- ------------------------------------------------------------
 alter table public.profiles add column if not exists firma_nombre text;
+alter table public.profiles add column if not exists firma_cargo text;
 
 -- ------------------------------------------------------------
 -- 2) Permiso de escritura
 --    Los GRANT de profiles son columna por columna (migración 07): sin
 --    esta línea la app guarda todo lo demás y falla solo en este campo.
 -- ------------------------------------------------------------
-grant update (firma_nombre) on public.profiles to authenticated;
+grant update (firma_nombre, firma_cargo) on public.profiles to authenticated;
 
 -- ------------------------------------------------------------
 -- 3) Lo que NO cambia, a propósito
@@ -41,7 +50,9 @@ grant update (firma_nombre) on public.profiles to authenticated;
 -- ------------------------------------------------------------
 -- 4) Verificación
 --      select column_name from information_schema.columns
---       where table_name = 'profiles' and column_name = 'firma_nombre';
+--       where table_name = 'profiles'
+--         and column_name in ('firma_nombre', 'firma_cargo');
+--    → tienen que salir las dos filas
 -- ------------------------------------------------------------
 
 -- ============================================================

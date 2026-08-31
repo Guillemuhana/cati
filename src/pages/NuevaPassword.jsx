@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Unlink2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import AuthLayout from '../components/AuthLayout'
@@ -12,9 +13,10 @@ import { useSeo } from '../lib/seo'
 const MINIMO = 6
 
 export default function NuevaPassword() {
+  const { t } = useTranslation()
   useSeo({
-    title: 'Elegir contraseña nueva',
-    description: 'Elegí una contraseña nueva para tu cuenta de Numera.',
+    title: t('seo.nuevaPasswordTitulo'),
+    description: t('seo.nuevaPasswordDesc'),
     noindex: true
   })
 
@@ -45,7 +47,7 @@ export default function NuevaPassword() {
       const fallo = query.get('error_description') || hash.get('error_description')
       if (fallo) {
         if (!vivo) return
-        setError(traducirErrorLink(fallo))
+        setError(t(claveErrorLink(fallo), { minimo: MINIMO }))
         setEstado('invalido')
         return
       }
@@ -61,7 +63,7 @@ export default function NuevaPassword() {
         })
         if (!vivo) return
         if (err) {
-          setError(traducirErrorLink(err.message))
+          setError(t(claveErrorLink(err.message), { minimo: MINIMO }))
           setEstado('invalido')
           return
         }
@@ -87,11 +89,11 @@ export default function NuevaPassword() {
     setError('')
 
     if (form.password.length < MINIMO) {
-      setError(`La contraseña tiene que tener al menos ${MINIMO} caracteres.`)
+      setError(t('nuevaPassword.errorCorta', { minimo: MINIMO }))
       return
     }
     if (form.password !== form.repetir) {
-      setError('Las dos contraseñas no coinciden.')
+      setError(t('nuevaPassword.errorNoCoinciden'))
       return
     }
 
@@ -102,14 +104,17 @@ export default function NuevaPassword() {
       // vuelva a escribir la contraseña que acaba de elegir.
       navigate('/panel', { replace: true })
     } catch (err) {
-      setError(traducirErrorLink(err.message))
+      setError(t(claveErrorLink(err.message), { minimo: MINIMO }))
       setLoading(false)
     }
   }
 
   if (estado === 'verificando') {
     return (
-      <AuthLayout title="Un segundo" subtitle="Estamos revisando el link.">
+      <AuthLayout
+        title={t('nuevaPassword.verificandoTitulo')}
+        subtitle={t('nuevaPassword.verificandoSubtitulo')}
+      >
         <div className="flex justify-center py-4">
           <Spinner />
         </div>
@@ -120,13 +125,13 @@ export default function NuevaPassword() {
   if (estado === 'invalido') {
     return (
       <AuthLayout
-        title="Ese link ya no sirve"
-        subtitle="Los links de recupero duran una hora y se usan una sola vez."
+        title={t('nuevaPassword.invalidoTitulo')}
+        subtitle={t('nuevaPassword.invalidoSubtitulo')}
       >
         <div className="flex flex-col items-center text-center">
           <Unlink2 size={38} className="text-ink-faint" strokeWidth={1.5} />
           <p className="mt-4 text-sm text-ink-soft">
-            {error || 'Pedí uno nuevo y volvé a abrirlo desde el mail.'}
+            {error || t('nuevaPassword.invalidoDetalle')}
           </p>
         </div>
 
@@ -134,11 +139,11 @@ export default function NuevaPassword() {
           to="/recuperar"
           className="btn-primary mt-6 block rounded-md py-2.5 text-center text-sm font-semibold"
         >
-          Pedir un link nuevo
+          {t('nuevaPassword.pedirNuevo')}
         </Link>
         <p className="mt-6 text-center text-sm text-ink-soft">
           <Link to="/ingresar" className="font-medium text-brand-600 hover:underline">
-            Volver a ingresar
+            {t('recuperar.volverIngresar')}
           </Link>
         </p>
       </AuthLayout>
@@ -146,12 +151,9 @@ export default function NuevaPassword() {
   }
 
   return (
-    <AuthLayout
-      title="Elegí una contraseña nueva"
-      subtitle="Con esta vas a entrar de ahora en más."
-    >
+    <AuthLayout title={t('nuevaPassword.titulo')} subtitle={t('nuevaPassword.subtitulo')}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Contraseña nueva">
+        <Field label={t('nuevaPassword.campoNueva')}>
           <CampoPassword
             autoFocus
             minLength={MINIMO}
@@ -160,7 +162,7 @@ export default function NuevaPassword() {
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
         </Field>
-        <Field label="Repetila">
+        <Field label={t('nuevaPassword.campoRepetir')}>
           <CampoPassword
             autoComplete="new-password"
             value={form.repetir}
@@ -168,7 +170,7 @@ export default function NuevaPassword() {
           />
         </Field>
 
-        <p className="text-xs text-ink-faint">Al menos {MINIMO} caracteres.</p>
+        <p className="text-xs text-ink-faint">{t('nuevaPassword.minimo', { minimo: MINIMO })}</p>
 
         {error && <p className="text-sm text-rust-500">{error}</p>}
 
@@ -177,22 +179,23 @@ export default function NuevaPassword() {
           disabled={loading}
           className="btn-primary w-full rounded-md py-2.5 text-sm font-semibold"
         >
-          {loading ? 'Guardando...' : 'Guardar y entrar'}
+          {loading ? t('comun.guardando') : t('nuevaPassword.guardarYEntrar')}
         </button>
       </form>
     </AuthLayout>
   )
 }
 
-export function traducirErrorLink(message = '') {
-  const m = message.toLowerCase()
+// Devuelve la clave del catálogo: el texto lo arma la pantalla, que es
+// la que sabe en qué idioma está.
+export function claveErrorLink(message = '') {
+  const m = `${message}`.toLowerCase()
   if (m.includes('expired') || m.includes('invalid') || m.includes('not found'))
-    return 'El link venció o ya se usó. Pedí uno nuevo.'
+    return 'nuevaPassword.errorVencido'
   if (m.includes('should be at least') || m.includes('password should'))
-    return `La contraseña tiene que tener al menos ${MINIMO} caracteres.`
+    return 'nuevaPassword.errorCorta'
   if (m.includes('different from the old') || m.includes('same as the old'))
-    return 'Esa es la contraseña que ya tenías. Elegí otra.'
-  if (m.includes('session') || m.includes('jwt'))
-    return 'Se cortó la sesión del recupero. Pedí un link nuevo.'
-  return message || 'No pudimos guardar la contraseña. Probá de nuevo.'
+    return 'nuevaPassword.errorMisma'
+  if (m.includes('session') || m.includes('jwt')) return 'nuevaPassword.errorSesion'
+  return 'nuevaPassword.errorGenerico'
 }

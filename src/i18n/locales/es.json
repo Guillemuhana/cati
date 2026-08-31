@@ -1,0 +1,238 @@
+{
+  "idioma": {
+    "etiqueta": "Idioma",
+    "cambiar": "Cambiar idioma"
+  },
+  "comun": {
+    "guardar": "Guardar",
+    "guardando": "Guardando...",
+    "guardado": "Guardado ✓",
+    "cancelar": "Cancelar",
+    "cerrar": "Cerrar",
+    "eliminar": "Eliminar",
+    "duplicar": "Duplicar",
+    "editar": "Editar",
+    "volver": "Volver",
+    "buscar": "Buscar",
+    "cargando": "Cargando...",
+    "opcional": "Opcional",
+    "si": "Sí",
+    "no": "No",
+    "error": "Ocurrió un error. Probá de nuevo.",
+    "reintentar": "Probá de nuevo"
+  },
+  "nav": {
+    "panel": "Panel",
+    "presupuestos": "Presupuestos",
+    "presupuestosCorto": "Presup.",
+    "facturas": "Facturas",
+    "catalogo": "Catálogo",
+    "clientes": "Clientes",
+    "reportes": "Reportes",
+    "miNegocio": "Mi negocio",
+    "confidencialidad": "Confidencialidad",
+    "administracion": "Administración",
+    "invitar": "Invitar y ganar",
+    "invitarBadge": "3 meses",
+    "ayuda": "Ayuda",
+    "abrirMenu": "Abrir menú",
+    "cerrarMenu": "Cerrar menú",
+    "salir": "Cerrar sesión",
+    "tuNegocio": "Tu negocio"
+  },
+  "auth": {
+    "ingresar": "Ingresar",
+    "ingresando": "Ingresando...",
+    "crearCuenta": "Crear cuenta",
+    "email": "Email",
+    "password": "Contraseña",
+    "mostrarPassword": "Mostrar contraseña",
+    "ocultarPassword": "Ocultar contraseña",
+    "olvide": "¿Olvidaste tu contraseña?",
+    "conGoogle": "Ingresar con Google",
+    "crearConGoogle": "Crear cuenta con Google",
+    "o": "o",
+    "loginTitulo": "Bienvenido de nuevo",
+    "loginSubtitulo": "Ingresá para seguir armando tus presupuestos.",
+    "sinCuenta": "¿No tenés cuenta?",
+    "creaUnaGratis": "Creá una gratis",
+    "yaTengoCuenta": "Ya tengo cuenta",
+    "desarrollo": "Desarrollo",
+    "panelFrase": "Presupuestos prolijos,\nen minutos.",
+    "panelDetalle": "Cargá tus ítems, tus clientes y tus condiciones. Salí con un PDF listo para enviar.",
+    "errores": {
+      "credenciales": "Email o contraseña incorrectos.",
+      "yaRegistrado": "Ya existe una cuenta con ese email.",
+      "passwordCorta": "La contraseña debe tener al menos 6 caracteres.",
+      "generico": "Ocurrió un error. Probá de nuevo.",
+      "demasiadosIntentos": "Demasiados intentos fallidos. Esperá {{minutos}} min y probá de nuevo.",
+      "esperaCorta": "Esperá {{segundos}} s antes de volver a probar."
+    },
+    "continuarGoogle": "Continuar con Google",
+    "googleNoHabilitado": "Todavía no está habilitado el ingreso con Google. Entrá con tu email y contraseña.",
+    "googleNoAbre": "No se pudo abrir el ingreso con Google.",
+    "abriendoGoogle": "Abriendo Google…"
+  },
+  "recuperar": {
+    "titulo": "¿Olvidaste tu contraseña?",
+    "subtitulo": "Poné tu email y te mandamos un link para elegir una nueva.",
+    "enviar": "Mandarme el link",
+    "enviando": "Mandando...",
+    "listoTitulo": "Revisá tu correo",
+    "listoSubtitulo": "Si hay una cuenta con ese email, ya salió el link.",
+    "listoDetalle": "Le mandamos un link a <0>{{email}}</0> para elegir una contraseña nueva. Vence en una hora.",
+    "noLlego": "¿No llegó? Fijate en el correo no deseado, o",
+    "otroEmail": "probá con otro email",
+    "volverIngresar": "Volver a ingresar",
+    "teAcordaste": "¿Te acordaste?",
+    "avisoGoogle": "Si creaste la cuenta con Google, entrá con el botón de Google: esa cuenta no tiene contraseña acá.",
+    "errorLimite": "Pediste varios links seguidos. Esperá un minuto y probá de nuevo.",
+    "errorEmail": "Ese email no parece válido.",
+    "errorGenerico": "No pudimos mandar el mail. Probá de nuevo."
+  },
+  "nuevaPassword": {
+    "verificandoTitulo": "Un segundo",
+    "verificandoSubtitulo": "Estamos revisando el link.",
+    "invalidoTitulo": "Ese link ya no sirve",
+    "invalidoSubtitulo": "Los links de recupero duran una hora y se usan una sola vez.",
+    "invalidoDetalle": "Pedí uno nuevo y volvé a abrirlo desde el mail.",
+    "pedirNuevo": "Pedir un link nuevo",
+    "titulo": "Elegí una contraseña nueva",
+    "subtitulo": "Con esta vas a entrar de ahora en más.",
+    "campoNueva": "Contraseña nueva",
+    "campoRepetir": "Repetila",
+    "minimo": "Al menos {{minimo}} caracteres.",
+    "guardarYEntrar": "Guardar y entrar",
+    "errorCorta": "La contraseña tiene que tener al menos {{minimo}} caracteres.",
+    "errorNoCoinciden": "Las dos contraseñas no coinciden.",
+    "errorVencido": "El link venció o ya se usó. Pedí uno nuevo.",
+    "errorMisma": "Esa es la contraseña que ya tenías. Elegí otra.",
+    "errorSesion": "Se cortó la sesión del recupero. Pedí un link nuevo.",
+    "errorGenerico": "No pudimos guardar la contraseña. Probá de nuevo."
+  },
+  "home": {
+    "heroTitulo": "Presupuestá como una empresa grande, sin dejar de ser vos",
+    "heroSubtitulo": "Presupuestos, facturas, recibos y acuerdos de confidencialidad. Con tu logo, firmados por vos y en un enlace que tu cliente abre del celular y acepta con un botón. Todo desde el teléfono, en minutos.",
+    "empezarGratis": "Empezar gratis",
+    "promoLibre": "Gratis con todas las funciones hasta el {{fecha}} · sin tarjeta",
+    "promoPrueba": "{{promo}} gratis con todo desbloqueado · después USD 2/mes · cancelás cuando quieras",
+    "seccionPresupuestos": "El presupuesto, de punta a punta",
+    "seccionDocumentos": "Y todo lo que viene después",
+    "seccionNegocio": "Tu negocio, ordenado",
+    "features": {
+      "completo": {
+        "titulo": "El presupuesto completo",
+        "desc": "Ítems, cantidades, descuentos por línea, impuestos, seña y moneda. Los totales se calculan solos."
+      },
+      "marca": {
+        "titulo": "Con tu marca, no con la nuestra",
+        "desc": "Tu logo, tus colores y tus datos de contacto en el PDF y en todo lo que ve tu cliente. También el logo de él, al lado de sus datos."
+      },
+      "enlace": {
+        "titulo": "Que lo acepte de una",
+        "desc": "Le mandás un enlace por WhatsApp o un QR: lo abre del celular y lo acepta con un botón, sin imprimir nada."
+      },
+      "avisos": {
+        "titulo": "Te enterás cuando lo abre",
+        "desc": "Visto, aceptado o rechazado, con la fecha. Y el aviso te llega mientras tenés la app abierta."
+      },
+      "rubro": {
+        "titulo": "Ya sabe de tu oficio",
+        "desc": "Elegís tu rubro y el primer presupuesto nace con las condiciones, las formas de pago y la validez que se usan en lo tuyo."
+      },
+      "pdfPropio": {
+        "titulo": "O subí tu propia propuesta",
+        "desc": "Si la armás por tu cuenta —como los fotógrafos, con las fotos y los packs ya diseñados— la subís y viaja con el presupuesto."
+      },
+      "facturas": {
+        "titulo": "Facturas y recibos",
+        "desc": "El presupuesto aceptado se convierte en factura en un toque. Y cada pago o seña tiene su recibo."
+      },
+      "confidencialidad": {
+        "titulo": "Acuerdos de confidencialidad",
+        "desc": "Armás el acuerdo, se lo mandás por enlace y lo firma desde el celular. Queda con fecha, hora y huella digital del texto firmado."
+      },
+      "firma": {
+        "titulo": "Tu firma, una sola vez",
+        "desc": "Firmala en pantalla con el dedo o subí la foto de la firma en papel. Desde entonces tus presupuestos y acuerdos salen ya firmados."
+      },
+      "clientes": {
+        "titulo": "Escribí una sola vez",
+        "desc": "Tus clientes y tus precios quedan guardados. El siguiente presupuesto sale en dos toques."
+      },
+      "reportes": {
+        "titulo": "Cuánto cerrás y cuánto no",
+        "desc": "Los reportes te muestran lo aceptado, lo rechazado y lo que sigue esperando respuesta."
+      },
+      "invitar": {
+        "titulo": "Invitá y ganá meses",
+        "desc": "Le pasás tu enlace a otro que factura por su cuenta y los dos se llevan tiempo gratis."
+      }
+    },
+    "cierre": "Todo funciona igual desde la computadora y desde el teléfono, y en español o en inglés: lo elegís arriba y la app entera te sigue.",
+    "footerLema": "Numera · Hecho para vos"
+  },
+  "seo": {
+    "tituloPorDefecto": "Numera · Presupuestos profesionales en minutos",
+    "descripcionPorDefecto": "Hacé presupuestos prolijos y mandalos en PDF por WhatsApp o email. Clientes, ítems, condiciones y seguimiento de aceptados, en una sola app. Probalo gratis.",
+    "ingresarTitulo": "Ingresar",
+    "ingresarDesc": "Entrá a tu cuenta de Numera para ver y armar tus presupuestos.",
+    "recuperarTitulo": "Recuperar contraseña",
+    "recuperarDesc": "Te mandamos un mail para volver a entrar a tu cuenta de Numera.",
+    "nuevaPasswordTitulo": "Elegir contraseña nueva",
+    "nuevaPasswordDesc": "Elegí una contraseña nueva para tu cuenta de Numera."
+  },
+  "firma": {
+    "titulo": "Mi firma",
+    "descConFirma": "Tus presupuestos y acuerdos nuevos ya salen firmados por vos.",
+    "descSinFirma": "Guardala una vez y no la dibujás nunca más.",
+    "explicacion": "Firmá acá mismo con el dedo, o firmá en un papel blanco con birome negra, sacale una foto derecha y subila: la app le saca el fondo del papel y deja solo el trazo.",
+    "firmarEnPantalla": "Firmar en pantalla",
+    "subirFoto": "Subir la foto de mi firma",
+    "subirOtraFoto": "Subir otra foto",
+    "procesando": "Procesando…",
+    "guardarEsta": "Guardar esta firma",
+    "guardandoFirma": "Guardando…",
+    "reemplaza": "Al guardar reemplaza la que tenías.",
+    "borrar": "Borrar",
+    "confirmarBorrado": "¿Borrar tu firma guardada? Los acuerdos ya firmados no se tocan.",
+    "usarPublic": "Usar {{archivo}}",
+    "avisoPublic": "Ya está guardada en tu cuenta. Si la firma quedó en public/, borrá ese archivo del proyecto: ahí es descargable por cualquiera que sepa la dirección.",
+    "errorImagen": "No pudimos procesar esa imagen.",
+    "errorGuardar": "No pudimos guardar esa firma.",
+    "errorLeer": "No pudimos leer esa imagen.",
+    "errorBorrar": "No pudimos borrarla.",
+    "lienzoAyuda": "Firmá acá arriba con el dedo",
+    "lienzoNota": "Se guarda tal cual la dibujaste.",
+    "lienzoBorrar": "Borrar y firmar de nuevo"
+  },
+  "registro": {
+    "titulo": "Creá tu cuenta",
+    "subtitulo": "Armá presupuestos prolijos en minutos.",
+    "invitacion": "🎁 Entraste por una invitación. Creá tu cuenta y le sumás un invitado a quien te la pasó.",
+    "nombreNegocio": "Nombre de tu negocio",
+    "nombreNegocioEjemplo": "Ej: Estudio Martínez",
+    "rubro": "¿A qué te dedicás?",
+    "rubroElegir": "Elegir rubro (opcional)",
+    "rubroAyuda": "Con esto tus presupuestos arrancan con las condiciones y formas de pago típicas de tu rubro. Después las cambiás cuando quieras.",
+    "creando": "Creando cuenta...",
+    "yaTenesCuenta": "¿Ya tenés cuenta?",
+    "ingresa": "Ingresá",
+    "confirmaTitulo": "Revisá tu correo",
+    "confirmaSubtitulo": "Te enviamos un enlace para confirmar tu cuenta.",
+    "confirmaDetalle": "Una vez confirmada, ya podés",
+    "confirmaIngresar": "ingresar",
+    "seoTitulo": "Crear cuenta gratis",
+    "seoDesc": "Creá tu cuenta de Numera y hacé tu primer presupuesto en minutos. Gratis, sin tarjeta."
+  },
+  "plan": {
+    "gratisHasta": "Todas las funciones están <1>gratis</1> hasta el <3>{{fecha}}</3>",
+    "aprovecha": ". ¡Aprovechá!",
+    "quedanDias_one": " · queda {{count}} día.",
+    "quedanDias_other": " · quedan {{count}} días.",
+    "pruebaActiva": "✨ {{promo}} gratis · te quedan <1>{{restante}}</1> con todo desbloqueado",
+    "verPlanes": "Ver planes →",
+    "terminado": "🔒 Tu período gratis terminó · desbloqueá las funciones premium",
+    "suscribirme": "Suscribirme por USD 2/mes →"
+  }
+}

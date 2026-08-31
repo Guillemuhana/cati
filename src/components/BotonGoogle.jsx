@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 
 /**
@@ -12,7 +13,8 @@ import { useAuth } from '../context/AuthContext'
  * El logo va dibujado acá, con los colores oficiales, porque las reglas
  * de marca de Google piden ese ícono y no otro.
  */
-export default function BotonGoogle({ children = 'Continuar con Google' }) {
+export default function BotonGoogle({ children }) {
+  const { t } = useTranslation()
   const { signInWithGoogle } = useAuth()
   const [yendo, setYendo] = useState(false)
   const [error, setError] = useState('')
@@ -28,8 +30,8 @@ export default function BotonGoogle({ children = 'Continuar con Google' }) {
       const msg = `${e?.message || ''}`.toLowerCase()
       setError(
         msg.includes('provider') || msg.includes('not enabled')
-          ? 'Todavía no está habilitado el ingreso con Google. Entrá con tu email y contraseña.'
-          : e?.message || 'No se pudo abrir el ingreso con Google.'
+          ? t('auth.googleNoHabilitado')
+          : e?.message || t('auth.googleNoAbre')
       )
       setYendo(false)
     }
@@ -61,7 +63,7 @@ export default function BotonGoogle({ children = 'Continuar con Google' }) {
             d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"
           />
         </svg>
-        {yendo ? 'Abriendo Google…' : children}
+        {yendo ? t('auth.abriendoGoogle') : children || t('auth.continuarGoogle')}
       </button>
       {error && <p className="mt-2 text-center text-sm text-rust-500">{error}</p>}
     </>

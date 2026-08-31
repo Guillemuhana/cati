@@ -1,41 +1,46 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { usePlan } from '../hooks/usePlan'
 import { classNames } from '../lib/utils'
 import Notificaciones from './Notificaciones'
+import SelectorIdioma from './SelectorIdioma'
 import { PROMO_LABEL, FREE_UNTIL_LABEL, freeDaysLeft } from '../lib/config'
 
+// Los rótulos son claves del catálogo, no texto suelto: la lista se arma
+// una sola vez y el idioma se resuelve recién al dibujar.
 const NAV_ITEMS = [
-  { to: '/panel', label: 'Panel', icon: IconGrid },
-  { to: '/presupuestos', label: 'Presupuestos', icon: IconDoc },
-  { to: '/facturas', label: 'Facturas', icon: IconReceipt },
-  { to: '/catalogo', label: 'Catálogo', icon: IconTag },
-  { to: '/clientes', label: 'Clientes', icon: IconUsers },
-  { to: '/reportes', label: 'Reportes', icon: IconChart },
-  { to: '/perfil', label: 'Mi negocio', icon: IconBuilding },
+  { to: '/panel', label: 'nav.panel', icon: IconGrid },
+  { to: '/presupuestos', label: 'nav.presupuestos', icon: IconDoc },
+  { to: '/facturas', label: 'nav.facturas', icon: IconReceipt },
+  { to: '/catalogo', label: 'nav.catalogo', icon: IconTag },
+  { to: '/clientes', label: 'nav.clientes', icon: IconUsers },
+  { to: '/reportes', label: 'nav.reportes', icon: IconChart },
+  { to: '/perfil', label: 'nav.miNegocio', icon: IconBuilding },
   // El premio va escrito en el menú: si no dice qué se gana, nadie entra.
-  { to: '/invitar', label: 'Invitar y ganar', icon: IconGift, badge: '3 meses' },
-  { to: '/ayuda', label: 'Ayuda', icon: IconHelp }
+  { to: '/invitar', label: 'nav.invitar', icon: IconGift, badge: 'nav.invitarBadge' },
+  { to: '/ayuda', label: 'nav.ayuda', icon: IconHelp }
 ]
 
 // Accesos rápidos en la barra inferior de celular (el resto está en el menú).
 const MOBILE_ITEMS = [
-  { to: '/panel', label: 'Panel', icon: IconGrid },
-  { to: '/presupuestos', label: 'Presup.', icon: IconDoc },
-  { to: '/catalogo', label: 'Catálogo', icon: IconTag },
-  { to: '/clientes', label: 'Clientes', icon: IconUsers }
+  { to: '/panel', label: 'nav.panel', icon: IconGrid },
+  { to: '/presupuestos', label: 'nav.presupuestosCorto', icon: IconDoc },
+  { to: '/catalogo', label: 'nav.catalogo', icon: IconTag },
+  { to: '/clientes', label: 'nav.clientes', icon: IconUsers }
 ]
 
 // Solo para el dueño. Se agregan al final del menú si la base de datos
 // dice que esta cuenta es admin. El candado de verdad está en la base
 // (public.is_admin), no acá: esto solo decide qué se dibuja.
 const ADMIN_ITEMS = [
-  { to: '/confidencialidad', label: 'Confidencialidad', icon: IconLock },
-  { to: '/admin', label: 'Administración', icon: IconShield }
+  { to: '/confidencialidad', label: 'nav.confidencialidad', icon: IconLock },
+  { to: '/admin', label: 'nav.administracion', icon: IconShield }
 ]
 
 export default function Layout({ children }) {
+  const { t } = useTranslation()
   const { profile, signOut, isAdmin } = useAuth()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -59,16 +64,19 @@ export default function Layout({ children }) {
         <div className="border-t border-line pt-4">
           <div className="flex items-center justify-between gap-2">
             <p className="truncate font-sans text-sm font-semibold text-ink">
-              {profile?.business_name || 'Tu negocio'}
+              {profile?.business_name || t('nav.tuNegocio')}
             </p>
             <Notificaciones />
           </div>
-          <button
-            onClick={handleSignOut}
-            className="mt-2 text-sm text-ink-soft transition hover:text-rust-500"
-          >
-            Cerrar sesión
-          </button>
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <button
+              onClick={handleSignOut}
+              className="text-sm text-ink-soft transition hover:text-rust-500"
+            >
+              {t('nav.salir')}
+            </button>
+            <SelectorIdioma compacto />
+          </div>
         </div>
       </aside>
 
@@ -78,7 +86,7 @@ export default function Layout({ children }) {
         <div className="flex items-center gap-2">
           <Notificaciones />
           <button
-            aria-label="Abrir menú"
+            aria-label={t('nav.abrirMenu')}
             onClick={() => setMenuOpen(true)}
             className="rounded-lg border border-line p-2 text-ink"
           >
@@ -93,7 +101,11 @@ export default function Layout({ children }) {
           <div className="absolute right-0 top-0 flex h-full w-72 flex-col bg-surface px-5 py-6 shadow-soft">
             <div className="flex items-center justify-between">
               <Brand compact />
-              <button aria-label="Cerrar menú" onClick={() => setMenuOpen(false)} className="p-1 text-ink-soft">
+              <button
+                aria-label={t('nav.cerrarMenu')}
+                onClick={() => setMenuOpen(false)}
+                className="p-1 text-ink-soft"
+              >
                 <IconClose />
               </button>
             </div>
@@ -103,10 +115,15 @@ export default function Layout({ children }) {
               ))}
             </nav>
             <div className="mt-auto border-t border-line pt-4">
-              <p className="truncate text-sm font-semibold text-ink">{profile?.business_name || 'Tu negocio'}</p>
-              <button onClick={handleSignOut} className="mt-2 text-sm text-ink-soft hover:text-rust-500">
-                Cerrar sesión
-              </button>
+              <p className="truncate text-sm font-semibold text-ink">
+                {profile?.business_name || t('nav.tuNegocio')}
+              </p>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <button onClick={handleSignOut} className="text-sm text-ink-soft hover:text-rust-500">
+                  {t('nav.salir')}
+                </button>
+                <SelectorIdioma compacto />
+              </div>
             </div>
           </div>
         </div>
@@ -134,7 +151,7 @@ export default function Layout({ children }) {
             }
           >
             <item.icon className="h-5 w-5" />
-            {item.label}
+            {t(item.label)}
           </NavLink>
         ))}
       </nav>
@@ -143,6 +160,7 @@ export default function Layout({ children }) {
 }
 
 function NavItem({ to, label, icon: Icon, onClick, badge }) {
+  const { t } = useTranslation()
   return (
     <NavLink
       to={to}
@@ -155,10 +173,10 @@ function NavItem({ to, label, icon: Icon, onClick, badge }) {
       }
     >
       <Icon className="h-[18px] w-[18px]" />
-      <span className="flex-1">{label}</span>
+      <span className="flex-1">{t(label)}</span>
       {badge && (
         <span className="shrink-0 rounded-full bg-brass-500/15 px-2 py-0.5 text-[10px] font-semibold text-brass-600">
-          {badge}
+          {t(badge)}
         </span>
       )}
     </NavLink>
@@ -166,6 +184,7 @@ function NavItem({ to, label, icon: Icon, onClick, badge }) {
 }
 
 function TrialBanner() {
+  const { t } = useTranslation()
   const { freeForAll, isPaid, trialActive, trialLeftLabel } = usePlan()
   if (isPaid) return null
 
@@ -183,10 +202,20 @@ function TrialBanner() {
             : 'border-teal-500/30 bg-teal-500/[0.07]'
         )}
       >
-        {ultimoTramo ? '⏳' : '🎉'} Todas las funciones están{' '}
-        <b className={ultimoTramo ? 'text-brass-600' : 'text-teal-600'}>gratis</b> hasta el{' '}
-        <b>{FREE_UNTIL_LABEL}</b>
-        {ultimoTramo ? ` · quedan ${dias} ${dias === 1 ? 'día' : 'días'}.` : '. ¡Aprovechá!'}
+        {ultimoTramo ? '⏳' : '🎉'}{' '}
+        {/* Trans y no interpolación: «gratis» y la fecha van en negrita en
+            medio de la frase, y en inglés caen en otro orden. */}
+        <Trans
+          i18nKey="plan.gratisHasta"
+          values={{ fecha: FREE_UNTIL_LABEL }}
+          components={[
+            <span key="0" />,
+            <b key="1" className={ultimoTramo ? 'text-brass-600' : 'text-teal-600'} />,
+            <span key="2" />,
+            <b key="3" />
+          ]}
+        />
+        {ultimoTramo ? t('plan.quedanDias', { count: dias }) : t('plan.aprovecha')}
       </div>
     )
   }
@@ -198,9 +227,13 @@ function TrialBanner() {
         className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brand-500/25 bg-gradient-to-r from-brand-500/[0.07] to-brass-400/[0.10] px-4 py-2.5 text-sm transition hover:from-brand-500/[0.12]"
       >
         <span className="text-ink-soft">
-          ✨ {PROMO_LABEL} gratis · te quedan <b className="text-brand-700">{trialLeftLabel}</b> con todo desbloqueado
+          <Trans
+            i18nKey="plan.pruebaActiva"
+            values={{ promo: PROMO_LABEL, restante: trialLeftLabel }}
+            components={[<span key="0" />, <b key="1" className="text-brand-700" />]}
+          />
         </span>
-        <span className="font-medium text-brand-700">Ver planes →</span>
+        <span className="font-medium text-brand-700">{t('plan.verPlanes')}</span>
       </Link>
     )
   }
@@ -210,8 +243,8 @@ function TrialBanner() {
       to="/premium"
       className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brass-500/40 bg-brass-500/[0.08] px-4 py-2.5 text-sm transition hover:bg-brass-500/[0.14]"
     >
-      <span className="text-ink-soft">🔒 Tu período gratis terminó · desbloqueá las funciones premium</span>
-      <span className="font-semibold text-brass-600">Suscribirme por USD 2/mes →</span>
+      <span className="text-ink-soft">{t('plan.terminado')}</span>
+      <span className="font-semibold text-brass-600">{t('plan.suscribirme')}</span>
     </Link>
   )
 }

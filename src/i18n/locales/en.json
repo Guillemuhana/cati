@@ -1,0 +1,238 @@
+{
+  "idioma": {
+    "etiqueta": "Language",
+    "cambiar": "Change language"
+  },
+  "comun": {
+    "guardar": "Save",
+    "guardando": "Saving...",
+    "guardado": "Saved ✓",
+    "cancelar": "Cancel",
+    "cerrar": "Close",
+    "eliminar": "Delete",
+    "duplicar": "Duplicate",
+    "editar": "Edit",
+    "volver": "Back",
+    "buscar": "Search",
+    "cargando": "Loading...",
+    "opcional": "Optional",
+    "si": "Yes",
+    "no": "No",
+    "error": "Something went wrong. Please try again.",
+    "reintentar": "Try again"
+  },
+  "nav": {
+    "panel": "Dashboard",
+    "presupuestos": "Quotes",
+    "presupuestosCorto": "Quotes",
+    "facturas": "Invoices",
+    "catalogo": "Catalog",
+    "clientes": "Clients",
+    "reportes": "Reports",
+    "miNegocio": "My business",
+    "confidencialidad": "NDAs",
+    "administracion": "Admin",
+    "invitar": "Refer and earn",
+    "invitarBadge": "3 months",
+    "ayuda": "Help",
+    "abrirMenu": "Open menu",
+    "cerrarMenu": "Close menu",
+    "salir": "Sign out",
+    "tuNegocio": "Your business"
+  },
+  "auth": {
+    "ingresar": "Sign in",
+    "ingresando": "Signing in...",
+    "crearCuenta": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "mostrarPassword": "Show password",
+    "ocultarPassword": "Hide password",
+    "olvide": "Forgot your password?",
+    "conGoogle": "Sign in with Google",
+    "crearConGoogle": "Sign up with Google",
+    "o": "or",
+    "loginTitulo": "Welcome back",
+    "loginSubtitulo": "Sign in to keep building your quotes.",
+    "sinCuenta": "No account yet?",
+    "creaUnaGratis": "Create one for free",
+    "yaTengoCuenta": "I already have an account",
+    "desarrollo": "Built by",
+    "panelFrase": "Polished quotes,\nin minutes.",
+    "panelDetalle": "Add your items, your clients and your terms. Walk away with a PDF ready to send.",
+    "errores": {
+      "credenciales": "Wrong email or password.",
+      "yaRegistrado": "An account with that email already exists.",
+      "passwordCorta": "Your password must be at least 6 characters long.",
+      "generico": "Something went wrong. Please try again.",
+      "demasiadosIntentos": "Too many failed attempts. Wait {{minutos}} min and try again.",
+      "esperaCorta": "Wait {{segundos}}s before trying again."
+    },
+    "continuarGoogle": "Continue with Google",
+    "googleNoHabilitado": "Signing in with Google is not enabled yet. Use your email and password.",
+    "googleNoAbre": "We couldn't open the Google sign-in.",
+    "abriendoGoogle": "Opening Google…"
+  },
+  "recuperar": {
+    "titulo": "Forgot your password?",
+    "subtitulo": "Enter your email and we'll send you a link to choose a new one.",
+    "enviar": "Send me the link",
+    "enviando": "Sending...",
+    "listoTitulo": "Check your inbox",
+    "listoSubtitulo": "If there's an account with that email, the link is on its way.",
+    "listoDetalle": "We sent a link to <0>{{email}}</0> so you can choose a new password. It expires in one hour.",
+    "noLlego": "Didn't arrive? Check your spam folder, or",
+    "otroEmail": "try another email",
+    "volverIngresar": "Back to sign in",
+    "teAcordaste": "Remembered it?",
+    "avisoGoogle": "If you created your account with Google, use the Google button: that account has no password here.",
+    "errorLimite": "You asked for several links in a row. Wait a minute and try again.",
+    "errorEmail": "That email doesn't look valid.",
+    "errorGenerico": "We couldn't send the email. Please try again."
+  },
+  "nuevaPassword": {
+    "verificandoTitulo": "One moment",
+    "verificandoSubtitulo": "We're checking the link.",
+    "invalidoTitulo": "That link no longer works",
+    "invalidoSubtitulo": "Recovery links last one hour and can only be used once.",
+    "invalidoDetalle": "Ask for a new one and open it from the email.",
+    "pedirNuevo": "Get a new link",
+    "titulo": "Choose a new password",
+    "subtitulo": "This is the one you'll sign in with from now on.",
+    "campoNueva": "New password",
+    "campoRepetir": "Repeat it",
+    "minimo": "At least {{minimo}} characters.",
+    "guardarYEntrar": "Save and sign in",
+    "errorCorta": "Your password must be at least {{minimo}} characters long.",
+    "errorNoCoinciden": "The two passwords don't match.",
+    "errorVencido": "The link expired or was already used. Ask for a new one.",
+    "errorMisma": "That's the password you already had. Choose a different one.",
+    "errorSesion": "The recovery session dropped. Ask for a new link.",
+    "errorGenerico": "We couldn't save your password. Please try again."
+  },
+  "home": {
+    "heroTitulo": "Quote like a big company, without stopping being you",
+    "heroSubtitulo": "Quotes, invoices, receipts and non-disclosure agreements. With your logo, signed by you, in a link your client opens on their phone and accepts with one tap. All from your phone, in minutes.",
+    "empezarGratis": "Start free",
+    "promoLibre": "Free with every feature until {{fecha}} · no card needed",
+    "promoPrueba": "{{promo}} free with everything unlocked · then USD 2/month · cancel anytime",
+    "seccionPresupuestos": "The quote, end to end",
+    "seccionDocumentos": "And everything that comes after",
+    "seccionNegocio": "Your business, in order",
+    "features": {
+      "completo": {
+        "titulo": "The whole quote",
+        "desc": "Items, quantities, per-line discounts, taxes, deposit and currency. Totals add themselves up."
+      },
+      "marca": {
+        "titulo": "Your brand, not ours",
+        "desc": "Your logo, your colors and your contact details on the PDF and everywhere your client looks. Their logo too, right beside their details."
+      },
+      "enlace": {
+        "titulo": "Accepted on the spot",
+        "desc": "Send a link over WhatsApp or a QR code: they open it on their phone and accept with one tap, nothing to print."
+      },
+      "avisos": {
+        "titulo": "You know the moment they open it",
+        "desc": "Seen, accepted or declined, with the date. And the alert reaches you while the app is open."
+      },
+      "rubro": {
+        "titulo": "It already knows your trade",
+        "desc": "Pick your line of work and your first quote is born with the terms, payment methods and validity your trade actually uses."
+      },
+      "pdfPropio": {
+        "titulo": "Or upload your own proposal",
+        "desc": "If you design it yourself —like photographers do, with the shots and packages already laid out— upload it and it travels with the quote."
+      },
+      "facturas": {
+        "titulo": "Invoices and receipts",
+        "desc": "An accepted quote turns into an invoice in one tap. And every payment or deposit gets its receipt."
+      },
+      "confidencialidad": {
+        "titulo": "Non-disclosure agreements",
+        "desc": "Draft the agreement, send it as a link and they sign from their phone. It keeps the date, the time and a digital fingerprint of the signed text."
+      },
+      "firma": {
+        "titulo": "Your signature, once and for all",
+        "desc": "Draw it on screen with your finger or upload a photo of it on paper. From then on your quotes and agreements come out already signed."
+      },
+      "clientes": {
+        "titulo": "Type it once",
+        "desc": "Your clients and your prices stay saved. The next quote takes two taps."
+      },
+      "reportes": {
+        "titulo": "What you close and what you don't",
+        "desc": "Reports show you what was accepted, what was declined and what's still waiting for an answer."
+      },
+      "invitar": {
+        "titulo": "Refer someone, earn months",
+        "desc": "Pass your link to someone else who bills on their own and you both walk away with free time."
+      }
+    },
+    "cierre": "Everything works the same on your computer and on your phone, in Spanish or in English: pick it up top and the whole app follows you.",
+    "footerLema": "Numera · Made for you"
+  },
+  "seo": {
+    "tituloPorDefecto": "Numera · Professional quotes in minutes",
+    "descripcionPorDefecto": "Build polished quotes and send them as a PDF over WhatsApp or email. Clients, items, terms and accepted-quote tracking, all in one app. Try it free.",
+    "ingresarTitulo": "Sign in",
+    "ingresarDesc": "Sign in to your Numera account to see and build your quotes.",
+    "recuperarTitulo": "Reset password",
+    "recuperarDesc": "We'll email you a link to get back into your Numera account.",
+    "nuevaPasswordTitulo": "Choose a new password",
+    "nuevaPasswordDesc": "Choose a new password for your Numera account."
+  },
+  "firma": {
+    "titulo": "My signature",
+    "descConFirma": "Your new quotes and agreements already come out signed by you.",
+    "descSinFirma": "Save it once and never draw it again.",
+    "explicacion": "Sign right here with your finger, or sign a sheet of white paper with a black pen, take a straight photo and upload it: the app strips the paper away and keeps only the stroke.",
+    "firmarEnPantalla": "Sign on screen",
+    "subirFoto": "Upload a photo of my signature",
+    "subirOtraFoto": "Upload another photo",
+    "procesando": "Processing…",
+    "guardarEsta": "Save this signature",
+    "guardandoFirma": "Saving…",
+    "reemplaza": "Saving replaces the one you had.",
+    "borrar": "Delete",
+    "confirmarBorrado": "Delete your saved signature? Agreements already signed are left alone.",
+    "usarPublic": "Use {{archivo}}",
+    "avisoPublic": "It's saved in your account now. If the signature is still in public/, delete that file from the project: anyone who knows the address can download it there.",
+    "errorImagen": "We couldn't process that image.",
+    "errorGuardar": "We couldn't save that signature.",
+    "errorLeer": "We couldn't read that image.",
+    "errorBorrar": "We couldn't delete it.",
+    "lienzoAyuda": "Sign above with your finger",
+    "lienzoNota": "It's saved exactly as you drew it.",
+    "lienzoBorrar": "Clear and sign again"
+  },
+  "registro": {
+    "titulo": "Create your account",
+    "subtitulo": "Build polished quotes in minutes.",
+    "invitacion": "🎁 You came in through an invitation. Create your account and whoever sent it gets credit for one referral.",
+    "nombreNegocio": "Your business name",
+    "nombreNegocioEjemplo": "e.g. Martinez Studio",
+    "rubro": "What do you do?",
+    "rubroElegir": "Pick your trade (optional)",
+    "rubroAyuda": "With this, your quotes start out with the terms and payment methods typical of your trade. You can change them whenever you want.",
+    "creando": "Creating account...",
+    "yaTenesCuenta": "Already have an account?",
+    "ingresa": "Sign in",
+    "confirmaTitulo": "Check your inbox",
+    "confirmaSubtitulo": "We sent you a link to confirm your account.",
+    "confirmaDetalle": "Once confirmed, you can",
+    "confirmaIngresar": "sign in",
+    "seoTitulo": "Create a free account",
+    "seoDesc": "Create your Numera account and build your first quote in minutes. Free, no card needed."
+  },
+  "plan": {
+    "gratisHasta": "Every feature is <1>free</1> until <3>{{fecha}}</3>",
+    "aprovecha": ". Make the most of it!",
+    "quedanDias_one": " · {{count}} day left.",
+    "quedanDias_other": " · {{count}} days left.",
+    "pruebaActiva": "✨ {{promo}} free · you have <1>{{restante}}</1> left with everything unlocked",
+    "verPlanes": "See plans →",
+    "terminado": "🔒 Your free period ended · unlock the premium features",
+    "suscribirme": "Subscribe for USD 2/month →"
+  }
+}

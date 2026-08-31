@@ -6,6 +6,10 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { supabaseConfigured } from './lib/supabaseClient.js'
 import { captureReferralFromUrl } from './lib/referral.js'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+// Antes que App: i18next tiene que estar inicializado cuando el primer
+// componente pida un texto, si no el primer dibujado sale con las claves
+// crudas y se ve el parpadeo.
+import './i18n'
 import './index.css'
 
 // Si la visita llegó por un link de invitación (?ref=), lo guardamos antes

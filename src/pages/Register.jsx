@@ -1,19 +1,21 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import AuthLayout from '../components/AuthLayout'
 import BotonGoogle from '../components/BotonGoogle'
-import { Field, traducirError } from './Login'
+import CampoPassword from '../components/CampoPassword'
+import { Field } from './Login'
+import { useMensajeErrorAuth } from '../lib/erroresAuth'
 import { getStoredReferral, clearStoredReferral } from '../lib/referral'
 import { RUBRO_GROUPS } from '../lib/rubros'
 import { useSeo } from '../lib/seo'
 
 export default function Register() {
-  useSeo({
-    title: 'Crear cuenta gratis',
-    description: 'Creá tu cuenta de Numera y hacé tu primer presupuesto en minutos. Gratis, sin tarjeta.'
-  })
+  const { t } = useTranslation()
+  useSeo({ title: t('registro.seoTitulo'), description: t('registro.seoDesc') })
 
+  const mensajeDeError = useMensajeErrorAuth()
   const { signUp } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ businessName: '', email: '', password: '', rubro: '' })
@@ -36,7 +38,7 @@ export default function Register() {
         setDone(true)
       }
     } catch (err) {
-      setError(traducirError(err.message))
+      setError(mensajeDeError(err.message))
     } finally {
       setLoading(false)
     }
@@ -44,11 +46,11 @@ export default function Register() {
 
   if (done) {
     return (
-      <AuthLayout title="Revisá tu correo" subtitle="Te enviamos un enlace para confirmar tu cuenta.">
+      <AuthLayout title={t('registro.confirmaTitulo')} subtitle={t('registro.confirmaSubtitulo')}>
         <p className="text-center text-sm text-ink-soft">
-          Una vez confirmada, ya podés{' '}
+          {t('registro.confirmaDetalle')}{' '}
           <Link to="/ingresar" className="font-medium text-brand-600 hover:underline">
-            ingresar
+            {t('registro.confirmaIngresar')}
           </Link>
           .
         </p>
@@ -57,42 +59,42 @@ export default function Register() {
   }
 
   return (
-    <AuthLayout title="Creá tu cuenta" subtitle="Armá presupuestos prolijos en minutos.">
+    <AuthLayout title={t('registro.titulo')} subtitle={t('registro.subtitulo')}>
       {referralCode && (
         <div className="mb-5 rounded-xl2 border border-teal-500/30 bg-teal-500/[0.07] px-4 py-3 text-center text-sm text-ink-soft">
-          🎁 Entraste por una invitación. Creá tu cuenta y le sumás un invitado a quien te la pasó.
+          {t('registro.invitacion')}
         </div>
       )}
 
       {/* Con Google no hay que elegir contraseña ni confirmar el mail:
           la cuenta queda lista de una. El nombre del negocio y el rubro
           los pide después la bienvenida del panel. */}
-      <BotonGoogle>Crear cuenta con Google</BotonGoogle>
+      <BotonGoogle>{t('auth.crearConGoogle')}</BotonGoogle>
 
       <div className="my-5 flex items-center gap-3">
         <span className="h-px flex-1 bg-line" />
-        <span className="text-xs text-ink-faint">o</span>
+        <span className="text-xs text-ink-faint">{t('auth.o')}</span>
         <span className="h-px flex-1 bg-line" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Nombre de tu negocio">
+        <Field label={t('registro.nombreNegocio')}>
           <input
             type="text"
             required
             value={form.businessName}
             onChange={(e) => setForm({ ...form, businessName: e.target.value })}
             className="w-full rounded-md border border-line px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none"
-            placeholder="Ej: Estudio Martínez"
+            placeholder={t('registro.nombreNegocioEjemplo')}
           />
         </Field>
-        <Field label="¿A qué te dedicás?">
+        <Field label={t('registro.rubro')}>
           <select
             value={form.rubro}
             onChange={(e) => setForm({ ...form, rubro: e.target.value })}
             className="w-full rounded-md border border-line px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none"
           >
-            <option value="">Elegir rubro (opcional)</option>
+            <option value="">{t('registro.rubroElegir')}</option>
             {RUBRO_GROUPS.map((g) => (
               <optgroup key={g.group} label={g.group}>
                 {g.rubros.map((r) => (
@@ -103,12 +105,9 @@ export default function Register() {
               </optgroup>
             ))}
           </select>
-          <p className="mt-1.5 text-xs text-ink-faint">
-            Con esto tus presupuestos arrancan con las condiciones y formas de pago típicas de tu rubro. Después las
-            cambiás cuando quieras.
-          </p>
+          <p className="mt-1.5 text-xs text-ink-faint">{t('registro.rubroAyuda')}</p>
         </Field>
-        <Field label="Email">
+        <Field label={t('auth.email')}>
           <input
             type="email"
             required
@@ -118,15 +117,12 @@ export default function Register() {
             className="w-full rounded-md border border-line px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none"
           />
         </Field>
-        <Field label="Contraseña">
-          <input
-            type="password"
-            required
+        <Field label={t('auth.password')}>
+          <CampoPassword
             minLength={6}
             autoComplete="new-password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full rounded-md border border-line px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none"
           />
         </Field>
 
@@ -137,14 +133,14 @@ export default function Register() {
           disabled={loading}
           className="btn-primary w-full rounded-md py-2.5 text-sm font-semibold"
         >
-          {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+          {loading ? t('registro.creando') : t('auth.crearCuenta')}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-soft">
-        ¿Ya tenés cuenta?{' '}
+        {t('registro.yaTenesCuenta')}{' '}
         <Link to="/ingresar" className="font-medium text-brand-600 hover:underline">
-          Ingresá
+          {t('registro.ingresa')}
         </Link>
       </p>
     </AuthLayout>

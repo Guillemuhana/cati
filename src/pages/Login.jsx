@@ -1,54 +1,95 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import AuthLayout from '../components/AuthLayout'
 import BotonGoogle from '../components/BotonGoogle'
 import CampoPassword from '../components/CampoPassword'
+import { useMensajeErrorAuth } from '../lib/erroresAuth'
+import { anotarFallo, esperaRestante, formatoEspera, limpiarIntentos } from '../lib/limiteIntentos'
 import { useSeo } from '../lib/seo'
 
 export default function Login() {
-  useSeo({
-    title: 'Ingresar',
-    description: 'Entrá a tu cuenta de Numera para ver y armar tus presupuestos.'
-  })
+  const { t } = useTranslation()
+  useSeo({ title: t('seo.ingresarTitulo'), description: t('seo.ingresarDesc') })
 
   const { signIn } = useAuth()
   const navigate = useNavigate()
+  const mensajeDeError = useMensajeErrorAuth()
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  // Milisegundos que faltan para poder volver a probar. Se recalcula solo
+  // para que el cartel descuente en vez de quedar clavado en un número
+  // viejo que ya venció.
+  const [espera, setEspera] = useState(0)
+
+  useEffect(() => {
+    setEspera(esperaRestante(form.email))
+  }, [form.email])
+
+  useEffect(() => {
+    if (espera <= 0) return
+    const id = setInterval(() => setEspera(esperaRestante(form.email)), 1000)
+    return () => clearInterval(id)
+  }, [espera, form.email])
+
+  const avisarEspera = (ms) => {
+    const { unidad, valor } = formatoEspera(ms)
+    setError(
+      unidad === 'segundos'
+        ? t('auth.errores.esperaCorta', { segundos: valor })
+        : t('auth.errores.demasiadosIntentos', { minutos: valor })
+    )
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    // El freno se mira antes de salir a la red: no tiene sentido gastar un
+    // intento contra Supabase si acá ya sabemos que está bloqueado.
+    const bloqueo = esperaRestante(form.email)
+    if (bloqueo > 0) {
+      setEspera(bloqueo)
+      avisarEspera(bloqueo)
+      return
+    }
+
     setLoading(true)
     try {
       await signIn(form)
+      limpiarIntentos(form.email)
       navigate('/panel')
     } catch (err) {
-      setError(traducirError(err.message))
+      // Solo cuentan los fallos de contraseña. Que se caiga la red no
+      // tiene por qué acercar a nadie al bloqueo.
+      const esCredencial = `${err?.message || ''}`.toLowerCase().includes('invalid login credentials')
+      const restante = esCredencial ? anotarFallo(form.email) : 0
+      setEspera(restante)
+      if (restante > 0) avisarEspera(restante)
+      else setError(mensajeDeError(err.message))
     } finally {
       setLoading(false)
     }
   }
 
+  const bloqueado = espera > 0
+
   return (
-    <AuthLayout
-      title="Bienvenido de nuevo"
-      subtitle="Ingresá para seguir armando tus presupuestos."
-    >
+    <AuthLayout title={t('auth.loginTitulo')} subtitle={t('auth.loginSubtitulo')}>
       {/* Arriba del formulario a propósito: es el camino más corto y el
           que más gente usa. */}
-      <BotonGoogle>Ingresar con Google</BotonGoogle>
+      <BotonGoogle>{t('auth.conGoogle')}</BotonGoogle>
 
       <div className="my-5 flex items-center gap-3">
         <span className="h-px flex-1 bg-line" />
-        <span className="text-xs text-ink-faint">o</span>
+        <span className="text-xs text-ink-faint">{t('auth.o')}</span>
         <span className="h-px flex-1 bg-line" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Email">
+        <Field label={t('auth.email')}>
           <input
             type="email"
             required
@@ -58,7 +99,7 @@ export default function Login() {
             className="w-full rounded-md border border-line px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none"
           />
         </Field>
-        <Field label="Contraseña">
+        <Field label={t('auth.password')}>
           <CampoPassword
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -67,7 +108,7 @@ export default function Login() {
 
         <div className="flex justify-end">
           <Link to="/recuperar" className="text-sm text-ink-soft hover:text-brand-600 hover:underline">
-            ¿Olvidaste tu contraseña?
+            {t('auth.olvide')}
           </Link>
         </div>
 
@@ -75,17 +116,17 @@ export default function Login() {
 
         <button
           type="submit"
-          disabled={loading}
-          className="btn-primary w-full rounded-md py-2.5 text-sm font-semibold"
+          disabled={loading || bloqueado}
+          className="btn-primary w-full rounded-md py-2.5 text-sm font-semibold disabled:opacity-60"
         >
-          {loading ? 'Ingresando...' : 'Ingresar'}
+          {loading ? t('auth.ingresando') : t('auth.ingresar')}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-soft">
-        ¿No tenés cuenta?{' '}
+        {t('auth.sinCuenta')}{' '}
         <Link to="/registro" className="font-medium text-brand-600 hover:underline">
-          Creá una gratis
+          {t('auth.creaUnaGratis')}
         </Link>
       </p>
     </AuthLayout>
@@ -99,11 +140,4 @@ export function Field({ label, children }) {
       {children}
     </label>
   )
-}
-
-export function traducirError(message = '') {
-  if (message.includes('Invalid login credentials')) return 'Email o contraseña incorrectos.'
-  if (message.includes('User already registered')) return 'Ya existe una cuenta con ese email.'
-  if (message.includes('Password should be at least')) return 'La contraseña debe tener al menos 6 caracteres.'
-  return message || 'Ocurrió un error. Probá de nuevo.'
 }

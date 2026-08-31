@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 // Input de contraseña con el ojito para espiar lo que uno escribió.
 //
@@ -15,7 +16,9 @@ export default function CampoPassword({
   minLength,
   autoFocus = false
 }) {
+  const { t } = useTranslation()
   const [ver, setVer] = useState(false)
+  const rotulo = ver ? t('auth.ocultarPassword') : t('auth.mostrarPassword')
 
   return (
     <div className="relative">
@@ -33,8 +36,8 @@ export default function CampoPassword({
       <button
         type="button"
         onClick={() => setVer((v) => !v)}
-        aria-label={ver ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-        title={ver ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        aria-label={rotulo}
+        title={rotulo}
         className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-ink-faint hover:text-ink-soft focus:outline-none"
       >
         {ver ? <EyeOff size={18} /> : <Eye size={18} />}

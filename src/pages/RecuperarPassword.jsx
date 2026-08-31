@@ -1,16 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MailCheck } from 'lucide-react'
+import { Trans, useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import AuthLayout from '../components/AuthLayout'
 import { Field } from './Login'
 import { useSeo } from '../lib/seo'
 
 export default function RecuperarPassword() {
-  useSeo({
-    title: 'Recuperar contraseña',
-    description: 'Te mandamos un mail para volver a entrar a tu cuenta de Numera.'
-  })
+  const { t } = useTranslation()
+  useSeo({ title: t('seo.recuperarTitulo'), description: t('seo.recuperarDesc') })
 
   const { resetPassword } = useAuth()
   const [email, setEmail] = useState('')
@@ -26,7 +25,7 @@ export default function RecuperarPassword() {
       await resetPassword(email)
       setEnviado(true)
     } catch (err) {
-      setError(traducirErrorRecupero(err.message))
+      setError(t(claveErrorRecupero(err.message)))
     } finally {
       setLoading(false)
     }
@@ -36,24 +35,26 @@ export default function RecuperarPassword() {
   // cualquiera podría usar esta pantalla para averiguar quién tiene cuenta.
   if (enviado) {
     return (
-      <AuthLayout
-        title="Revisá tu correo"
-        subtitle="Si hay una cuenta con ese email, ya salió el link."
-      >
+      <AuthLayout title={t('recuperar.listoTitulo')} subtitle={t('recuperar.listoSubtitulo')}>
         <div className="flex flex-col items-center text-center">
           <MailCheck size={40} className="text-brand-600" strokeWidth={1.5} />
           <p className="mt-4 text-sm text-ink-soft">
-            Le mandamos un link a <span className="font-medium text-ink">{email}</span> para
-            elegir una contraseña nueva. Vence en una hora.
+            {/* Trans y no una interpolación suelta: el email va en negrita
+                en medio de la frase, y en inglés cae en otro lugar. */}
+            <Trans
+              i18nKey="recuperar.listoDetalle"
+              values={{ email }}
+              components={[<span key="0" className="font-medium text-ink" />]}
+            />
           </p>
           <p className="mt-3 text-sm text-ink-faint">
-            ¿No llegó? Fijate en el correo no deseado, o{' '}
+            {t('recuperar.noLlego')}{' '}
             <button
               type="button"
               onClick={() => setEnviado(false)}
               className="font-medium text-brand-600 hover:underline"
             >
-              probá con otro email
+              {t('recuperar.otroEmail')}
             </button>
             .
           </p>
@@ -63,19 +64,16 @@ export default function RecuperarPassword() {
           to="/ingresar"
           className="mt-6 block rounded-md border border-line py-2.5 text-center text-sm font-medium text-ink hover:bg-paper"
         >
-          Volver a ingresar
+          {t('recuperar.volverIngresar')}
         </Link>
       </AuthLayout>
     )
   }
 
   return (
-    <AuthLayout
-      title="¿Olvidaste tu contraseña?"
-      subtitle="Poné tu email y te mandamos un link para elegir una nueva."
-    >
+    <AuthLayout title={t('recuperar.titulo')} subtitle={t('recuperar.subtitulo')}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Email">
+        <Field label={t('auth.email')}>
           <input
             type="email"
             required
@@ -94,30 +92,29 @@ export default function RecuperarPassword() {
           disabled={loading}
           className="btn-primary w-full rounded-md py-2.5 text-sm font-semibold"
         >
-          {loading ? 'Mandando...' : 'Mandarme el link'}
+          {loading ? t('recuperar.enviando') : t('recuperar.enviar')}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-soft">
-        ¿Te acordaste?{' '}
+        {t('recuperar.teAcordaste')}{' '}
         <Link to="/ingresar" className="font-medium text-brand-600 hover:underline">
-          Volver a ingresar
+          {t('recuperar.volverIngresar')}
         </Link>
       </p>
 
       {/* Quien entró con Google no tiene contraseña nuestra que recuperar. */}
-      <p className="mt-3 text-center text-xs text-ink-faint">
-        Si creaste la cuenta con Google, entrá con el botón de Google: esa cuenta no
-        tiene contraseña acá.
-      </p>
+      <p className="mt-3 text-center text-xs text-ink-faint">{t('recuperar.avisoGoogle')}</p>
     </AuthLayout>
   )
 }
 
-export function traducirErrorRecupero(message = '') {
-  const m = message.toLowerCase()
+// Devuelve la clave del catálogo, no el texto: el mensaje lo arma la
+// pantalla, que es la que sabe en qué idioma está.
+export function claveErrorRecupero(message = '') {
+  const m = `${message}`.toLowerCase()
   if (m.includes('rate limit') || m.includes('too many') || m.includes('for security purposes'))
-    return 'Pediste varios links seguidos. Esperá un minuto y probá de nuevo.'
-  if (m.includes('invalid') && m.includes('email')) return 'Ese email no parece válido.'
-  return message || 'No pudimos mandar el mail. Probá de nuevo.'
+    return 'recuperar.errorLimite'
+  if (m.includes('invalid') && m.includes('email')) return 'recuperar.errorEmail'
+  return 'recuperar.errorGenerico'
 }

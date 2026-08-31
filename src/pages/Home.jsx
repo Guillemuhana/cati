@@ -1,9 +1,66 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import {
+  BellRing,
+  Briefcase,
+  ChartColumn,
+  FileText,
+  FileUp,
+  Gift,
+  Palette,
+  PenLine,
+  Receipt,
+  Send,
+  ShieldCheck,
+  Users
+} from 'lucide-react'
 import { FREE_FOR_ALL, PROMO_LABEL, FREE_UNTIL_LABEL } from '../lib/config'
 import { useSeo } from '../lib/seo'
+import SelectorIdioma from '../components/SelectorIdioma'
+
+/**
+ * La portada.
+ *
+ * Está agrupada en tres bloques y no en una lista suelta porque la app ya
+ * no hace una sola cosa: quien llega tiene que ver de un vistazo que
+ * además del presupuesto están la factura, el recibo, el acuerdo de
+ * confidencialidad y la firma. Un listado de doce tarjetas iguales se lee
+ * como ruido; tres títulos cuentan una historia.
+ */
+const BLOQUES = [
+  {
+    titulo: 'home.seccionPresupuestos',
+    items: [
+      { key: 'completo', Icono: FileText, color: 'from-brand-700 to-brand-500' },
+      { key: 'marca', Icono: Palette, color: 'from-brand-500 to-brass-400' },
+      { key: 'enlace', Icono: Send, color: 'from-brass-500 to-brand-600' },
+      { key: 'avisos', Icono: BellRing, color: 'from-brand-600 to-brand-300' },
+      { key: 'rubro', Icono: Briefcase, color: 'from-brand-700 to-brass-500' },
+      { key: 'pdfPropio', Icono: FileUp, color: 'from-brass-400 to-brass-600' }
+    ]
+  },
+  {
+    titulo: 'home.seccionDocumentos',
+    items: [
+      { key: 'facturas', Icono: Receipt, color: 'from-brand-600 to-brand-400' },
+      { key: 'confidencialidad', Icono: ShieldCheck, color: 'from-teal-500 to-brand-600' },
+      { key: 'firma', Icono: PenLine, color: 'from-brand-700 to-teal-500' }
+    ]
+  },
+  {
+    titulo: 'home.seccionNegocio',
+    items: [
+      { key: 'clientes', Icono: Users, color: 'from-brand-500 to-brand-700' },
+      { key: 'reportes', Icono: ChartColumn, color: 'from-brass-500 to-brand-500' },
+      { key: 'invitar', Icono: Gift, color: 'from-brass-400 to-brand-600' }
+    ]
+  }
+]
 
 export default function Home() {
+  const { t } = useTranslation()
   useSeo()
+
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-paper">
       {/* Foto de fondo del hero, velada para que el texto siga legible */}
@@ -28,15 +85,16 @@ export default function Home() {
       <header className="relative mx-auto hidden w-full max-w-5xl items-center justify-between px-6 py-6 sm:flex">
         <img src="/logo-numera.png" alt="Numera" className="h-12 w-auto object-contain sm:h-28" />
         <div className="flex items-center gap-3">
+          <SelectorIdioma compacto />
           {/* En mobile no entra junto al logo, y el hero ya ofrece "Ya tengo cuenta" */}
           <Link to="/ingresar" className="hidden text-sm font-medium text-ink-soft hover:text-ink sm:inline">
-            Ingresar
+            {t('auth.ingresar')}
           </Link>
           <Link
             to="/registro"
             className="rounded-md bg-gradient-to-r from-brand-600 to-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-soft transition hover:from-brand-700 hover:to-brand-600"
           >
-            Crear cuenta
+            {t('auth.crearCuenta')}
           </Link>
         </div>
       </header>
@@ -80,102 +138,81 @@ export default function Home() {
             to="/registro"
             className="block w-full rounded-xl2 bg-gradient-to-r from-brand-700 to-brand-500 px-6 py-3.5 text-center text-base font-semibold text-white shadow-soft transition active:from-brand-700 active:to-brand-600"
           >
-            Crear cuenta
+            {t('auth.crearCuenta')}
           </Link>
-          <Link
-            to="/ingresar"
-            className="mt-2.5 block text-center text-sm font-medium text-ink-soft"
-          >
-            Ya tengo cuenta
-          </Link>
+          <div className="mt-2.5 flex items-center justify-center gap-4">
+            <Link to="/ingresar" className="text-sm font-medium text-ink-soft">
+              {t('auth.yaTengoCuenta')}
+            </Link>
+            <SelectorIdioma compacto />
+          </div>
         </div>
       </div>
 
-      <main className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-6 pt-6 text-center sm:pt-0">
-        <h1 className="font-display text-4xl font-medium leading-tight text-ink sm:text-5xl">
-          Presupuestá como una empresa grande, sin dejar de ser vos
+      <main className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col items-center px-6 pt-6 text-center sm:pt-0">
+        <h1 className="max-w-3xl font-display text-4xl font-medium leading-tight text-ink sm:text-5xl">
+          {t('home.heroTitulo')}
         </h1>
-        <p className="mt-4 max-w-xl text-base text-ink-soft">
-          Cargás los ítems y Numera hace el resto: un PDF con tu logo, un enlace que tu cliente abre del celular
-          y acepta con un botón, y un aviso tuyo apenas lo hace. Todo desde el teléfono, en minutos.
-        </p>
+        <p className="mt-4 max-w-2xl text-base text-ink-soft">{t('home.heroSubtitulo')}</p>
         <div className="mt-8 hidden flex-col gap-3 sm:flex sm:flex-row">
           <Link
             to="/registro"
             className="rounded-md bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:from-brand-700 hover:to-brand-600"
           >
-            Empezar gratis
+            {t('home.empezarGratis')}
           </Link>
           <Link
             to="/ingresar"
             className="rounded-md border border-line px-6 py-3 text-sm font-semibold text-ink transition hover:border-ink-faint"
           >
-            Ya tengo cuenta
+            {t('auth.yaTengoCuenta')}
           </Link>
         </div>
         <p className="mt-3 text-xs text-ink-faint">
           {FREE_FOR_ALL
-            ? `Gratis con todas las funciones hasta el ${FREE_UNTIL_LABEL} · sin tarjeta`
-            : `${PROMO_LABEL} gratis con todo desbloqueado · después USD 2/mes · cancelás cuando quieras`}
+            ? t('home.promoLibre', { fecha: FREE_UNTIL_LABEL })
+            : t('home.promoPrueba', { promo: PROMO_LABEL })}
         </p>
 
-        <dl className="mt-16 grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-3">
-          <Feature
-            title="El presupuesto completo"
-            desc="Ítems, cantidades, descuentos, impuestos, anticipo y moneda. Los totales se calculan solos."
-            color="from-brand-700 to-brand-500"
-          />
-          <Feature
-            title="Con tu marca, no con la nuestra"
-            desc="Tu logo, tus colores y tus datos de contacto en el PDF y en todo lo que ve tu cliente."
-            color="from-brand-500 to-brass-400"
-          />
-          <Feature
-            title="Que lo acepte de una"
-            desc="Le mandás un enlace por WhatsApp: lo abre del celular y lo acepta con un botón, sin imprimir nada."
-            color="from-brass-500 to-brand-600"
-          />
-          <Feature
-            title="Te enterás cuando lo abre"
-            desc="Visto, aceptado o rechazado, con la fecha. Y el aviso te llega mientras tenés la app abierta."
-            color="from-brand-600 to-brand-300"
-          />
-          <Feature
-            title="Escribí una sola vez"
-            desc="Tus clientes y tus precios quedan guardados. El siguiente presupuesto sale en dos toques."
-            color="from-brass-400 to-brass-600"
-          />
-          <Feature
-            title="Y lo que viene después"
-            desc="El presupuesto aceptado se convierte en factura, y los reportes te muestran cuánto cerrás y cuánto no."
-            color="from-brand-700 to-brass-500"
-          />
-        </dl>
+        {BLOQUES.map((bloque, i) => (
+          <section key={bloque.titulo} className={`w-full ${i === 0 ? 'mt-16' : 'mt-12'}`}>
+            <h2 className="text-left font-display text-xl font-medium text-ink sm:text-center">
+              {t(bloque.titulo)}
+            </h2>
+            <dl className="mt-5 grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-3">
+              {bloque.items.map(({ key, Icono, color }) => (
+                <Feature
+                  key={key}
+                  Icono={Icono}
+                  color={color}
+                  title={t(`home.features.${key}.titulo`)}
+                  desc={t(`home.features.${key}.desc`)}
+                />
+              ))}
+            </dl>
+          </section>
+        ))}
 
-        <p className="mt-8 max-w-xl text-sm text-ink-soft">
-          Elegís tu rubro al empezar y el primer presupuesto ya nace con las condiciones, las formas de pago y
-          la validez que se usan en tu oficio. Y si armás la propuesta por tu cuenta —como hacen los
-          fotógrafos, con las fotos y los packs en un PDF— la subís y viaja con el presupuesto.
-        </p>
+        <p className="mt-10 max-w-2xl text-sm text-ink-soft">{t('home.cierre')}</p>
       </main>
 
       <footer className="py-6 text-center text-xs text-ink-faint">
-        <p>Numera · Hecho para vos</p>
+        <p>{t('home.footerLema')}</p>
         <p className="mt-1">
-          Desarrollo <span className="font-medium text-ink-soft">sTuDiO-B2B</span>
+          {t('auth.desarrollo')} <span className="font-medium text-ink-soft">sTuDiO-B2B</span>
         </p>
       </footer>
     </div>
   )
 }
 
-function Feature({ title, desc, color = 'from-brand-600 to-brand-500' }) {
+function Feature({ title, desc, Icono, color = 'from-brand-600 to-brand-500' }) {
   return (
     <div className="rounded-xl2 border border-line bg-surface/80 p-5 backdrop-blur-sm">
-      <span className={`mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br ${color} shadow-soft`}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" width="18" height="18" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 13l4 4L19 7" />
-        </svg>
+      <span
+        className={`mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br ${color} shadow-soft`}
+      >
+        <Icono size={18} color="#fff" strokeWidth={2} aria-hidden="true" />
       </span>
       <dt className="font-display text-base font-medium text-ink">{title}</dt>
       <dd className="mt-1.5 text-sm text-ink-soft">{desc}</dd>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import StatCard from '../components/StatCard'
@@ -10,6 +11,7 @@ import { formatMoney, formatDate, formatNumero, STATUS } from '../lib/utils'
 const ACCEPTED = ['aceptado', 'aprobado']
 
 export default function Reportes() {
+  const { t } = useTranslation()
   return (
     <PremiumGate title="Reportes">
       <ReportesInner />
@@ -77,7 +79,7 @@ function ReportesInner() {
       formatNumero(b.numero, b.issue_date, profile?.number_prefix),
       b.issue_date || '',
       (b.clients?.name || '').replace(/"/g, '""'),
-      STATUS[b.status]?.label || b.status,
+      STATUS[b.status] ? t(STATUS[b.status].label) : b.status,
       b.currency,
       b.subtotal ?? 0,
       b.discount_amount ?? 0,

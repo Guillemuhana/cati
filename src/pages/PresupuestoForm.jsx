@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
@@ -53,6 +54,7 @@ const emptyBudget = {
 }
 
 export default function PresupuestoForm() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const isEdit = Boolean(id)
   const navigate = useNavigate()
@@ -506,7 +508,7 @@ export default function PresupuestoForm() {
                 <select value={budget.status} onChange={(e) => patchBudget({ status: e.target.value })} className={inputCls}>
                   {STATUS_OPTIONS.map((s) => (
                     <option key={s} value={s}>
-                      {STATUS[s].label}
+                      {t(STATUS[s].label)}
                     </option>
                   ))}
                 </select>

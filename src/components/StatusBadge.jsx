@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { STATUS } from '../lib/utils'
 
 const COLOR_MAP = {
@@ -9,12 +10,13 @@ const COLOR_MAP = {
 }
 
 export default function StatusBadge({ status, className = '' }) {
+  const { t } = useTranslation()
   const meta = STATUS[status] || STATUS.enviado
   return (
     <span
       className={`stamp inline-flex items-center rounded-md border-2 px-2.5 py-0.5 font-display text-[11px] font-semibold uppercase tracking-wider ${COLOR_MAP[meta.color]} ${className}`}
     >
-      {meta.label}
+      {t(meta.label)}
     </span>
   )
 }

@@ -1,21 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import StatusBadge from '../components/StatusBadge'
 import Spinner from '../components/Spinner'
 import { classNames, formatDate, formatMoney, formatNumero } from '../lib/utils'
 
+// Claves del catálogo: el rótulo se resuelve al dibujar.
 const FILTERS = [
-  { key: 'todos', label: 'Todos' },
-  { key: 'enviado', label: 'Enviado' },
-  { key: 'visto', label: 'Visto' },
-  { key: 'aceptado', label: 'Aceptado' },
-  { key: 'rechazado', label: 'Rechazado' },
-  { key: 'vencido', label: 'Vencido' }
+  { key: 'todos', label: 'estados.todos' },
+  { key: 'enviado', label: 'estados.enviado' },
+  { key: 'visto', label: 'estados.visto' },
+  { key: 'aceptado', label: 'estados.aceptado' },
+  { key: 'rechazado', label: 'estados.rechazado' },
+  { key: 'vencido', label: 'estados.vencido' }
 ]
 
 export default function Presupuestos() {
+  const { t } = useTranslation()
   const { user, profile } = useAuth()
   const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)
@@ -59,14 +62,14 @@ export default function Presupuestos() {
     <div>
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl font-medium text-ink">Presupuestos</h1>
-          <p className="mt-1 text-sm text-ink-soft">Todo lo que fuiste armando, en un solo lugar.</p>
+          <h1 className="font-display text-3xl font-medium text-ink">{t('presupuestos.titulo')}</h1>
+          <p className="mt-1 text-sm text-ink-soft">{t('presupuestos.bajada')}</p>
         </div>
         <Link
           to="/presupuestos/nuevo"
           className="btn-primary inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold"
         >
-          + Nuevo presupuesto
+          {t('panel.nuevoPresupuesto')}
         </Link>
       </header>
 
@@ -83,13 +86,13 @@ export default function Presupuestos() {
                   : 'border-line text-ink-soft hover:border-ink-faint'
               )}
             >
-              {f.label}
+              {t(f.label)}
             </button>
           ))}
         </div>
         <input
           type="text"
-          placeholder="Buscar por cliente o número..."
+          placeholder={t('presupuestos.buscar')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none sm:w-64"
@@ -102,7 +105,7 @@ export default function Presupuestos() {
             <Spinner />
           </div>
         ) : filtered.length === 0 ? (
-          <p className="px-6 py-14 text-center text-sm text-ink-soft">No hay presupuestos que coincidan.</p>
+          <p className="px-6 py-14 text-center text-sm text-ink-soft">{t('presupuestos.sinResultados')}</p>
         ) : (
           <ul className="divide-y divide-line">
             {filtered.map((b) => (
@@ -116,7 +119,7 @@ export default function Presupuestos() {
                       {b.title || b.clients?.name || formatNumero(b.numero, b.issue_date, profile?.number_prefix)}
                     </p>
                     <p className="mt-0.5 text-xs text-ink-soft">
-                      {formatNumero(b.numero, b.issue_date, profile?.number_prefix)} · {b.clients?.name || 'Sin cliente'} · {formatDate(b.issue_date)}
+                      {formatNumero(b.numero, b.issue_date, profile?.number_prefix)} · {b.clients?.name || t('panel.sinCliente')} · {formatDate(b.issue_date)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">

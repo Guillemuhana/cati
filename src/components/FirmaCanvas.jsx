@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import SignaturePad from 'signature_pad'
+import { useTranslation } from 'react-i18next'
 
 /**
  * Recuadro para firmar con el dedo (o con el mouse).
@@ -28,6 +29,7 @@ import SignaturePad from 'signature_pad'
  * algunos Android.
  */
 export default function FirmaCanvas({ value, onChange, disabled = false, alto = 180 }) {
+  const { t } = useTranslation()
   const wrapRef = useRef(null)
   const canvasRef = useRef(null)
   const padRef = useRef(null)
@@ -145,20 +147,20 @@ export default function FirmaCanvas({ value, onChange, disabled = false, alto = 
         <div className="pointer-events-none absolute inset-x-6 bottom-8 border-b border-line" />
         {vacio && (
           <p className="pointer-events-none absolute inset-x-0 bottom-2.5 text-center text-xs text-ink-faint">
-            Firmá acá arriba con el dedo
+            {t('firma.lienzoAyuda')}
           </p>
         )}
       </div>
 
       <div className="mt-2 flex items-center justify-between gap-3">
-        <p className="text-xs text-ink-faint">Se guarda tal cual la dibujaste.</p>
+        <p className="text-xs text-ink-faint">{t('firma.lienzoNota')}</p>
         <button
           type="button"
           onClick={borrar}
           disabled={disabled || vacio}
           className="rounded-md px-2.5 py-1.5 text-xs font-medium text-ink-soft transition hover:bg-ink/5 hover:text-ink disabled:opacity-40"
         >
-          Borrar y firmar de nuevo
+          {t('firma.lienzoBorrar')}
         </button>
       </div>
     </div>

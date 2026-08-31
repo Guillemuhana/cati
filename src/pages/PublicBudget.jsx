@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   AnimatePresence,
   MotionConfig,
@@ -529,6 +530,7 @@ function Block({ title, text }) {
 
 // Sello ligeramente rotado, en la línea del resto del sistema (.stamp)
 function StatusStamp({ status }) {
+  const { t } = useTranslation()
   const aceptado = status === 'aceptado'
   const color = aceptado ? '#189B84' : '#B4483A'
   return (
@@ -539,7 +541,7 @@ function StatusStamp({ status }) {
       className="inline-block rounded border-2 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em]"
       style={{ color, borderColor: color, background: `${color}0F` }}
     >
-      {aceptado ? 'Aceptado' : 'Rechazado'}
+      {t(aceptado ? 'estados.aceptado' : 'estados.rechazado')}
     </motion.span>
   )
 }

@@ -1,4 +1,7 @@
 import { Document, Page, Text, View, StyleSheet, Image, Font, Svg, Path, pdf } from '@react-pdf/renderer'
+// El PDF se arma fuera de React (desde un botón, no desde un componente),
+// así que el idioma se lee de la instancia y no del hook.
+import i18n from '../i18n'
 import { formatMoney, formatDate, formatNumero, STATUS, safeImages, isSafeImageUrl } from './utils'
 import { cleanDetails } from '../components/BudgetDetails'
 import { canalesDe } from './redes'
@@ -281,7 +284,7 @@ function PayCol({ title, text }) {
 }
 
 function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuesto', numberPrefix, statusText }) {
-  const statusLabel = statusText || (STATUS[budget.status] || STATUS.enviado).label
+  const statusLabel = statusText || i18n.t((STATUS[budget.status] || STATUS.enviado).label)
   const accent = profile?.brand_color || '#1B3B6F'
   const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)
   const rows = normalizeItems(items)

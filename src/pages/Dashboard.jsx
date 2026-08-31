@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import StatCard from '../components/StatCard'
@@ -12,6 +13,7 @@ import { formatMoney, formatDate, formatNumero } from '../lib/utils'
 import { CLAVES, marcar, estaMarcado } from '../lib/onboarding'
 
 export default function Dashboard() {
+  const { t } = useTranslation()
   const { user, profile } = useAuth()
   const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)
@@ -69,29 +71,39 @@ export default function Dashboard() {
 
       <header className="mb-8">
         <h1 className="font-display text-3xl font-medium text-ink">
-          Hola
+          {t('panel.hola')}
           {firstName && (
             <span className="bg-gradient-to-r from-brand-700 to-brass-500 bg-clip-text text-transparent">
               , {firstName}
             </span>
           )}
         </h1>
-        <p className="mt-1 text-sm text-ink-soft">Así viene tu actividad con Numera.</p>
+        <p className="mt-1 text-sm text-ink-soft">{t('panel.bajada')}</p>
       </header>
 
       <PrimerosPasos budgets={budgets} cargando={loading} />
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <StatCard label="Presupuestos" value={stats.total} tone="navy" />
-        <StatCard label="Enviados" value={stats.enviados} tone="blue" hint={formatMoney(stats.montoPendiente, profile?.currency)} />
-        <StatCard label="Aprobados" value={stats.aprobados} tone="teal" hint={formatMoney(stats.montoAprobado, profile?.currency)} />
-        <StatCard label="Moneda" value={profile?.currency || 'ARS'} />
+        <StatCard label={t('panel.presupuestos')} value={stats.total} tone="navy" />
+        <StatCard
+          label={t('panel.enviados')}
+          value={stats.enviados}
+          tone="blue"
+          hint={formatMoney(stats.montoPendiente, profile?.currency)}
+        />
+        <StatCard
+          label={t('panel.aprobados')}
+          value={stats.aprobados}
+          tone="teal"
+          hint={formatMoney(stats.montoAprobado, profile?.currency)}
+        />
+        <StatCard label={t('panel.moneda')} value={profile?.currency || 'ARS'} />
       </div>
 
       <div className="mt-10 flex items-center justify-between">
-        <h2 className="font-display text-xl font-medium text-ink">Actividad reciente</h2>
+        <h2 className="font-display text-xl font-medium text-ink">{t('panel.actividadReciente')}</h2>
         <Link to="/presupuestos/nuevo" className="text-sm font-medium text-brand-600 hover:underline">
-          + Nuevo presupuesto
+          {t('panel.nuevoPresupuesto')}
         </Link>
       </div>
 
@@ -115,7 +127,7 @@ export default function Dashboard() {
                       {b.title || b.clients?.name || formatNumero(b.numero, b.issue_date, profile?.number_prefix)}
                     </p>
                     <p className="mt-0.5 text-xs text-ink-soft">
-                      {formatNumero(b.numero, b.issue_date, profile?.number_prefix)} · {b.clients?.name || 'Sin cliente'} · {formatDate(b.issue_date)}
+                      {formatNumero(b.numero, b.issue_date, profile?.number_prefix)} · {b.clients?.name || t('panel.sinCliente')} · {formatDate(b.issue_date)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
@@ -135,17 +147,16 @@ export default function Dashboard() {
 }
 
 function EmptyState() {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-col items-center px-6 py-14 text-center">
-      <p className="font-display text-lg text-ink">Todavía no armaste presupuestos</p>
-      <p className="mt-1 max-w-xs text-sm text-ink-soft">
-        Creá el primero y compartilo en PDF con tu cliente en menos de dos minutos.
-      </p>
+      <p className="font-display text-lg text-ink">{t('panel.vacioTitulo')}</p>
+      <p className="mt-1 max-w-xs text-sm text-ink-soft">{t('panel.vacioDetalle')}</p>
       <Link
         to="/presupuestos/nuevo"
         className="mt-5 rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
       >
-        Crear presupuesto
+        {t('panel.vacioBoton')}
       </Link>
     </div>
   )

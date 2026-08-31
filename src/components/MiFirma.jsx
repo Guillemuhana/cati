@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Card from './Card'
 import FirmaCanvas from './FirmaCanvas'
@@ -20,6 +21,7 @@ import { limpiarFirmaAcotada, recortarFirmaDibujada, FIRMA_EN_PUBLIC } from '../
  * navegador: así sirve igual desde la compu y desde el teléfono.
  */
 export default function MiFirma() {
+  const { t } = useTranslation()
   const { profile, updateProfile } = useAuth()
   const inputRef = useRef(null)
   const [busy, setBusy] = useState('')
@@ -50,7 +52,7 @@ export default function MiFirma() {
       await guardar(await limpiarFirmaAcotada(file))
       cerrarDibujo()
     } catch (err) {
-      setError(err?.message || 'No pudimos procesar esa imagen.')
+      setError(err?.message || t('firma.errorImagen'))
     }
     setBusy('')
   }
@@ -65,7 +67,7 @@ export default function MiFirma() {
       await guardar(await recortarFirmaDibujada(trazo))
       cerrarDibujo()
     } catch (err) {
-      setError(err?.message || 'No pudimos guardar esa firma.')
+      setError(err?.message || t('firma.errorGuardar'))
     }
     setBusy('')
   }
@@ -75,46 +77,42 @@ export default function MiFirma() {
     setError('')
     try {
       const res = await fetch(FIRMA_EN_PUBLIC, { cache: 'no-store' })
-      if (!res.ok) throw new Error(`No encontré ${FIRMA_EN_PUBLIC}.`)
+      if (!res.ok) throw new Error(t('firma.errorNoEncontrado', { archivo: FIRMA_EN_PUBLIC }))
       const blob = await res.blob()
       if (!blob.type.startsWith('image/')) {
-        throw new Error(`El archivo ${FIRMA_EN_PUBLIC} no es una imagen.`)
+        throw new Error(t('firma.errorNoEsImagen', { archivo: FIRMA_EN_PUBLIC }))
       }
       await guardar(await limpiarFirmaAcotada(blob))
       cerrarDibujo()
     } catch (err) {
-      setError(err?.message || 'No pudimos leer esa imagen.')
+      setError(err?.message || t('firma.errorLeer'))
     }
     setBusy('')
   }
 
   const borrar = async () => {
-    if (!window.confirm('¿Borrar tu firma guardada? Los acuerdos ya firmados no se tocan.')) return
+    if (!window.confirm(t('firma.confirmarBorrado'))) return
     setBusy('borrar')
     setError('')
     try {
       await guardar(null)
     } catch {
-      setError('No pudimos borrarla.')
+      setError(t('firma.errorBorrar'))
     }
     setBusy('')
   }
 
   return (
     <Card
-      title="Mi firma"
-      desc={
-        firma
-          ? 'Tus presupuestos y acuerdos nuevos ya salen firmados por vos.'
-          : 'Guardala una vez y no la dibujás nunca más.'
-      }
+      title={t('firma.titulo')}
+      desc={firma ? t('firma.descConFirma') : t('firma.descSinFirma')}
       className="mb-6"
     >
       {firma ? (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <div className="flex h-20 items-end border-b border-line">
-              <img src={firma} alt="Tu firma" className="max-h-20 max-w-full object-contain" />
+              <img src={firma} alt={t('firma.alt')} className="max-h-20 max-w-full object-contain" />
             </div>
             <p className="mt-1.5 text-xs text-ink-soft">
               {profile?.firma_nombre || profile?.business_name}
@@ -128,7 +126,7 @@ export default function MiFirma() {
               disabled={!!busy || dibujando}
               className="rounded-md border border-line px-3 py-2 text-xs font-medium text-ink transition hover:border-ink-faint disabled:opacity-60"
             >
-              Firmar en pantalla
+              {t('firma.firmarEnPantalla')}
             </button>
             <button
               type="button"
@@ -136,7 +134,7 @@ export default function MiFirma() {
               disabled={!!busy}
               className="rounded-md border border-line px-3 py-2 text-xs font-medium text-ink transition hover:border-ink-faint disabled:opacity-60"
             >
-              {busy === 'archivo' ? 'Procesando…' : 'Subir otra foto'}
+              {busy === 'archivo' ? t('firma.procesando') : t('firma.subirOtraFoto')}
             </button>
             <button
               type="button"
@@ -144,16 +142,13 @@ export default function MiFirma() {
               disabled={!!busy}
               className="text-xs text-ink-faint underline-offset-4 hover:text-rust-500 hover:underline disabled:opacity-60"
             >
-              Borrar
+              {t('firma.borrar')}
             </button>
           </div>
         </div>
       ) : (
         <div>
-          <p className="text-sm leading-relaxed text-ink-soft">
-            Firmá acá mismo con el dedo, o firmá en un papel blanco con birome negra, sacale una
-            foto derecha y subila: la app le saca el fondo del papel y deja solo el trazo.
-          </p>
+          <p className="text-sm leading-relaxed text-ink-soft">{t('firma.explicacion')}</p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
@@ -161,7 +156,7 @@ export default function MiFirma() {
               disabled={!!busy || dibujando}
               className="btn-primary rounded-md px-4 py-2.5 text-sm font-semibold disabled:opacity-60"
             >
-              Firmar en pantalla
+              {t('firma.firmarEnPantalla')}
             </button>
             <button
               type="button"
@@ -169,7 +164,7 @@ export default function MiFirma() {
               disabled={!!busy}
               className="rounded-md border border-line px-4 py-2.5 text-sm font-medium text-ink transition hover:border-ink-faint disabled:opacity-60"
             >
-              {busy === 'archivo' ? 'Procesando…' : 'Subir la foto de mi firma'}
+              {busy === 'archivo' ? t('firma.procesando') : t('firma.subirFoto')}
             </button>
             {/* Atajo para la foto que ya está en public/. Ver el aviso de
                 abajo: ese archivo lo puede bajar cualquiera. */}
@@ -179,7 +174,7 @@ export default function MiFirma() {
               disabled={!!busy}
               className="rounded-md border border-line px-4 py-2.5 text-sm font-medium text-ink transition hover:border-ink-faint disabled:opacity-60"
             >
-              {busy === 'public' ? 'Procesando…' : `Usar ${FIRMA_EN_PUBLIC}`}
+              {busy === 'public' ? t('firma.procesando') : t('firma.usarPublic', { archivo: FIRMA_EN_PUBLIC })}
             </button>
           </div>
         </div>
@@ -195,7 +190,7 @@ export default function MiFirma() {
               disabled={!trazo || !!busy}
               className="btn-primary rounded-md px-4 py-2.5 text-sm font-semibold disabled:opacity-60"
             >
-              {busy === 'dibujo' ? 'Guardando…' : 'Guardar esta firma'}
+              {busy === 'dibujo' ? t('firma.guardandoFirma') : t('firma.guardarEsta')}
             </button>
             <button
               type="button"
@@ -203,10 +198,10 @@ export default function MiFirma() {
               disabled={!!busy}
               className="text-sm font-medium text-ink-soft transition hover:text-ink disabled:opacity-60"
             >
-              Cancelar
+              {t('comun.cancelar')}
             </button>
             {firma && (
-              <span className="text-xs text-ink-faint">Al guardar reemplaza la que tenías.</span>
+              <span className="text-xs text-ink-faint">{t('firma.reemplaza')}</span>
             )}
           </div>
         </div>
@@ -227,10 +222,7 @@ export default function MiFirma() {
       )}
 
       {firma && (
-        <p className="mt-3 text-xs leading-relaxed text-ink-faint">
-          Ya está guardada en tu cuenta. Si la firma quedó en public/, borrá ese archivo del
-          proyecto: ahí es descargable por cualquiera que sepa la dirección.
-        </p>
+        <p className="mt-3 text-xs leading-relaxed text-ink-faint">{t('firma.avisoPublic')}</p>
       )}
     </Card>
   )

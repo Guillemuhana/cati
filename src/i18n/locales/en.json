@@ -204,7 +204,10 @@
     "errorBorrar": "We couldn't delete it.",
     "lienzoAyuda": "Sign above with your finger",
     "lienzoNota": "It's saved exactly as you drew it.",
-    "lienzoBorrar": "Clear and sign again"
+    "lienzoBorrar": "Clear and sign again",
+    "errorNoEncontrado": "I couldn't find {{archivo}}.",
+    "errorNoEsImagen": "The file {{archivo}} is not an image.",
+    "alt": "Your signature"
   },
   "registro": {
     "titulo": "Create your account",
@@ -234,5 +237,35 @@
     "verPlanes": "See plans →",
     "terminado": "🔒 Your free period ended · unlock the premium features",
     "suscribirme": "Subscribe for USD 2/month →"
+  },
+  "estados": {
+    "borrador": "Draft",
+    "enviado": "Sent",
+    "visto": "Seen",
+    "aprobado": "Approved",
+    "aceptado": "Accepted",
+    "rechazado": "Declined",
+    "vencido": "Expired",
+    "todos": "All"
+  },
+  "panel": {
+    "hola": "Hi",
+    "bajada": "Here's how your activity on Numera is going.",
+    "presupuestos": "Quotes",
+    "enviados": "Sent",
+    "aprobados": "Approved",
+    "moneda": "Currency",
+    "actividadReciente": "Recent activity",
+    "nuevoPresupuesto": "+ New quote",
+    "sinCliente": "No client",
+    "vacioTitulo": "You haven't built any quotes yet",
+    "vacioDetalle": "Create your first one and share it as a PDF with your client in under two minutes.",
+    "vacioBoton": "Create a quote"
+  },
+  "presupuestos": {
+    "titulo": "Quotes",
+    "bajada": "Everything you have built, all in one place.",
+    "buscar": "Search by client or number...",
+    "sinResultados": "No quotes match that."
   }
 }

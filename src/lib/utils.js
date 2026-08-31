@@ -128,14 +128,17 @@ export function getBudgetErrors({ client_id, items = [], issue_date, due_date, d
   return errors
 }
 
+// `label` es la clave del catálogo, no el texto: el mismo estado se
+// dibuja en la pantalla, en el PDF y en el enlace público, y los tres
+// tienen que decirlo en el idioma elegido.
 export const STATUS = {
-  borrador: { label: 'Borrador', color: 'ink' },
-  enviado: { label: 'Enviado', color: 'brass' },
-  visto: { label: 'Visto', color: 'brand' },
-  aprobado: { label: 'Aprobado', color: 'teal' },
-  aceptado: { label: 'Aceptado', color: 'teal' },
-  rechazado: { label: 'Rechazado', color: 'rust' },
-  vencido: { label: 'Vencido', color: 'rust' }
+  borrador: { label: 'estados.borrador', color: 'ink' },
+  enviado: { label: 'estados.enviado', color: 'brass' },
+  visto: { label: 'estados.visto', color: 'brand' },
+  aprobado: { label: 'estados.aprobado', color: 'teal' },
+  aceptado: { label: 'estados.aceptado', color: 'teal' },
+  rechazado: { label: 'estados.rechazado', color: 'rust' },
+  vencido: { label: 'estados.vencido', color: 'rust' }
 }
 
 // Estados ofrecidos en los selectores. No incluye 'borrador' (se sacó: un

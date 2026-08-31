@@ -204,7 +204,10 @@
     "errorBorrar": "No pudimos borrarla.",
     "lienzoAyuda": "Firmá acá arriba con el dedo",
     "lienzoNota": "Se guarda tal cual la dibujaste.",
-    "lienzoBorrar": "Borrar y firmar de nuevo"
+    "lienzoBorrar": "Borrar y firmar de nuevo",
+    "errorNoEncontrado": "No encontré {{archivo}}.",
+    "errorNoEsImagen": "El archivo {{archivo}} no es una imagen.",
+    "alt": "Tu firma"
   },
   "registro": {
     "titulo": "Creá tu cuenta",
@@ -234,5 +237,35 @@
     "verPlanes": "Ver planes →",
     "terminado": "🔒 Tu período gratis terminó · desbloqueá las funciones premium",
     "suscribirme": "Suscribirme por USD 2/mes →"
+  },
+  "estados": {
+    "borrador": "Borrador",
+    "enviado": "Enviado",
+    "visto": "Visto",
+    "aprobado": "Aprobado",
+    "aceptado": "Aceptado",
+    "rechazado": "Rechazado",
+    "vencido": "Vencido",
+    "todos": "Todos"
+  },
+  "panel": {
+    "hola": "Hola",
+    "bajada": "Así viene tu actividad con Numera.",
+    "presupuestos": "Presupuestos",
+    "enviados": "Enviados",
+    "aprobados": "Aprobados",
+    "moneda": "Moneda",
+    "actividadReciente": "Actividad reciente",
+    "nuevoPresupuesto": "+ Nuevo presupuesto",
+    "sinCliente": "Sin cliente",
+    "vacioTitulo": "Todavía no armaste presupuestos",
+    "vacioDetalle": "Creá el primero y compartilo en PDF con tu cliente en menos de dos minutos.",
+    "vacioBoton": "Crear presupuesto"
+  },
+  "presupuestos": {
+    "titulo": "Presupuestos",
+    "bajada": "Todo lo que fuiste armando, en un solo lugar.",
+    "buscar": "Buscar por cliente o número...",
+    "sinResultados": "No hay presupuestos que coincidan."
   }
 }

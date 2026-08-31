@@ -22,7 +22,9 @@ import {
   readableAccent,
   resolveAccent,
   safeImages,
-  safePdfUrl
+  safePdfUrl,
+  hayDescripcionLarga,
+  partirDescripcion
 } from '../lib/utils'
 import { lineAmount } from '../components/ItemsTable'
 import { useSeo } from '../lib/seo'
@@ -39,6 +41,7 @@ const stagger = {
 }
 
 export default function PublicBudget() {
+  const { t } = useTranslation()
   // Datos de un cliente real: fuera de los buscadores.
   useSeo({ title: 'Presupuesto', noindex: true })
 
@@ -120,6 +123,9 @@ export default function PublicBudget() {
   const actionShadow = '0 10px 22px -8px rgba(20, 24, 28, 0.45), 0 3px 8px -3px rgba(20, 24, 28, 0.25)'
   const currency = budget.currency
   const balance = (Number(budget.total) || 0) - (Number(budget.deposit) || 0)
+  // Con una memoria descriptiva larga la tabla de columnas no sirve: ver
+  // hayDescripcionLarga() en lib/utils.
+  const textoLargo = hayDescripcionLarga(items)
   const decided = budget.status === 'aceptado' || budget.status === 'rechazado'
 
   return (
@@ -242,51 +248,104 @@ export default function PublicBudget() {
               </motion.div>
             )}
 
-            {/* Ítems */}
+            {/* Ítems.
+                Con descripciones largas la tabla de columnas no sirve: ver
+                hayDescripcionLarga() en lib/utils. */}
             <motion.div variants={reveal} className="mt-8 overflow-hidden rounded-lg border border-line">
-              <div className="hidden grid-cols-[1fr_60px_minmax(90px,110px)_minmax(90px,110px)] gap-3 border-b border-line bg-paper px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-faint sm:grid">
-                <span>Descripción</span>
-                <span className="text-right">Cant.</span>
-                <span className="text-right">Precio</span>
-                <span className="text-right">Importe</span>
-              </div>
-              {items.map((it, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.35 + i * 0.04, type: 'spring', stiffness: 260, damping: 28 }}
-                  className="border-b border-line px-4 py-3.5 text-sm transition-colors last:border-0 hover:bg-paper/60 sm:grid sm:grid-cols-[1fr_60px_minmax(90px,110px)_minmax(90px,110px)] sm:items-start sm:gap-3 sm:py-2.5"
-                >
-                  <span className="block min-w-0 break-words leading-relaxed text-ink">
-                    {it.description}
-                    {Number(it.discount) > 0 && (
-                      <span className="ml-1.5 rounded bg-brass-400/15 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-brass-600">
-                        -{it.discount}%
-                      </span>
-                    )}
+              {!textoLargo && (
+                <div className="hidden grid-cols-[1fr_60px_minmax(90px,110px)_minmax(90px,110px)] gap-3 border-b border-line bg-paper px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-faint sm:grid">
+                  <span>{t('items.descripcion')}</span>
+                  <span className="text-right">{t('items.cantidad')}</span>
+                  <span className="text-right">{t('items.precioUnit')}</span>
+                  <span className="text-right">{t('items.importe')}</span>
+                </div>
+              )}
+              {items.map((it, i) => {
+                const aparicion = {
+                  initial: { opacity: 0, y: 8 },
+                  animate: { opacity: 1, y: 0 },
+                  transition: { delay: 0.35 + i * 0.04, type: 'spring', stiffness: 260, damping: 28 }
+                }
+                const descuento = Number(it.discount) > 0 && (
+                  <span className="rounded bg-brass-400/15 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-brass-600">
+                    -{it.discount}%
                   </span>
+                )
 
-                  {/* Móvil: cantidad × precio en una línea, importe a la derecha */}
-                  <div className="mt-2 flex items-baseline justify-between gap-3 border-t border-dashed border-line pt-2 sm:hidden">
-                    <span className="font-mono text-xs tabular-nums text-ink-faint">
-                      {it.quantity} × {formatMoney(it.unit_price, currency)}
+                if (textoLargo) {
+                  const { titulo, cuerpo } = partirDescripcion(it.description)
+                  return (
+                    <motion.div
+                      key={i}
+                      {...aparicion}
+                      className="border-b border-line px-4 py-4 text-sm transition-colors last:border-0 hover:bg-paper/60"
+                    >
+                      {/* Los números arriba: es lo primero que busca el que abre el link. */}
+                      <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-line pb-2.5">
+                        <span className="flex flex-wrap items-baseline gap-2 font-mono text-xs tabular-nums text-ink-faint">
+                          <span>
+                            {it.quantity} × {formatMoney(it.unit_price, currency)}
+                          </span>
+                          {descuento}
+                        </span>
+                        <span className="whitespace-nowrap font-mono text-base font-semibold tabular-nums text-ink">
+                          {formatMoney(lineAmount(it), currency)}
+                        </span>
+                      </div>
+
+                      {/* Y el texto abajo, a todo el ancho. */}
+                      <div className="mt-3 min-w-0">
+                        {titulo && (
+                          <p className="break-words font-semibold leading-snug text-ink">{titulo}</p>
+                        )}
+                        {cuerpo && (
+                          <p
+                            className={`whitespace-pre-line break-words leading-relaxed text-ink-soft ${
+                              titulo ? 'mt-1.5' : ''
+                            }`}
+                          >
+                            {cuerpo}
+                          </p>
+                        )}
+                      </div>
+                    </motion.div>
+                  )
+                }
+
+                return (
+                  <motion.div
+                    key={i}
+                    {...aparicion}
+                    className="border-b border-line px-4 py-3.5 text-sm transition-colors last:border-0 hover:bg-paper/60 sm:grid sm:grid-cols-[1fr_60px_minmax(90px,110px)_minmax(90px,110px)] sm:items-start sm:gap-3 sm:py-2.5"
+                  >
+                    <span className="block min-w-0 whitespace-pre-line break-words leading-relaxed text-ink">
+                      {it.description}
+                      {descuento && <span className="ml-1.5">{descuento}</span>}
                     </span>
-                    <span className="whitespace-nowrap font-mono font-semibold tabular-nums text-ink">
+
+                    {/* Móvil: cantidad × precio en una línea, importe a la derecha */}
+                    <div className="mt-2 flex items-baseline justify-between gap-3 border-t border-dashed border-line pt-2 sm:hidden">
+                      <span className="font-mono text-xs tabular-nums text-ink-faint">
+                        {it.quantity} × {formatMoney(it.unit_price, currency)}
+                      </span>
+                      <span className="whitespace-nowrap font-mono font-semibold tabular-nums text-ink">
+                        {formatMoney(lineAmount(it), currency)}
+                      </span>
+                    </div>
+
+                    {/* Escritorio: columnas */}
+                    <span className="hidden text-right font-mono tabular-nums text-ink-soft sm:block">
+                      {it.quantity}
+                    </span>
+                    <span className="hidden whitespace-nowrap text-right font-mono tabular-nums text-ink-soft sm:block">
+                      {formatMoney(it.unit_price, currency)}
+                    </span>
+                    <span className="hidden whitespace-nowrap text-right font-mono font-semibold tabular-nums text-ink sm:block">
                       {formatMoney(lineAmount(it), currency)}
                     </span>
-                  </div>
-
-                  {/* Escritorio: columnas */}
-                  <span className="hidden text-right font-mono tabular-nums text-ink-soft sm:block">{it.quantity}</span>
-                  <span className="hidden whitespace-nowrap text-right font-mono tabular-nums text-ink-soft sm:block">
-                    {formatMoney(it.unit_price, currency)}
-                  </span>
-                  <span className="hidden whitespace-nowrap text-right font-mono font-semibold tabular-nums text-ink sm:block">
-                    {formatMoney(lineAmount(it), currency)}
-                  </span>
-                </motion.div>
-              ))}
+                  </motion.div>
+                )
+              })}
             </motion.div>
 
             {/* Totales */}

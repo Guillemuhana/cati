@@ -1,4 +1,13 @@
-import { formatMoney, formatDate, formatNumero, safeImages, isSafeImageUrl } from '../lib/utils'
+import { useTranslation } from 'react-i18next'
+import {
+  formatMoney,
+  formatDate,
+  formatNumero,
+  safeImages,
+  isSafeImageUrl,
+  hayDescripcionLarga,
+  partirDescripcion
+} from '../lib/utils'
 import { cleanDetails } from './BudgetDetails'
 import { lineAmount } from './ItemsTable'
 
@@ -7,8 +16,10 @@ import { lineAmount } from './ItemsTable'
  * Reutiliza los mismos datos y totales que se guardan y se exportan.
  */
 export default function PreviewModal({ budget, items, client, profile, totals, onClose, actions }) {
+  const { t } = useTranslation()
   const currency = budget.currency
   const validItems = items.filter((it) => (it.description || '').trim() !== '' || Number(it.unit_price) > 0)
+  const textoLargo = hayDescripcionLarga(validItems)
   const logoCliente = isSafeImageUrl(client?.logo_url) ? client.logo_url : ''
 
   return (
@@ -94,21 +105,58 @@ export default function PreviewModal({ budget, items, client, profile, totals, o
             </div>
           </div>
 
-          {/* Tabla */}
+          {/* Tabla. Con descripciones largas cambia de forma: los números
+              suben y el texto baja a todo el ancho (ver lib/utils). */}
           <div className="mt-8 overflow-hidden rounded-lg border border-line">
-            <div className="hidden grid-cols-[1fr_60px_100px_100px] gap-2 border-b border-line bg-paper px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-ink-faint sm:grid">
-              <span>Descripción</span>
-              <span className="text-right">Cant.</span>
-              <span className="text-right">Precio</span>
-              <span className="text-right">Importe</span>
-            </div>
-            {validItems.map((it, i) => (
+            {!textoLargo && (
+              <div className="hidden grid-cols-[1fr_60px_100px_100px] gap-2 border-b border-line bg-paper px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-ink-faint sm:grid">
+                <span>{t('items.descripcion')}</span>
+                <span className="text-right">{t('items.cantidad')}</span>
+                <span className="text-right">{t('items.precioUnit')}</span>
+                <span className="text-right">{t('items.importe')}</span>
+              </div>
+            )}
+            {textoLargo &&
+              validItems.map((it, i) => {
+                const { titulo, cuerpo } = partirDescripcion(it.description || t('items.item'))
+                return (
+                  <div key={i} className="border-b border-line px-3 py-4 text-sm last:border-0">
+                    <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-line pb-2">
+                      <span className="flex flex-wrap items-baseline gap-2 font-mono text-xs tabular-nums text-ink-faint">
+                        <span>
+                          {it.quantity} × {formatMoney(it.unit_price, currency)}
+                        </span>
+                        {Number(it.discount) > 0 && (
+                          <span className="text-brass-600">-{it.discount}%</span>
+                        )}
+                      </span>
+                      <span className="whitespace-nowrap font-mono text-base font-semibold tabular-nums text-ink">
+                        {formatMoney(lineAmount(it), currency)}
+                      </span>
+                    </div>
+                    <div className="mt-3 min-w-0">
+                      {titulo && <p className="break-words font-semibold leading-snug text-ink">{titulo}</p>}
+                      {cuerpo && (
+                        <p
+                          className={`whitespace-pre-line break-words leading-relaxed text-ink-soft ${
+                            titulo ? 'mt-1.5' : ''
+                          }`}
+                        >
+                          {cuerpo}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            {!textoLargo &&
+              validItems.map((it, i) => (
               <div
                 key={i}
                 className="border-b border-line px-3 py-3 text-sm last:border-0 sm:grid sm:grid-cols-[1fr_60px_100px_100px] sm:items-start sm:gap-2 sm:py-2"
               >
-                <span className="block min-w-0 break-words leading-relaxed text-ink">
-                  {it.description || 'Ítem'}
+                <span className="block min-w-0 whitespace-pre-line break-words leading-relaxed text-ink">
+                  {it.description || t('items.item')}
                   {Number(it.discount) > 0 && <span className="ml-1 text-xs text-brass-600">-{it.discount}%</span>}
                 </span>
 

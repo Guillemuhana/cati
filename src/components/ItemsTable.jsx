@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { formatMoney } from '../lib/utils'
 
 let localId = 0
@@ -24,7 +25,9 @@ export function lineAmount(item) {
 const COLS =
   'sm:grid-cols-[minmax(120px,1fr)_minmax(52px,68px)_minmax(80px,104px)_minmax(48px,64px)_minmax(80px,104px)_28px]'
 
-export default function ItemsTable({ items, onChange, currency, placeholder = 'Ej: Diseño de landing page' }) {
+export default function ItemsTable({ items, onChange, currency, placeholder }) {
+  const { t } = useTranslation()
+  const marcador = placeholder || t('items.placeholder')
   const update = (index, field, value) => {
     const next = items.slice()
     next[index] = { ...next[index], [field]: value }
@@ -44,12 +47,12 @@ export default function ItemsTable({ items, onChange, currency, placeholder = 'E
       <div
         className={`hidden gap-3 border-b border-line px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-faint sm:grid sm:gap-2 ${COLS}`}
       >
-        <span>Descripción</span>
-        <span className="text-right">Cant.</span>
-        <span className="text-right">Precio unit.</span>
-        <span className="text-right">Desc. %</span>
-        <span className="text-right">Importe</span>
-        <span className="sr-only">Acciones</span>
+        <span>{t('items.descripcion')}</span>
+        <span className="text-right">{t('items.cantidad')}</span>
+        <span className="text-right">{t('items.precioUnit')}</span>
+        <span className="text-right">{t('items.descPct')}</span>
+        <span className="text-right">{t('items.importe')}</span>
+        <span className="sr-only">{t('items.acciones')}</span>
       </div>
 
       <div className="divide-y divide-line">
@@ -68,7 +71,7 @@ export default function ItemsTable({ items, onChange, currency, placeholder = 'E
                 </span>
                 <input
                   type="text"
-                  placeholder={placeholder}
+                  placeholder={marcador}
                   value={item.description}
                   onChange={(e) => update(index, 'description', e.target.value)}
                   className="w-full rounded-md border border-line bg-transparent px-2.5 py-2 text-sm text-ink transition placeholder:text-ink-faint focus:border-brand-500 focus:bg-white focus:outline-none sm:border-transparent sm:hover:border-line"
@@ -78,21 +81,21 @@ export default function ItemsTable({ items, onChange, currency, placeholder = 'E
               {/* En móvil: cantidad / precio / descuento en grilla de 3 */}
               <div className="grid min-w-0 grid-cols-3 gap-3 sm:contents">
                 <NumField
-                  label="Cant."
+                  label={t('items.cantidad')}
                   value={item.quantity}
                   min={0}
                   step="0.5"
                   onChange={(v) => update(index, 'quantity', v)}
                 />
                 <NumField
-                  label="Precio unit."
+                  label={t('items.precioUnit')}
                   value={item.unit_price}
                   min={0}
                   step="0.01"
                   onChange={(v) => update(index, 'unit_price', v)}
                 />
                 <NumField
-                  label="Desc. %"
+                  label={t('items.descPct')}
                   value={item.discount}
                   min={0}
                   max={100}
@@ -115,8 +118,8 @@ export default function ItemsTable({ items, onChange, currency, placeholder = 'E
                   type="button"
                   onClick={() => remove(index)}
                   disabled={last}
-                  aria-label="Quitar ítem"
-                  title={last ? 'Debe existir al menos un ítem' : 'Quitar ítem'}
+                  aria-label={t('items.quitar')}
+                  title={last ? t('items.minimoUno') : t('items.quitar')}
                   className="rounded-md p-1.5 text-ink-faint transition hover:bg-rust-500/10 hover:text-rust-500 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-faint"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="18" height="18">
@@ -137,7 +140,7 @@ export default function ItemsTable({ items, onChange, currency, placeholder = 'E
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
           <path d="M12 5v14M5 12h14" strokeLinecap="round" />
         </svg>
-        Agregar ítem
+        {t('items.agregar')}
       </button>
     </div>
   )

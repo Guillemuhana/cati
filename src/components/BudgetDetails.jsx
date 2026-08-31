@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useRef } from 'react'
 
 export const MAX_DETAILS = 8
@@ -9,6 +10,7 @@ const MAX_VALUE = 200
 // y puede inventar los suyos. La tarjeta arranca vacía: el que no los usa
 // no tiene que ignorar cuatro campos en cada presupuesto.
 export default function BudgetDetails({ sugeridos = [], value = [], onChange }) {
+  const { t } = useTranslation()
   const details = Array.isArray(value) ? value : []
   const ultimoRef = useRef(null)
 
@@ -45,7 +47,7 @@ export default function BudgetDetails({ sugeridos = [], value = [], onChange }) 
                       type="text"
                       value={d.label}
                       maxLength={MAX_LABEL}
-                      placeholder="Nombre del dato"
+                      placeholder={t('detalles.nombreDato')}
                       onChange={(e) => editar(i, { label: e.target.value })}
                       className="w-full rounded-md border border-line px-3 py-2 text-sm font-medium transition focus:border-brand-500 focus:outline-none"
                     />
@@ -57,7 +59,7 @@ export default function BudgetDetails({ sugeridos = [], value = [], onChange }) 
                     value={d.value}
                     maxLength={MAX_VALUE}
                     autoFocus={ultimoRef.current === i}
-                    placeholder="Ej: Sábado 14/03"
+                    placeholder={t('detalles.valorEjemplo')}
                     onChange={(e) => editar(i, { value: e.target.value })}
                     className="w-full rounded-md border border-line px-3 py-2 text-sm transition focus:border-brand-500 focus:outline-none"
                   />
@@ -65,7 +67,7 @@ export default function BudgetDetails({ sugeridos = [], value = [], onChange }) 
                 <button
                   type="button"
                   onClick={() => quitar(i)}
-                  aria-label={`Quitar ${d.label || 'dato'}`}
+                  aria-label={t('detalles.quitarDato', { nombre: d.label || t('detalles.dato') })}
                   className="shrink-0 rounded-md px-2 py-2 text-base leading-none text-ink-faint transition hover:text-rust-500 sm:text-sm"
                 >
                   ✕
@@ -77,7 +79,7 @@ export default function BudgetDetails({ sugeridos = [], value = [], onChange }) 
       )}
 
       {lleno ? (
-        <p className="text-xs text-ink-faint">Llegaste a los {MAX_DETAILS} datos. Sacá uno para agregar otro.</p>
+        <p className="text-xs text-ink-faint">{t('detalles.lleno', { maximo: MAX_DETAILS })}</p>
       ) : (
         <div className="flex flex-wrap gap-1.5">
           {disponibles.map((s) => (
@@ -86,15 +88,13 @@ export default function BudgetDetails({ sugeridos = [], value = [], onChange }) 
             </Chip>
           ))}
           <Chip onClick={() => agregar('')} destacado={disponibles.length === 0}>
-            + Agregar otro dato
+            {t('detalles.agregarOtro')}
           </Chip>
         </div>
       )}
 
       {details.length === 0 && (
-        <p className="mt-2 text-xs text-ink-faint">
-          Opcional. Lo que cargues acá se imprime arriba del detalle, en el PDF y en el enlace del cliente.
-        </p>
+        <p className="mt-2 text-xs text-ink-faint">{t('detalles.ayuda')}</p>
       )}
     </div>
   )

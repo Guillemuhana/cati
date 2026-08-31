@@ -313,3 +313,45 @@ export function missingColumnError(err) {
     ? `Falta la columna «${col}» en la base. Fijate qué migración de supabase/ la crea y correla.`
     : 'Falta una columna nueva en la base. Corré las migraciones pendientes de supabase/.'
 }
+
+
+// ------------------------------------------------------------
+// Ítems con descripción larga.
+//
+// La tabla de cuatro columnas (descripción · cantidad · precio · importe)
+// funciona con «Diseño de logo». Con la memoria descriptiva de un
+// desarrollo —quince renglones— no: la descripción queda embutida en
+// media pantalla, cae una frase por línea, y el importe termina tan
+// lejos del texto que hay que buscarlo con el dedo.
+//
+// Cuando aparece uno de esos, la lista entera cambia de forma: los
+// números suben a un renglón propio arriba y el texto baja a todo el
+// ancho. La decisión es de la lista entera y no de cada ítem porque un
+// encabezado de columnas que solo describe a la mitad de las filas
+// confunde más que ayudar.
+// ------------------------------------------------------------
+const LARGO_MAXIMO_EN_COLUMNA = 90
+
+export function esDescripcionLarga(texto) {
+  const t = `${texto || ''}`
+  return t.length > LARGO_MAXIMO_EN_COLUMNA || t.includes('\n')
+}
+
+export function hayDescripcionLarga(items) {
+  return (Array.isArray(items) ? items : []).some((it) => esDescripcionLarga(it?.description))
+}
+
+/**
+ * Parte la descripción en título y cuerpo.
+ *
+ * Mucha gente escribe el nombre del trabajo en el primer renglón y el
+ * detalle abajo. Si vino así, se respeta: el primero en negrita y el
+ * resto como párrafo. Si es un bloque solo, no se inventa un título
+ * cortando por la mitad, va todo como cuerpo.
+ */
+export function partirDescripcion(texto) {
+  const limpio = `${texto || ''}`.trim()
+  const corte = limpio.indexOf('\n')
+  if (corte === -1) return { titulo: '', cuerpo: limpio }
+  return { titulo: limpio.slice(0, corte).trim(), cuerpo: limpio.slice(corte + 1).trim() }
+}

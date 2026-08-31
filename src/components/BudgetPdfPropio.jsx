@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useRef, useState } from 'react'
 import { FileText } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -19,6 +20,7 @@ const MAX_BYTES = 15 * 1024 * 1024 // igual que el límite del bucket (migració
  * acá y el usuario cancela, se perdió el PDF.
  */
 export default function BudgetPdfPropio({ userId, value = '', onChange }) {
+  const { t } = useTranslation()
   const url = safePdfUrl(value)
   const [subiendo, setSubiendo] = useState(false)
   const [error, setError] = useState('')
@@ -31,12 +33,12 @@ export default function BudgetPdfPropio({ userId, value = '', onChange }) {
 
     setError('')
     if (file.type !== 'application/pdf') {
-      setError('Tiene que ser un archivo PDF.')
+      setError(t('adjuntos.debeSerPdf'))
       return
     }
     if (file.size > MAX_BYTES) {
       setError(
-        `«${file.name}» pesa ${(file.size / 1024 / 1024).toFixed(1)} MB y el máximo es 15 MB. Exportalo con las imágenes más comprimidas.`
+        t('adjuntos.pdfPesado', { nombre: file.name, mb: (file.size / 1024 / 1024).toFixed(1) })
       )
       return
     }
@@ -54,10 +56,10 @@ export default function BudgetPdfPropio({ userId, value = '', onChange }) {
       const msg = `${err?.message || ''}`.toLowerCase()
       setError(
         msg.includes('mime') || msg.includes('bucket') || msg.includes('not found')
-          ? 'Ejecutá la migración supabase/migration_25 en Supabase para poder subir PDF.'
+          ? t('adjuntos.migracion25')
           : msg.includes('exceeded') || msg.includes('too large')
-            ? 'El archivo supera el límite del servidor. Ejecutá la migración 25 o probá con un PDF más liviano.'
-            : err?.message || 'No se pudo subir el PDF.'
+            ? t('adjuntos.pdfLimiteServidor')
+            : err?.message || t('adjuntos.errorPdf')
       )
     } finally {
       setSubiendo(false)
@@ -71,10 +73,8 @@ export default function BudgetPdfPropio({ userId, value = '', onChange }) {
           <FileText size={17} aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-ink">Tu PDF está cargado</p>
-          <p className="mt-0.5 text-xs text-ink-soft">
-            Es lo primero que se le ofrece al cliente al compartir.
-          </p>
+          <p className="text-sm font-medium text-ink">{t('adjuntos.pdfCargado')}</p>
+          <p className="mt-0.5 text-xs text-ink-soft">{t('adjuntos.pdfCargadoDetalle')}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <a
@@ -83,14 +83,14 @@ export default function BudgetPdfPropio({ userId, value = '', onChange }) {
             rel="noreferrer"
             className="rounded-md border border-line px-2.5 py-1.5 text-xs font-medium text-ink-soft transition hover:border-ink-faint hover:text-ink"
           >
-            Ver
+            {t('adjuntos.ver')}
           </a>
           <button
             type="button"
             onClick={() => onChange('')}
             className="rounded-md px-2.5 py-1.5 text-xs font-medium text-rust-500 transition hover:bg-rust-500/[0.08]"
           >
-            Quitar
+            {t('adjuntos.quitar')}
           </button>
         </div>
       </div>
@@ -113,9 +113,9 @@ export default function BudgetPdfPropio({ userId, value = '', onChange }) {
         className="flex w-full items-center justify-center gap-2 rounded-xl2 border border-dashed border-line px-4 py-6 text-sm font-medium text-ink-soft transition hover:border-brand-500/50 hover:text-ink disabled:opacity-60"
       >
         <FileText size={17} aria-hidden="true" />
-        {subiendo ? 'Subiendo…' : 'Elegir un PDF'}
+        {subiendo ? t('adjuntos.subiendo') : t('adjuntos.elegirPdf')}
       </button>
-      <p className="mt-1.5 text-xs text-ink-faint">Un archivo, hasta 15 MB.</p>
+      <p className="mt-1.5 text-xs text-ink-faint">{t('adjuntos.unArchivo')}</p>
       {error && <p className="mt-2 text-xs text-rust-500">{error}</p>}
     </div>
   )

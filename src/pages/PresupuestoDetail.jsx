@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { FileText, Send } from 'lucide-react'
@@ -10,10 +11,21 @@ import Spinner from '../components/Spinner'
 import { cleanDetails } from '../components/BudgetDetails'
 import CompartirModal from '../components/CompartirModal'
 import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
-import { formatDate, formatMoney, formatNumero, STATUS_OPTIONS, safeImages, safePdfUrl, storagePathFromUrl } from '../lib/utils'
+import {
+  formatDate,
+  formatMoney,
+  formatNumero,
+  STATUS_OPTIONS,
+  safeImages,
+  safePdfUrl,
+  storagePathFromUrl,
+  hayDescripcionLarga,
+  partirDescripcion
+} from '../lib/utils'
 import { CLAVES, marcar } from '../lib/onboarding'
 
 export default function PresupuestoDetail() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, profile } = useAuth()
@@ -86,7 +98,7 @@ export default function PresupuestoDetail() {
       if (error) throw error
       navigate(`/facturas/${data.id}`)
     } catch (err) {
-      window.alert(err.message || 'No se pudo crear el comprobante. ¿Ejecutaste la migración 06?')
+      window.alert(err.message || t('detalle.errorFactura'))
     } finally {
       setBusy(false)
     }
@@ -128,7 +140,7 @@ export default function PresupuestoDetail() {
     try {
       await downloadBudgetPdf({ budget, items, client, profile })
     } catch (err) {
-      setPdfError(err?.message || 'No se pudo generar el PDF del presupuesto.')
+      setPdfError(err?.message || t('detalle.errorPdf'))
     } finally {
       setBusy(false)
     }
@@ -143,8 +155,13 @@ export default function PresupuestoDetail() {
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: `Presupuesto ${formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)}`,
-          text: `Presupuesto de ${profile?.business_name || ''} para ${client?.name || ''}`
+          title: t('detalle.compartirTitulo', {
+            numero: formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)
+          }),
+          text: t('detalle.compartirTexto', {
+            negocio: profile?.business_name || '',
+            cliente: client?.name || ''
+          })
         })
       } else {
         await downloadBudgetPdf({ budget, items, client, profile })
@@ -155,7 +172,7 @@ export default function PresupuestoDetail() {
         try {
           await downloadBudgetPdf({ budget, items, client, profile })
         } catch (err2) {
-          setPdfError(err2?.message || 'No se pudo generar el PDF del presupuesto.')
+          setPdfError(err2?.message || t('detalle.errorPdf'))
         }
       }
     } finally {
@@ -212,7 +229,7 @@ export default function PresupuestoDetail() {
   }
 
   const handleDelete = async () => {
-    if (!window.confirm('¿Eliminar este presupuesto? Esta acción no se puede deshacer.')) return
+    if (!window.confirm(t('detalle.confirmarBorrado'))) return
     setBusy(true)
     // Las imágenes adjuntas no se borran solas: sin esto, una foto que el
     // usuario cree eliminada sigue online para cualquiera que tenga la URL.
@@ -237,15 +254,22 @@ export default function PresupuestoDetail() {
   // saber de quién es el presupuesto antes de abrir el link, y quien lo
   // abre ve además el logo en la vista previa (api/preview.js).
   const numeroTexto = formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)
-  const asunto = `Presupuesto ${numeroTexto}${profile?.business_name ? ' · ' + profile.business_name : ''}`
-  const saludo = `Hola${client?.name ? ' ' + client.name : ''}, te comparto el presupuesto ${numeroTexto}${
-    profile?.business_name ? ' de ' + profile.business_name : ''
-  }: ${publicUrl}`
+  // Con una memoria descriptiva larga la tabla de columnas no sirve.
+  const textoLargo = hayDescripcionLarga(items)
+  const asunto = profile?.business_name
+    ? t('detalle.asuntoConNegocio', { numero: numeroTexto, negocio: profile.business_name })
+    : t('detalle.asunto', { numero: numeroTexto })
+  const saludo = t('detalle.saludo', {
+    nombre: client?.name ? ' ' + client.name : '',
+    numero: numeroTexto,
+    negocio: profile?.business_name ? t('detalle.saludoDe', { negocio: profile.business_name }) : '',
+    enlace: publicUrl
+  })
 
   return (
     <div>
       <Link to="/presupuestos" className="text-sm text-ink-soft hover:text-ink">
-        ← Presupuestos
+        {t('form.volver')}
       </Link>
 
       <header className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -257,7 +281,7 @@ export default function PresupuestoDetail() {
             <StatusBadge status={budget.status} />
           </div>
           <p className="mt-1 text-sm text-ink-soft">
-            {formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)} · {client?.name || 'Sin cliente'} · Emitido el {formatDate(budget.issue_date)}
+            {formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)} · {client?.name || t('panel.sinCliente')} · {t('detalle.emitidoEl', { fecha: formatDate(budget.issue_date) })}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -265,7 +289,7 @@ export default function PresupuestoDetail() {
             to={`/presupuestos/${id}/editar`}
             className="rounded-md border border-line px-3.5 py-2 text-sm font-medium text-ink transition hover:border-ink-faint"
           >
-            Editar
+            {t('comun.editar')}
           </Link>
           {isPremium && (
             <button
@@ -273,7 +297,7 @@ export default function PresupuestoDetail() {
               disabled={busy}
               className="rounded-md border border-line px-3.5 py-2 text-sm font-medium text-ink transition hover:border-ink-faint disabled:opacity-60"
             >
-              {invoiceId ? 'Ver factura' : 'Convertir en factura'}
+              {invoiceId ? t('detalle.verFactura') : t('detalle.convertirFactura')}
             </button>
           )}
           {/* Mandarlo es lo que el usuario viene a hacer: un solo botón,
@@ -287,7 +311,7 @@ export default function PresupuestoDetail() {
             className="btn-primary flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold"
           >
             <Send size={15} aria-hidden="true" />
-            {busy ? 'Preparando…' : 'Compartir'}
+            {busy ? t('detalle.preparando') : t('detalle.compartir')}
           </button>
         </div>
       </header>
@@ -301,19 +325,55 @@ export default function PresupuestoDetail() {
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <div className="overflow-hidden rounded-xl2 border border-line bg-surface">
-            <div className="hidden grid-cols-[1fr_80px_120px_120px] gap-3 border-b border-line px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-faint sm:grid">
-              <span>Descripción</span>
-              <span className="text-right">Cant.</span>
-              <span className="text-right">Precio unit.</span>
-              <span className="text-right">Importe</span>
-            </div>
+            {!textoLargo && (
+              <div className="hidden grid-cols-[1fr_80px_120px_120px] gap-3 border-b border-line px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-faint sm:grid">
+                <span>{t('items.descripcion')}</span>
+                <span className="text-right">{t('items.cantidad')}</span>
+                <span className="text-right">{t('items.precioUnit')}</span>
+                <span className="text-right">{t('items.importe')}</span>
+              </div>
+            )}
             <div className="divide-y divide-line">
               {items.map((it) => {
                 const lineBase = it.quantity * it.unit_price
                 const lineTotal = lineBase - lineBase * ((it.discount || 0) / 100)
+
+                // Descripción larga: los números arriba y el texto a todo
+                // el ancho. Ver hayDescripcionLarga() en lib/utils.
+                if (textoLargo) {
+                  const { titulo, cuerpo } = partirDescripcion(it.description)
+                  return (
+                    <div key={it.id} className="px-5 py-4">
+                      <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-line pb-2">
+                        <span className="flex flex-wrap items-baseline gap-2 font-mono text-xs tabular-nums text-ink-faint">
+                          <span>
+                            {it.quantity} × {formatMoney(it.unit_price, budget.currency)}
+                          </span>
+                          {it.discount > 0 && <span className="text-brass-600">-{it.discount}%</span>}
+                        </span>
+                        <span className="whitespace-nowrap font-mono text-base font-semibold tabular-nums text-ink">
+                          {formatMoney(lineTotal, budget.currency)}
+                        </span>
+                      </div>
+                      <div className="mt-3 min-w-0">
+                        {titulo && <p className="break-words text-sm font-semibold leading-snug text-ink">{titulo}</p>}
+                        {cuerpo && (
+                          <p
+                            className={`whitespace-pre-line break-words text-sm leading-relaxed text-ink-soft ${
+                              titulo ? 'mt-1.5' : ''
+                            }`}
+                          >
+                            {cuerpo}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                }
+
                 return (
                   <div key={it.id} className="flex items-center justify-between gap-3 px-5 py-3 sm:grid sm:grid-cols-[1fr_80px_120px_120px]">
-                    <span className="min-w-0 flex-1 break-words text-sm text-ink">
+                    <span className="min-w-0 flex-1 whitespace-pre-line break-words text-sm text-ink">
                       {it.description}
                       {it.discount > 0 && <span className="ml-1.5 text-xs text-brass-600">-{it.discount}%</span>}
                     </span>
@@ -334,13 +394,15 @@ export default function PresupuestoDetail() {
             <div className="rounded-xl2 border border-line bg-surface p-5">
               {budget.notes && (
                 <div className="mb-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Notas</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">{t('detalle.notas')}</p>
                   <p className="mt-1 text-sm text-ink-soft">{budget.notes}</p>
                 </div>
               )}
               {budget.terms && (
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Condiciones</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+                    {t('detalle.condiciones')}
+                  </p>
                   <p className="mt-1 text-sm text-ink-soft">{budget.terms}</p>
                 </div>
               )}
@@ -350,20 +412,27 @@ export default function PresupuestoDetail() {
 
         <div className="space-y-6">
           <div className="rounded-xl2 border border-line bg-surface p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Resumen</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">{t('detalle.resumen')}</p>
             <div className="mt-3 space-y-2 font-mono text-sm">
-              <Row label="Subtotal" value={formatMoney(budget.subtotal, budget.currency)} />
-              {budget.discount_amount > 0 && <Row label="Descuento" value={`-${formatMoney(budget.discount_amount, budget.currency)}`} />}
-              {budget.tax_amount > 0 && <Row label={`Impuesto (${budget.tax_rate}%)`} value={formatMoney(budget.tax_amount, budget.currency)} />}
+              <Row label={t('form.subtotal')} value={formatMoney(budget.subtotal, budget.currency)} />
+              {budget.discount_amount > 0 && (
+                <Row label={t('form.descuento')} value={`-${formatMoney(budget.discount_amount, budget.currency)}`} />
+              )}
+              {budget.tax_amount > 0 && (
+                <Row
+                  label={t('detalle.impuesto', { tasa: budget.tax_rate })}
+                  value={formatMoney(budget.tax_amount, budget.currency)}
+                />
+              )}
               <div className="mt-2 flex items-center justify-between border-t border-line pt-2">
                 <span className="font-sans text-sm font-semibold text-ink">Total</span>
                 <span className="text-base font-semibold text-brand-600">{formatMoney(budget.total, budget.currency)}</span>
               </div>
               {Number(budget.deposit) > 0 && (
                 <>
-                  <Row label="Anticipo / seña" value={`-${formatMoney(budget.deposit, budget.currency)}`} />
+                  <Row label={t('form.anticipoResumen')} value={`-${formatMoney(budget.deposit, budget.currency)}`} />
                   <div className="flex items-center justify-between border-t border-line pt-2">
-                    <span className="font-sans text-sm font-semibold text-ink">Saldo</span>
+                    <span className="font-sans text-sm font-semibold text-ink">{t('detalle.saldo')}</span>
                     <span className="font-semibold text-ink">
                       {formatMoney((Number(budget.total) || 0) - (Number(budget.deposit) || 0), budget.currency)}
                     </span>
@@ -378,37 +447,43 @@ export default function PresupuestoDetail() {
           {publicUrl && isPremium && (
             <div className="rounded-xl2 border border-line bg-surface p-5">
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
-                Seguimiento
+                {t('detalle.seguimiento')}
               </p>
               {budget.viewed_at || budget.accepted_at || budget.rejected_at ? (
                 <div className="space-y-1 text-sm">
                   {budget.viewed_at && (
-                    <p className="text-ink-soft">👁 Visto el {formatDate(budget.viewed_at.slice(0, 10))}</p>
+                    <p className="text-ink-soft">
+                      {t('detalle.vistoEl', { fecha: formatDate(budget.viewed_at.slice(0, 10)) })}
+                    </p>
                   )}
                   {budget.accepted_at && (
-                    <p className="font-medium text-teal-600">✓ Aceptado el {formatDate(budget.accepted_at.slice(0, 10))}</p>
+                    <p className="font-medium text-teal-600">
+                      {t('detalle.aceptadoEl', { fecha: formatDate(budget.accepted_at.slice(0, 10)) })}
+                    </p>
                   )}
                   {budget.rejected_at && (
-                    <p className="font-medium text-rust-500">✗ Rechazado el {formatDate(budget.rejected_at.slice(0, 10))}</p>
+                    <p className="font-medium text-rust-500">
+                      {t('detalle.rechazadoEl', { fecha: formatDate(budget.rejected_at.slice(0, 10)) })}
+                    </p>
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-ink-soft">
-                  El cliente todavía no abrió el enlace. Te avisamos acá cuando lo vea.
-                </p>
+                <p className="text-sm text-ink-soft">{t('detalle.sinAbrir')}</p>
               )}
             </div>
           )}
 
           {publicUrl && !isPremium && (
             <Link to="/premium" className="block rounded-xl2 border border-dashed border-brand-500/40 bg-brand-500/[0.04] p-5 text-center transition hover:bg-brand-500/[0.07]">
-              <p className="text-sm font-semibold text-brand-700">🔒 Enlace público + QR</p>
-              <p className="mt-1 text-xs text-ink-soft">Compartí un link para que el cliente vea y acepte online. Función premium.</p>
+              <p className="text-sm font-semibold text-brand-700">{t('detalle.enlacePremium')}</p>
+              <p className="mt-1 text-xs text-ink-soft">{t('detalle.enlacePremiumDetalle')}</p>
             </Link>
           )}
 
           <div className="rounded-xl2 border border-line bg-surface p-5">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Cambiar estado</p>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+              {t('detalle.cambiarEstado')}
+            </p>
             <div className="flex flex-wrap gap-1.5">
               {STATUS_OPTIONS.map((s) => (
                 <button
@@ -425,7 +500,9 @@ export default function PresupuestoDetail() {
 
           {cleanDetails(budget.details).length > 0 && (
             <div className="rounded-xl2 border border-line bg-surface p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Datos del trabajo</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+                {t('detalle.datosTrabajo')}
+              </p>
               <dl className="mt-2 space-y-1.5">
                 {cleanDetails(budget.details).map((d) => (
                   <div key={d.label} className="flex justify-between gap-3 text-sm">
@@ -448,17 +525,15 @@ export default function PresupuestoDetail() {
                 <FileText size={18} aria-hidden="true" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-ink">Tu PDF</span>
-                <span className="block text-xs text-ink-soft">
-                  El cliente lo abre desde el enlace. Tocá para verlo.
-                </span>
+                <span className="block text-sm font-semibold text-ink">{t('detalle.tuPdf')}</span>
+                <span className="block text-xs text-ink-soft">{t('detalle.tuPdfDetalle')}</span>
               </span>
             </a>
           )}
 
           {safeImages(budget.images).length > 0 && (
             <div className="rounded-xl2 border border-line bg-surface p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Imágenes</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">{t('detalle.imagenes')}</p>
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {safeImages(budget.images).map((url) => (
                   <a key={url} href={url} target="_blank" rel="noopener noreferrer">
@@ -471,7 +546,7 @@ export default function PresupuestoDetail() {
 
           {client && (
             <div className="rounded-xl2 border border-line bg-surface p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Cliente</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">{t('detalle.cliente')}</p>
               {client.logo_url && (
                 <img src={client.logo_url} alt="" className="mt-2 h-10 max-w-[140px] object-contain" />
               )}
@@ -483,11 +558,11 @@ export default function PresupuestoDetail() {
 
           <div className="flex flex-wrap gap-2">
             <button onClick={handleDuplicate} disabled={busy} className="text-sm font-medium text-ink-soft hover:text-ink">
-              Duplicar
+              {t('comun.duplicar')}
             </button>
             <span className="text-ink-faint">·</span>
             <button onClick={handleDelete} disabled={busy} className="text-sm font-medium text-rust-500 hover:text-rust-500/80">
-              Eliminar
+              {t('comun.eliminar')}
             </button>
           </div>
         </div>

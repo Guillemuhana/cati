@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useRef, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
@@ -9,6 +10,7 @@ const TIPOS = ['image/png', 'image/jpeg', 'image/webp']
 // una referencia. Se suben apenas se eligen (así el usuario ve enseguida
 // si pesan demasiado) y quedan como URLs en budget.images.
 export default function BudgetImages({ userId, value = [], onChange }) {
+  const { t } = useTranslation()
   const images = Array.isArray(value) ? value : []
   const [subiendo, setSubiendo] = useState(false)
   const [error, setError] = useState('')
@@ -24,17 +26,17 @@ export default function BudgetImages({ userId, value = [], onChange }) {
     setError('')
 
     if (files.length > lugar) {
-      setError(`Podés subir hasta ${MAX_IMAGES} imágenes por presupuesto.`)
+      setError(t('adjuntos.demasiadas', { maximo: MAX_IMAGES }))
       return
     }
     const pesada = files.find((f) => f.size > MAX_BYTES)
     if (pesada) {
-      setError(`«${pesada.name}» pesa más de 5 MB. Probá con una foto más liviana.`)
+      setError(t('adjuntos.pesada', { nombre: pesada.name }))
       return
     }
     const rara = files.find((f) => !TIPOS.includes(f.type))
     if (rara) {
-      setError('Solo se pueden subir imágenes JPG, PNG o WEBP.')
+      setError(t('adjuntos.formato'))
       return
     }
 
@@ -56,8 +58,8 @@ export default function BudgetImages({ userId, value = [], onChange }) {
       const msg = `${err?.message || ''}`.toLowerCase()
       setError(
         msg.includes('bucket') || msg.includes('not found')
-          ? 'Ejecutá la migración supabase/migration_20 en Supabase para poder subir imágenes.'
-          : err?.message || 'No se pudo subir la imagen.'
+          ? t('adjuntos.migracion20')
+          : err?.message || t('adjuntos.errorImagen')
       )
     } finally {
       setSubiendo(false)
@@ -77,7 +79,7 @@ export default function BudgetImages({ userId, value = [], onChange }) {
             <button
               type="button"
               onClick={() => quitar(url)}
-              aria-label="Quitar imagen"
+              aria-label={t('adjuntos.quitarImagen')}
               className="absolute right-1 top-1 rounded-full bg-ink/70 px-1.5 text-xs font-semibold text-white opacity-0 transition group-hover:opacity-100 focus:opacity-100"
             >
               ✕
@@ -93,7 +95,7 @@ export default function BudgetImages({ userId, value = [], onChange }) {
             className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-line text-ink-soft transition hover:border-brand-500 hover:text-brand-600 disabled:opacity-50"
           >
             <span className="text-xl leading-none">+</span>
-            <span className="text-xs">{subiendo ? 'Subiendo…' : 'Agregar'}</span>
+            <span className="text-xs">{subiendo ? t('adjuntos.subiendo') : t('adjuntos.agregar')}</span>
           </button>
         )}
       </div>
@@ -110,10 +112,7 @@ export default function BudgetImages({ userId, value = [], onChange }) {
       {error ? (
         <p className="mt-2 text-xs text-rust-500">{error}</p>
       ) : (
-        <p className="mt-2 text-xs text-ink-faint">
-          Opcional. Hasta {MAX_IMAGES} imágenes de 5 MB (JPG, PNG o WEBP). Se ven en el PDF y en el enlace que le mandás
-          al cliente.
-        </p>
+        <p className="mt-2 text-xs text-ink-faint">{t('adjuntos.ayudaImagenes', { maximo: MAX_IMAGES })}</p>
       )}
     </div>
   )

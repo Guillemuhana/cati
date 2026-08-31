@@ -434,7 +434,7 @@
     "datosTrabajoDesc": "The ones your trade uses, or any you want to invent. All optional.",
     "productos": "Products or services",
     "pdfPropio": "Your own PDF",
-    "pdfPropioDesc": "Already have the proposal laid out as a PDF? Upload it and your client opens it from the same link.",
+    "pdfPropioDesc": "Already have the document laid out as a PDF —the proposal, an agreement, a spec sheet? Upload it and your client opens it from the same link.",
     "imagenes": "Images",
     "imagenesDesc": "A photo of the work, a plan or a reference. Not required.",
     "descuentosImpuestos": "Discounts and taxes",
@@ -559,5 +559,9 @@
     "asuntoConNegocio": "Quote {{numero}} · {{negocio}}",
     "saludo": "Hi{{nombre}}, here is quote {{numero}}{{negocio}}: {{enlace}}",
     "saludoDe": " from {{negocio}}"
+  },
+  "publico": {
+    "verDocumento": "View the full document",
+    "otraPestana": "The PDF opens in a new tab"
   }
 }

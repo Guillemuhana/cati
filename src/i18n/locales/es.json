@@ -434,7 +434,7 @@
     "datosTrabajoDesc": "Los que usa tu rubro, o los que quieras inventar. Todo opcional.",
     "productos": "Productos o servicios",
     "pdfPropio": "Tu propio PDF",
-    "pdfPropioDesc": "¿Ya tenés la propuesta armada en PDF? Subila y el cliente la abre desde el mismo enlace.",
+    "pdfPropioDesc": "¿Ya tenés armado el documento en PDF —la propuesta, un acuerdo, una ficha técnica—? Subilo y el cliente lo abre desde el mismo enlace.",
     "imagenes": "Imágenes",
     "imagenesDesc": "Una foto del trabajo, un plano o una referencia. No es obligatorio.",
     "descuentosImpuestos": "Descuentos e impuestos",
@@ -559,5 +559,9 @@
     "asuntoConNegocio": "Presupuesto {{numero}} · {{negocio}}",
     "saludo": "Hola{{nombre}}, te comparto el presupuesto {{numero}}{{negocio}}: {{enlace}}",
     "saludoDe": " de {{negocio}}"
+  },
+  "publico": {
+    "verDocumento": "Ver el documento completo",
+    "otraPestana": "Se abre el PDF en otra pestaña"
   }
 }

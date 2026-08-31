@@ -220,9 +220,16 @@ export default function PublicBudget() {
               )}
             </motion.div>
 
-            {/* La propuesta en PDF que armó el emisor. Va antes de las
-                imágenes y bien visible: en los rubros que la usan, ESA
-                es la propuesta y el detalle de acá es el resumen. */}
+            {/* El PDF que armó el emisor. Va antes de las imágenes y bien
+                visible: en los rubros que lo usan, ESE es el documento y el
+                detalle de acá es el resumen.
+
+                Dice «documento» y no «propuesta» a propósito: acá abajo
+                puede colgar un acuerdo de confidencialidad, una ficha
+                técnica o un pliego, y llamarle propuesta a un acuerdo
+                confunde justo a quien lo tiene que leer. «Completo» sí se
+                queda: es lo que avisa que esto es la versión larga y lo de
+                arriba el resumen. */}
             {safePdfUrl(budget.pdf_url) && (
               <motion.div variants={reveal} className="mt-8">
                 <a
@@ -238,8 +245,8 @@ export default function PublicBudget() {
                     </svg>
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold text-ink">Ver la propuesta completa</span>
-                    <span className="block text-xs text-ink-soft">Se abre el PDF en otra pestaña</span>
+                    <span className="block text-sm font-semibold text-ink">{t('publico.verDocumento')}</span>
+                    <span className="block text-xs text-ink-soft">{t('publico.otraPestana')}</span>
                   </span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16" className="shrink-0 text-ink-faint">
                     <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />

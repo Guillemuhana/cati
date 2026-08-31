@@ -206,13 +206,44 @@ export function readableAccent(hex, minRatio = 4.5) {
 // <a href> en NUESTRO dominio. Por eso solo se muestran URLs https
 // del Storage de Supabase, que es el único lugar del que salen.
 //
-// Está repetido en la base (migración 21) y acá: el de la base es el
+// Está repetido en la base (migración 31) y acá: el de la base es el
 // que manda, este evita mostrar basura vieja que ya esté guardada.
+//
+// ⚠ TIENE QUE SER NUESTRO PROYECTO, NO «UN PROYECTO DE SUPABASE»
+//   Antes acá decía `[a-z0-9-]+.supabase.co`, que acepta el proyecto de
+//   cualquiera: crear uno es gratis y lleva dos minutos. Con eso, un
+//   usuario podía guardar un pdf_url apuntando a un archivo suyo en un
+//   proyecto propio, y ese enlace se dibujaba en /p/<token>, que se
+//   sirve desde NUESTRO dominio: el cliente veía un botón «Ver la
+//   propuesta en PDF» con la marca del emisor, en un dominio en el que
+//   confía, bajando lo que quisiera el atacante.
 // ------------------------------------------------------------
-const STORAGE_URL = /^https:\/\/[a-z0-9-]+\.supabase\.co\//i
+const ORIGEN_STORAGE = (() => {
+  try {
+    // El mismo proyecto contra el que habla la app. Si falta la variable
+    // no se confía en ninguna URL: sin Supabase no hay nada que mostrar.
+    return new URL(import.meta.env.VITE_SUPABASE_URL).origin
+  } catch {
+    return ''
+  }
+})()
+
+const RUTA_PUBLICA = '/storage/v1/object/public/'
 
 export function isSafeImageUrl(url) {
-  return typeof url === 'string' && STORAGE_URL.test(url)
+  if (typeof url !== 'string' || !ORIGEN_STORAGE) return false
+  try {
+    const u = new URL(url)
+    // Con URL y no con una expresión regular: `https://nuestro.supabase.co@malo.com/`
+    // le gana a casi cualquier patrón escrito a mano, y acá no.
+    return (
+      u.protocol === 'https:' &&
+      u.origin === ORIGEN_STORAGE &&
+      u.pathname.startsWith(RUTA_PUBLICA)
+    )
+  } catch {
+    return false
+  }
 }
 
 export function safeImages(images) {

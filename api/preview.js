@@ -18,18 +18,45 @@
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-// El logo tiene que ser una URL https de nuestro Storage. Es la misma
-// regla que isSafeImageUrl() en el navegador: nada de lo que viene de la
-// base entra crudo a un atributo.
-const LOGO_OK = /^https:\/\/[a-z0-9-]+\.supabase\.co\//i
+// El logo tiene que ser una URL https del Storage de NUESTRO proyecto.
+// Es la misma regla que isSafeImageUrl() en el navegador.
+//
+// Antes decía `[a-z0-9-]+.supabase.co`, que acepta el proyecto de
+// cualquiera: la miniatura del link que se pega en un grupo de WhatsApp
+// terminaba mostrando la imagen que quisiera el emisor, con nuestro
+// dominio en la tarjeta.
+const ORIGEN_STORAGE = (() => {
+  try {
+    return new URL(process.env.VITE_SUPABASE_URL).origin
+  } catch {
+    return ''
+  }
+})()
 
+const logoOk = (u) => {
+  if (typeof u !== 'string' || !ORIGEN_STORAGE) return false
+  try {
+    const url = new URL(u)
+    return (
+      url.protocol === 'https:' &&
+      url.origin === ORIGEN_STORAGE &&
+      url.pathname.startsWith('/storage/v1/object/public/')
+    )
+  } catch {
+    return false
+  }
+}
+
+// Se recorta ANTES de escapar. Al revés, el corte puede caer en medio de
+// un «&amp;» y dejar un «&am» suelto en el atributo.
 const escape = (s) =>
   String(s == null ? '' : s)
+    .slice(0, 300)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .slice(0, 300)
+    .replace(/'/g, '&#39;')
 
 export default async function handler(req, res) {
   const token = String((req.query && req.query.token) || '')
@@ -65,7 +92,7 @@ export default async function handler(req, res) {
   const bajada = meta
     ? `Presupuesto de ${negocio}. Abrí el enlace para verlo en detalle, descargarlo en PDF y responder.`
     : 'Abrí el enlace para ver el presupuesto, descargarlo en PDF y responder.'
-  const imagen = meta && LOGO_OK.test(meta.logo_url || '') ? meta.logo_url : `${origen}/logo-numera.png`
+  const imagen = meta && logoOk(meta.logo_url) ? meta.logo_url : `${origen}/logo-numera.png`
   const color = /^#[0-9a-f]{6}$/i.test((meta && meta.brand_color) || '') ? meta.brand_color : '#1B3B6F'
 
   const html = `<!doctype html>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { usePlan } from '../hooks/usePlan'
 import { supabase } from '../lib/supabaseClient'
@@ -10,6 +11,7 @@ import RedIcon from '../components/RedIcon'
 import MiFirma from '../components/MiFirma'
 
 export default function Perfil() {
+  const { t } = useTranslation()
   const { profile, user, updateProfile, refreshProfile } = useAuth()
   const { isPremium } = usePlan()
   const [form, setForm] = useState({
@@ -86,8 +88,8 @@ export default function Perfil() {
   return (
     <div className="max-w-2xl">
       <header className="mb-6">
-        <h1 className="font-display text-3xl font-medium text-ink">Mi negocio</h1>
-        <p className="mt-1 text-sm text-ink-soft">Estos datos aparecen en cada presupuesto que compartís.</p>
+        <h1 className="font-display text-3xl font-medium text-ink">{t('perfil.titulo')}</h1>
+        <p className="mt-1 text-sm text-ink-soft">{t('perfil.bajada')}</p>
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-6 rounded-xl2 border border-line bg-surface p-6">
@@ -103,15 +105,15 @@ export default function Perfil() {
           </div>
           <div>
             <label className="cursor-pointer text-sm font-medium text-brand-600 hover:underline">
-              Subir logo
+              {t('perfil.subirLogo')}
               <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
             </label>
-            <p className="text-xs text-ink-faint">PNG o JPG, fondo transparente recomendado.</p>
+            <p className="text-xs text-ink-faint">{t('perfil.logoAyuda')}</p>
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Nombre del negocio">
+          <Field label={t('perfil.nombreNegocio')}>
             <input
               type="text"
               required
@@ -120,33 +122,27 @@ export default function Perfil() {
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
-          <Field label="Tu nombre y apellido">
+          <Field label={t('perfil.tuNombre')}>
             <input
               type="text"
-              placeholder="Ej: Guillermo Muhana"
+              placeholder={t('perfil.tuNombreEjemplo')}
               value={form.firma_nombre}
               onChange={(e) => setForm({ ...form, firma_nombre: e.target.value })}
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
-            <span className="mt-1 block text-xs text-ink-faint">
-              Es la aclaración que va debajo de tu firma en el presupuesto. «Estudio Martínez» no
-              firma nada: firma una persona.
-            </span>
+            <span className="mt-1 block text-xs text-ink-faint">{t('perfil.tuNombreAyuda')}</span>
           </Field>
-          <Field label="Tu cargo">
+          <Field label={t('perfil.tuCargo')}>
             <input
               type="text"
-              placeholder="Ej: CEO y Desarrollador de sTuDiob2b"
+              placeholder={t('perfil.tuCargoEjemplo')}
               value={form.firma_cargo}
               onChange={(e) => setForm({ ...form, firma_cargo: e.target.value })}
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
-            <span className="mt-1 block text-xs text-ink-faint">
-              Va debajo de tu nombre, en tu renglón de firma. El del cliente no lleva nada: eso lo
-              escribe él.
-            </span>
+            <span className="mt-1 block text-xs text-ink-faint">{t('perfil.tuCargoAyuda')}</span>
           </Field>
-          <Field label="Email de contacto">
+          <Field label={t('perfil.emailContacto')}>
             <input
               type="email"
               value={form.email}
@@ -154,7 +150,7 @@ export default function Perfil() {
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
-          <Field label="Teléfono">
+          <Field label={t('campos.telefono')}>
             <input
               type="text"
               value={form.phone}
@@ -162,7 +158,7 @@ export default function Perfil() {
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
-          <Field label="CUIT / ID fiscal">
+          <Field label={t('campos.cuit')}>
             <input
               type="text"
               value={form.tax_id}
@@ -170,7 +166,7 @@ export default function Perfil() {
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
-          <Field label="Dirección">
+          <Field label={t('campos.direccion')}>
             <input
               type="text"
               value={form.address}
@@ -178,7 +174,7 @@ export default function Perfil() {
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
-          <Field label="Moneda por defecto">
+          <Field label={t('perfil.monedaDefecto')}>
             <select
               value={form.currency}
               onChange={(e) => setForm({ ...form, currency: e.target.value })}
@@ -194,11 +190,8 @@ export default function Perfil() {
         </div>
 
         <div className="rounded-xl2 border border-line bg-paper/50 p-4">
-          <p className="text-sm font-semibold text-ink">Contacto y redes</p>
-          <p className="mt-0.5 text-xs text-ink-faint">
-            Lo que cargues acá aparece en el PDF y en el enlace que ve el cliente, con su ícono y a un toque desde el
-            celular. Todo opcional: lo que dejes vacío no se muestra.
-          </p>
+          <p className="text-sm font-semibold text-ink">{t('perfil.contactoRedes')}</p>
+          <p className="mt-0.5 text-xs text-ink-faint">{t('perfil.contactoRedesAyuda')}</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {CANALES.map((canal) => (
               <label key={canal.key} className="block">
@@ -220,14 +213,15 @@ export default function Perfil() {
                 {form[canal.key]?.trim() ? (
                   canal.url(form[canal.key]) ? (
                     <span className="mt-1 block text-xs text-ink-faint">
-                      Se va a ver como{' '}
+                      {t('perfil.seVaAVer')}{' '}
                       <strong className="font-medium text-ink-soft">
                         {canal.texto(form[canal.key]) || form[canal.key]}
                       </strong>
                     </span>
                   ) : (
                     <span className="mt-1 block text-xs text-rust-500">
-                      Así no se entiende y no se va a mostrar. {canal.ayuda || `Probá con ${canal.placeholder}`}
+                      {t('perfil.noSeEntiende')}{' '}
+                      {canal.ayuda || t('perfil.probaCon', { ejemplo: canal.placeholder })}
                     </span>
                   )
                 ) : (
@@ -238,13 +232,13 @@ export default function Perfil() {
           </div>
         </div>
 
-        <Field label="Rubro">
+        <Field label={t('perfil.rubro')}>
           <select
             value={form.rubro}
             onChange={(e) => setForm({ ...form, rubro: e.target.value })}
             className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           >
-            <option value="">Sin especificar</option>
+            <option value="">{t('perfil.rubroSinEspecificar')}</option>
             {RUBRO_GROUPS.map((g) => (
               <optgroup key={g.group} label={g.group}>
                 {g.rubros.map((r) => (
@@ -255,12 +249,10 @@ export default function Perfil() {
               </optgroup>
             ))}
           </select>
-          <p className="mt-1.5 text-xs text-ink-faint">
-            Solo se usa para sugerirte los textos de abajo cuando los dejás vacíos. No cambia nada de lo que ya cargaste.
-          </p>
+          <p className="mt-1.5 text-xs text-ink-faint">{t('perfil.rubroAyuda')}</p>
         </Field>
 
-        <Field label="Condiciones por defecto para nuevos presupuestos">
+        <Field label={t('perfil.condicionesDefecto')}>
           <textarea
             rows={3}
             value={form.default_terms}
@@ -271,68 +263,65 @@ export default function Perfil() {
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Condiciones de pago por defecto">
+          <Field label={t('perfil.condicionesPagoDefecto')}>
             <textarea
               rows={2}
               value={form.default_payment_terms}
               onChange={(e) => setForm({ ...form, default_payment_terms: e.target.value })}
-              placeholder={sugerido.payment_terms || 'Ej: 50% al aprobar, 50% contra entrega.'}
+              placeholder={sugerido.payment_terms || t('perfil.condicionesPagoEjemplo')}
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
-          <Field label="Formas de pago por defecto">
+          <Field label={t('perfil.formasPagoDefecto')}>
             <textarea
               rows={2}
               value={form.default_payment_methods}
               onChange={(e) => setForm({ ...form, default_payment_methods: e.target.value })}
-              placeholder={sugerido.payment_methods || 'Ej: Transferencia, efectivo, Mercado Pago.'}
+              placeholder={sugerido.payment_methods || t('perfil.formasPagoEjemplo')}
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
         </div>
 
-        <Field label="Datos bancarios / alias (aparecen en el PDF)">
+        <Field label={t('perfil.datosBancarios')}>
           <input
             type="text"
             value={form.bank_alias}
             onChange={(e) => setForm({ ...form, bank_alias: e.target.value })}
-            placeholder="Ej: alias mi.negocio.mp · CBU 000..."
+            placeholder={t('perfil.datosBancariosEjemplo')}
             className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           />
         </Field>
 
-        <Field label="Términos y condiciones (opcional)">
+        <Field label={t('perfil.terminos')}>
           <textarea
             rows={7}
             value={form.legal_terms}
             onChange={(e) => setForm({ ...form, legal_terms: e.target.value })}
-            placeholder={'Ej: La garantía cubre 6 meses por defectos de fabricación.\nLas cancelaciones con menos de 48 hs de aviso no reintegran la seña.\nLos plazos de entrega pueden variar por demoras del proveedor.'}
+            placeholder={t('perfil.terminosEjemplo')}
             className="w-full rounded-md border border-line px-3 py-2 text-sm leading-relaxed focus:border-brand-500 focus:outline-none"
           />
-          <p className="mt-1.5 text-xs text-ink-faint">
-            Texto legal de tu negocio (garantía, cancelaciones, letra chica). Se imprime al final del PDF y del enlace
-            público de todos tus documentos. Si lo dejás vacío, no aparece nada.
-          </p>
+          <p className="mt-1.5 text-xs text-ink-faint">{t('perfil.terminosAyuda')}</p>
         </Field>
 
         {!isPremium && (
           <Link to="/premium" className="block rounded-xl2 border border-dashed border-brand-500/40 bg-brand-500/[0.04] p-4 text-center transition hover:bg-brand-500/[0.07]">
-            <p className="text-sm font-semibold text-brand-700">🔒 Marca y numeración personalizada</p>
-            <p className="mt-1 text-xs text-ink-soft">Color propio, prefijo de numeración y ocultar «Generado con Numera». Función premium.</p>
+            <p className="text-sm font-semibold text-brand-700">{t('perfil.marcaPremiumTitulo')}</p>
+            <p className="mt-1 text-xs text-ink-soft">{t('perfil.marcaPremiumDetalle')}</p>
           </Link>
         )}
 
         <div className={`rounded-xl2 border border-line bg-paper/50 p-4 ${isPremium ? '' : 'pointer-events-none opacity-50'}`}>
-          <p className="mb-3 text-sm font-semibold text-ink">Marca y numeración</p>
+          <p className="mb-3 text-sm font-semibold text-ink">{t('perfil.marcaNumeracion')}</p>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Field label="Color de marca (PDF)">
+            <Field label={t('perfil.colorMarca')}>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
                   value={form.brand_color}
                   onChange={(e) => setForm({ ...form, brand_color: e.target.value })}
                   className="h-9 w-12 cursor-pointer rounded border border-line bg-white"
-                  aria-label="Color de marca"
+                  aria-label={t('perfil.colorMarcaAria')}
                 />
                 <input
                   type="text"
@@ -342,7 +331,7 @@ export default function Perfil() {
                 />
               </div>
             </Field>
-            <Field label="Prefijo de numeración">
+            <Field label={t('perfil.prefijoNumeracion')}>
               <input
                 type="text"
                 value={form.number_prefix}
@@ -352,7 +341,7 @@ export default function Perfil() {
                 className="w-full rounded-md border border-line px-3 py-2 text-sm uppercase focus:border-brand-500 focus:outline-none"
               />
             </Field>
-            <Field label="Marca de Numera en el PDF">
+            <Field label={t('perfil.marcaNumeraPdf')}>
               <label className="flex items-center gap-2 py-2 text-sm text-ink-soft">
                 <input
                   type="checkbox"
@@ -360,12 +349,13 @@ export default function Perfil() {
                   onChange={(e) => setForm({ ...form, hide_branding: e.target.checked })}
                   className="h-4 w-4 rounded border-line text-brand-500 focus:ring-brand-500"
                 />
-                Ocultar «Generado con Numera»
+                {t('perfil.ocultarGenerado')}
               </label>
             </Field>
           </div>
           <p className="mt-2 text-xs text-ink-faint">
-            Ejemplo de número: <span className="font-mono text-ink-soft">{(form.number_prefix || 'PRES')}-2026-0001</span>
+            {t('perfil.ejemploNumero')}{' '}
+            <span className="font-mono text-ink-soft">{(form.number_prefix || 'PRES')}-2026-0001</span>
           </p>
         </div>
 
@@ -377,9 +367,9 @@ export default function Perfil() {
             disabled={saving}
             className="btn-primary rounded-md px-5 py-2.5 text-sm font-semibold"
           >
-            {saving ? 'Guardando...' : 'Guardar cambios'}
+            {saving ? t('comun.guardando') : t('perfil.guardarCambios')}
           </button>
-          {saved && <span className="text-sm text-brand-600">Guardado ✓</span>}
+          {saved && <span className="text-sm text-brand-600">{t('comun.guardado')}</span>}
         </div>
       </form>
 

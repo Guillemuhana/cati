@@ -1,10 +1,11 @@
 export const CURRENCIES = ['ARS', 'USD', 'EUR', 'UYU', 'CLP', 'MXN', 'BRL']
 
 // Presets de IVA / impuesto para el selector rápido.
+// `label` es la clave del catálogo de idiomas, no el texto.
 export const TAX_PRESETS = [
-  { label: 'Sin IVA', value: 0 },
-  { label: 'IVA 10,5%', value: 10.5 },
-  { label: 'IVA 21%', value: 21 }
+  { label: 'form.sinIva', value: 0 },
+  { label: 'form.iva105', value: 10.5 },
+  { label: 'form.iva21', value: 21 }
 ]
 
 // Presets de vigencia (días) para la fecha de vencimiento.

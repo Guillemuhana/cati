@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+// shareBudget corre fuera de React: el idioma se lee de la instancia.
+import i18n from '../i18n'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
@@ -123,7 +125,7 @@ export default function PresupuestoForm() {
 
   // Guardar el presupuesto actual como plantilla reutilizable
   const saveTemplate = async () => {
-    const name = window.prompt('Nombre de la plantilla:')
+    const name = window.prompt(t('form.nombrePlantilla'))
     if (!name || !name.trim()) return
     const data = {
       budget: {
@@ -148,10 +150,10 @@ export default function PresupuestoForm() {
     }
     const { error: err } = await supabase.from('budget_templates').insert({ user_id: user.id, name: name.trim(), data })
     if (err) {
-      setError(isMissingColumn(err) ? 'Ejecutá la migración 03 en Supabase para usar plantillas.' : err.message)
+      setError(isMissingColumn(err) ? t('form.errorPlantillas') : err.message)
       return
     }
-    setSavedMsg('Plantilla guardada')
+    setSavedMsg(t('form.plantillaGuardada'))
     loadTemplates()
   }
 
@@ -259,7 +261,7 @@ export default function PresupuestoForm() {
       const errs = getBudgetErrors({ ...budget, items })
       if (Object.keys(errs).length) {
         setErrors(errs)
-        setError('Revisá los campos marcados en rojo.')
+        setError(t('form.errorCampos'))
         return
       }
     }
@@ -361,7 +363,7 @@ export default function PresupuestoForm() {
             await shareBudget(pdfData)
           }
         } catch (pdfErr) {
-          setError(pdfErr?.message || 'Se guardó el presupuesto, pero no se pudo generar el PDF.')
+          setError(pdfErr?.message || t('form.errorPdf'))
         }
       }
 
@@ -369,15 +371,15 @@ export default function PresupuestoForm() {
         navigate(`/presupuestos/${budgetId}/editar`, { replace: true })
         setSavedMsg('Guardado')
       } else if (after === 'editar') {
-        setSavedMsg('Cambios guardados')
+        setSavedMsg(t('form.cambiosGuardados'))
       } else {
         navigate(`/presupuestos/${budgetId}`)
       }
     } catch (err) {
       if (isMissingColumn(err)) {
-        setError('Faltan columnas nuevas en la base. Ejecutá la migración supabase/migration_02.sql en Supabase y volvé a intentar.')
+        setError(t('form.errorColumnas'))
       } else {
-        setError(err.message || 'No se pudo guardar.')
+        setError(err.message || t('campos.noSePudoGuardar'))
       }
     } finally {
       setSaving(false)
@@ -385,7 +387,7 @@ export default function PresupuestoForm() {
   }
 
   const handleCancel = () => {
-    if (dirtyRef.current && !window.confirm('Tenés cambios sin guardar. ¿Querés salir igualmente?')) return
+    if (dirtyRef.current && !window.confirm(t('form.confirmarSalir'))) return
     navigate('/presupuestos')
   }
 
@@ -404,10 +406,10 @@ export default function PresupuestoForm() {
       <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link to="/presupuestos" className="text-sm text-ink-soft hover:text-ink">
-            ← Presupuestos
+            {t('form.volver')}
           </Link>
           <h1 className="mt-1 font-display text-3xl font-medium text-ink">
-            {isEdit ? 'Editar presupuesto' : 'Nuevo presupuesto'}
+            {isEdit ? t('form.editar') : t('form.nuevo')}
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -422,9 +424,9 @@ export default function PresupuestoForm() {
               }}
               defaultValue=""
               className="rounded-md border border-line px-2.5 py-1.5 text-xs text-ink-soft focus:border-brand-500 focus:outline-none"
-              aria-label="Usar plantilla"
+              aria-label={t('form.usarPlantilla')}
             >
-              <option value="">Usar plantilla…</option>
+              <option value="">{t('form.usarPlantillaOpcion')}</option>
               {templates.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
@@ -438,7 +440,7 @@ export default function PresupuestoForm() {
               onClick={saveTemplate}
               className="rounded-md border border-line px-2.5 py-1.5 text-xs font-medium text-ink-soft transition hover:border-ink-faint hover:text-ink"
             >
-              Guardar como plantilla
+              {t('form.guardarPlantilla')}
             </button>
           )}
         </div>
@@ -447,27 +449,27 @@ export default function PresupuestoForm() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Columna principal */}
         <div className="space-y-6 lg:col-span-2">
-          <Card title="Datos generales">
+          <Card title={t('form.datosGenerales')}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Labeled label="Título (opcional)">
+              <Labeled label={t('form.tituloOpcional')}>
                 <input
                   type="text"
-                  placeholder="Ej: Rediseño de sitio web"
+                  placeholder={t('form.tituloEjemplo')}
                   value={budget.title}
                   onChange={(e) => patchBudget({ title: e.target.value })}
                   className={inputCls}
                 />
               </Labeled>
-              <Labeled label="Referencia interna (opcional)">
+              <Labeled label={t('form.referencia')}>
                 <input
                   type="text"
-                  placeholder="Ej: OC-2026-014"
+                  placeholder={t('form.referenciaEjemplo')}
                   value={budget.reference}
                   onChange={(e) => patchBudget({ reference: e.target.value })}
                   className={inputCls}
                 />
               </Labeled>
-              <Labeled label="Fecha de emisión">
+              <Labeled label={t('form.fechaEmision')}>
                 <input
                   type="date"
                   value={budget.issue_date}
@@ -475,7 +477,7 @@ export default function PresupuestoForm() {
                   className={inputCls}
                 />
               </Labeled>
-              <Labeled label="Válido hasta" error={errors.due_date}>
+              <Labeled label={t('form.validoHasta')} error={errors.due_date}>
                 <input
                   type="date"
                   value={budget.due_date}
@@ -490,12 +492,12 @@ export default function PresupuestoForm() {
                       active={budget.due_date === addDays(budget.issue_date, d)}
                       onClick={() => patchBudget({ due_date: addDays(budget.issue_date, d) })}
                     >
-                      {d} días
+                      {t('form.dias', { count: d })}
                     </Chip>
                   ))}
                 </div>
               </Labeled>
-              <Labeled label="Moneda">
+              <Labeled label={t('form.moneda')}>
                 <select value={budget.currency} onChange={(e) => patchBudget({ currency: e.target.value })} className={inputCls}>
                   {CURRENCIES.map((c) => (
                     <option key={c} value={c}>
@@ -504,7 +506,7 @@ export default function PresupuestoForm() {
                   ))}
                 </select>
               </Labeled>
-              <Labeled label="Estado">
+              <Labeled label={t('form.estado')}>
                 <select value={budget.status} onChange={(e) => patchBudget({ status: e.target.value })} className={inputCls}>
                   {STATUS_OPTIONS.map((s) => (
                     <option key={s} value={s}>
@@ -516,7 +518,7 @@ export default function PresupuestoForm() {
             </div>
           </Card>
 
-          <Card title="Cliente" desc="Elegí un cliente o creá uno nuevo sin perder lo cargado.">
+          <Card title={t('form.cliente')} desc={t('form.clienteDesc')}>
             <span className="mb-1.5 block text-sm font-medium text-ink">
               Cliente <span className="text-rust-500">*</span>
             </span>
@@ -529,7 +531,7 @@ export default function PresupuestoForm() {
             {errors.client_id && <FieldError>{errors.client_id}</FieldError>}
           </Card>
 
-          <Card title="Datos del trabajo" desc="Los que usa tu rubro, o los que quieras inventar. Todo opcional.">
+          <Card title={t('form.datosTrabajo')} desc={t('form.datosTrabajoDesc')}>
             <BudgetDetails
               sugeridos={getRubro(profile?.rubro).fields}
               value={budget.details}
@@ -538,7 +540,7 @@ export default function PresupuestoForm() {
           </Card>
 
           <Card
-            title="Productos o servicios"
+            title={t('form.productos')}
             action={isPremium ? <ProductPicker products={products} currency={budget.currency} onPick={pickProduct} /> : null}
           >
             <ItemsTable
@@ -551,10 +553,10 @@ export default function PresupuestoForm() {
           </Card>
 
           <Card
-            title="Tu propio PDF"
+            title={t('form.pdfPropio')}
             desc={
               getRubro(profile?.rubro).pdfPropio ||
-              '¿Ya tenés la propuesta armada en PDF? Subila y el cliente la abre desde el mismo enlace.'
+              t('form.pdfPropioDesc')
             }
           >
             <BudgetPdfPropio
@@ -564,7 +566,7 @@ export default function PresupuestoForm() {
             />
           </Card>
 
-          <Card title="Imágenes" desc="Una foto del trabajo, un plano o una referencia. No es obligatorio.">
+          <Card title={t('form.imagenes')} desc={t('form.imagenesDesc')}>
             <BudgetImages
               userId={user.id}
               value={budget.images}
@@ -572,22 +574,22 @@ export default function PresupuestoForm() {
             />
           </Card>
 
-          <Card title="Descuentos e impuestos">
+          <Card title={t('form.descuentosImpuestos')}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Labeled label="Tipo de descuento">
+              <Labeled label={t('form.tipoDescuento')}>
                 <select
                   value={budget.discount_type}
                   onChange={(e) => patchBudget({ discount_type: e.target.value })}
                   className={inputCls}
                 >
-                  <option value="none">Sin descuento</option>
-                  <option value="percent">Porcentaje</option>
-                  <option value="fixed">Monto fijo</option>
+                  <option value="none">{t('form.sinDescuento')}</option>
+                  <option value="percent">{t('form.porcentaje')}</option>
+                  <option value="fixed">{t('form.montoFijo')}</option>
                 </select>
               </Labeled>
               {budget.discount_type !== 'none' && (
                 <Labeled
-                  label={budget.discount_type === 'percent' ? 'Descuento (%)' : 'Descuento (monto)'}
+                  label={t(budget.discount_type === 'percent' ? 'form.descuentoPct' : 'form.descuentoMonto')}
                   error={errors.discount_value}
                 >
                   <input
@@ -602,11 +604,16 @@ export default function PresupuestoForm() {
                 </Labeled>
               )}
               <div className="sm:col-span-2">
-                <span className="mb-1.5 block text-sm font-medium text-ink">IVA / Impuesto</span>
+                <span className="mb-1.5 block text-sm font-medium text-ink">{t('form.ivaImpuesto')}</span>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {TAX_PRESETS.map((t) => (
-                    <Chip key={t.label} active={Number(budget.tax_rate) === t.value} onClick={() => patchBudget({ tax_rate: t.value })}>
-                      {t.label}
+                  {/* `preset` y no `t`: `t` ya es la función de traducción. */}
+                  {TAX_PRESETS.map((preset) => (
+                    <Chip
+                      key={preset.label}
+                      active={Number(budget.tax_rate) === preset.value}
+                      onClick={() => patchBudget({ tax_rate: preset.value })}
+                    >
+                      {t(preset.label)}
                     </Chip>
                   ))}
                   <div className="flex items-center gap-1.5">
@@ -617,13 +624,13 @@ export default function PresupuestoForm() {
                       value={budget.tax_rate}
                       onChange={(e) => patchBudget({ tax_rate: e.target.value })}
                       className="w-24 rounded-md border border-line px-2.5 py-1.5 text-right font-mono text-sm focus:border-brand-500 focus:outline-none"
-                      aria-label="Impuesto personalizado (%)"
+                      aria-label={t('form.impuestoPersonalizado')}
                     />
-                    <span className="text-sm text-ink-soft">% personalizado</span>
+                    <span className="text-sm text-ink-soft">{t('form.personalizado')}</span>
                   </div>
                 </div>
               </div>
-              <Labeled label="Anticipo / seña (opcional)">
+              <Labeled label={t('form.anticipo')}>
                 <input
                   type="number"
                   inputMode="decimal"
@@ -636,45 +643,45 @@ export default function PresupuestoForm() {
             </div>
           </Card>
 
-          <Card title="Notas, condiciones y pago">
+          <Card title={t('form.notasCondiciones')}>
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Labeled label="Notas para el cliente">
+                <Labeled label={t('form.notasCliente')}>
                   <textarea
                     rows={3}
                     value={budget.notes}
                     onChange={(e) => patchBudget({ notes: e.target.value })}
-                    placeholder="Ej: Incluye 2 rondas de revisión."
+                    placeholder={t('form.notasEjemplo')}
                     className={inputCls}
                   />
                 </Labeled>
-                <Labeled label="Condiciones">
+                <Labeled label={t('form.condiciones')}>
                   <textarea rows={3} value={budget.terms} onChange={(e) => patchBudget({ terms: e.target.value })} className={inputCls} />
                 </Labeled>
-                <Labeled label="Condiciones de pago">
+                <Labeled label={t('form.condicionesPago')}>
                   <textarea
                     rows={2}
                     value={budget.payment_terms}
                     onChange={(e) => patchBudget({ payment_terms: e.target.value })}
-                    placeholder="Ej: 50% al aprobar, 50% contra entrega."
+                    placeholder={t('perfil.condicionesPagoEjemplo')}
                     className={inputCls}
                   />
                 </Labeled>
-                <Labeled label="Formas de pago">
+                <Labeled label={t('form.formasPago')}>
                   <textarea
                     rows={2}
                     value={budget.payment_methods}
                     onChange={(e) => patchBudget({ payment_methods: e.target.value })}
-                    placeholder="Ej: Transferencia, efectivo, Mercado Pago."
+                    placeholder={t('perfil.formasPagoEjemplo')}
                     className={inputCls}
                   />
                 </Labeled>
-                <Labeled label="Plazo estimado de entrega">
+                <Labeled label={t('form.plazoEntrega')}>
                   <input
                     type="text"
                     value={budget.delivery_time}
                     onChange={(e) => patchBudget({ delivery_time: e.target.value })}
-                    placeholder="Ej: 15 días hábiles"
+                    placeholder={t('form.plazoEjemplo')}
                     className={inputCls}
                   />
                 </Labeled>
@@ -691,20 +698,22 @@ export default function PresupuestoForm() {
         {/* Resumen (sticky en desktop, en flujo en móvil) */}
         <div className="lg:col-span-1">
           <div className="space-y-4 lg:sticky lg:top-20">
-            <Card title="Resumen">
+            <Card title={t('form.resumen')}>
               <div className="space-y-2 font-mono text-sm">
-                <Row label="Subtotal" value={formatMoney(totals.subtotal, budget.currency)} />
-                {totals.discountAmount > 0 && <Row label="Descuento" value={`-${formatMoney(totals.discountAmount, budget.currency)}`} />}
+                <Row label={t('form.subtotal')} value={formatMoney(totals.subtotal, budget.currency)} />
+                {totals.discountAmount > 0 && (
+                  <Row label={t('form.descuento')} value={`-${formatMoney(totals.discountAmount, budget.currency)}`} />
+                )}
                 {totals.taxAmount > 0 && <Row label={`Impuesto (${budget.tax_rate}%)`} value={formatMoney(totals.taxAmount, budget.currency)} />}
                 <div className="mt-2 flex items-center justify-between rounded-lg bg-brand-500/[0.06] px-3 py-2">
-                  <span className="font-sans text-sm font-semibold text-ink">Total</span>
+                  <span className="font-sans text-sm font-semibold text-ink">{t('form.total')}</span>
                   <span className="font-sans text-xl font-semibold text-brand-700">{formatMoney(totals.total, budget.currency)}</span>
                 </div>
                 {totals.deposit > 0 && (
                   <>
-                    <Row label="Anticipo / seña" value={`-${formatMoney(totals.deposit, budget.currency)}`} />
+                    <Row label={t('form.anticipoResumen')} value={`-${formatMoney(totals.deposit, budget.currency)}`} />
                     <div className="flex items-center justify-between border-t border-line pt-2">
-                      <span className="font-sans text-sm font-semibold text-ink">Saldo pendiente</span>
+                      <span className="font-sans text-sm font-semibold text-ink">{t('form.saldoPendiente')}</span>
                       <span className="font-semibold text-ink">{formatMoney(totals.balance, budget.currency)}</span>
                     </div>
                   </>
@@ -716,22 +725,24 @@ export default function PresupuestoForm() {
 
               <div className="mt-5 space-y-2">
                 <button onClick={() => handleSave({ status: budget.status, mode: 'final', after: 'detail' })} disabled={saving} className="btn-primary w-full rounded-md py-2.5 text-sm font-semibold">
-                  {saving ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear presupuesto'}
+                  {saving ? t('comun.guardando') : isEdit ? t('form.guardarCambios') : t('form.crearPresupuesto')}
                 </button>
                 <div className="grid grid-cols-2 gap-2">
-                  <SecondaryBtn onClick={() => setShowPreview(true)} disabled={saving}>Vista previa</SecondaryBtn>
+                  <SecondaryBtn onClick={() => setShowPreview(true)} disabled={saving}>
+                    {t('form.vistaPrevia')}
+                  </SecondaryBtn>
                   <SecondaryBtn onClick={() => handleSave({ status: budget.status, mode: 'final', after: 'download' })} disabled={saving}>
-                    Crear + PDF
+                    {t('form.crearPdf')}
                   </SecondaryBtn>
                   <SecondaryBtn onClick={() => handleSave({ status: 'enviado', mode: 'final', after: 'share' })} disabled={saving}>
-                    Crear + enviar
+                    {t('form.crearEnviar')}
                   </SecondaryBtn>
                   <SecondaryBtn onClick={() => handleSave({ status: budget.status, mode: 'draft', after: 'editar' })} disabled={saving}>
-                    Guardar y seguir
+                    {t('form.guardarSeguir')}
                   </SecondaryBtn>
                 </div>
                 <button onClick={handleCancel} disabled={saving} className="w-full rounded-md px-4 py-2 text-sm font-medium text-ink-soft transition hover:text-rust-500">
-                  Cancelar
+                  {t('comun.cancelar')}
                 </button>
               </div>
             </Card>
@@ -742,7 +753,7 @@ export default function PresupuestoForm() {
       {/* Barra inferior fija (móvil) */}
       <div className="fixed inset-x-0 bottom-16 z-20 flex items-center gap-3 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] uppercase tracking-wide text-ink-faint">Total</p>
+          <p className="text-[11px] uppercase tracking-wide text-ink-faint">{t('form.total')}</p>
           <p className="truncate font-mono text-base font-semibold text-brand-700">{formatMoney(totals.total, budget.currency)}</p>
         </div>
         <button
@@ -750,7 +761,7 @@ export default function PresupuestoForm() {
           disabled={saving}
           className="btn-primary shrink-0 rounded-md px-5 py-2.5 text-sm font-semibold"
         >
-          {saving ? 'Guardando…' : isEdit ? 'Guardar' : 'Crear'}
+          {saving ? t('comun.guardando') : isEdit ? t('comun.guardar') : t('form.crear')}
         </button>
       </div>
 
@@ -770,7 +781,7 @@ export default function PresupuestoForm() {
               }}
               className="btn-primary rounded-md px-3.5 py-1.5 text-sm font-semibold"
             >
-              {isEdit ? 'Guardar' : 'Crear presupuesto'}
+              {isEdit ? t('comun.guardar') : t('form.crearPresupuesto')}
             </button>
           }
         />
@@ -785,7 +796,11 @@ async function shareBudget(pdfData) {
     const blob = await generateBudgetPdfBlob(pdfData)
     const file = new File([blob], `${formatNumero(pdfData.budget.numero, pdfData.budget.issue_date)}.pdf`, { type: 'application/pdf' })
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Presupuesto', text: `Presupuesto de ${pdfData.profile?.business_name || ''}` })
+      await navigator.share({
+        files: [file],
+        title: i18n.t('form.compartirTitulo'),
+        text: i18n.t('form.compartirTexto', { negocio: pdfData.profile?.business_name || '' })
+      })
     } else {
       await downloadBudgetPdf(pdfData)
     }

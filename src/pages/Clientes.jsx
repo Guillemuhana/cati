@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import Spinner from '../components/Spinner'
@@ -7,6 +8,7 @@ import { missingColumnError } from '../lib/utils'
 const emptyClient = { name: '', email: '', phone: '', tax_id: '', address: '', notes: '', logo_url: '' }
 
 export default function Clientes() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [clients, setClients] = useState([])
   const [loading, setLoading] = useState(true)
@@ -40,7 +42,7 @@ export default function Clientes() {
   }
 
   const handleDelete = async (client) => {
-    if (!window.confirm(`¿Eliminar a ${client.name}? Los presupuestos asociados quedarán sin cliente.`)) return
+    if (!window.confirm(t('clientes.confirmarBorrado', { nombre: client.name }))) return
     await supabase.from('clients').delete().eq('id', client.id)
     load()
   }
@@ -49,20 +51,20 @@ export default function Clientes() {
     <div>
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl font-medium text-ink">Clientes</h1>
-          <p className="mt-1 text-sm text-ink-soft">Tu cartera, lista para facturar el próximo trabajo.</p>
+          <h1 className="font-display text-3xl font-medium text-ink">{t('clientes.titulo')}</h1>
+          <p className="mt-1 text-sm text-ink-soft">{t('clientes.bajada')}</p>
         </div>
         <button
           onClick={() => setEditing('new')}
           className="inline-flex items-center justify-center gap-2 rounded-md bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600"
         >
-          + Nuevo cliente
+          {t('clientes.nuevo')}
         </button>
       </header>
 
       <input
         type="text"
-        placeholder="Buscar cliente..."
+        placeholder={t('clientes.buscar')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         className="mb-4 w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none sm:w-72"
@@ -74,7 +76,7 @@ export default function Clientes() {
             <Spinner />
           </div>
         ) : filtered.length === 0 ? (
-          <p className="px-6 py-14 text-center text-sm text-ink-soft">Todavía no cargaste clientes.</p>
+          <p className="px-6 py-14 text-center text-sm text-ink-soft">{t('clientes.vacio')}</p>
         ) : (
           <ul className="divide-y divide-line">
             {filtered.map((c) => (
@@ -84,16 +86,16 @@ export default function Clientes() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-ink">{c.name}</p>
                     <p className="mt-0.5 truncate text-xs text-ink-soft">
-                      {[c.email, c.phone].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
+                      {[c.email, c.phone].filter(Boolean).join(' · ') || t('clientes.sinContacto')}
                     </p>
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-3">
                   <button onClick={() => setEditing(c)} className="text-sm font-medium text-ink-soft hover:text-ink">
-                    Editar
+                    {t('comun.editar')}
                   </button>
                   <button onClick={() => handleDelete(c)} className="text-sm font-medium text-rust-500 hover:text-rust-500/80">
-                    Eliminar
+                    {t('comun.eliminar')}
                   </button>
                 </div>
               </li>
@@ -121,6 +123,7 @@ function ClientAvatar({ client, size = 'h-10 w-10' }) {
 }
 
 function ClientModal({ client, onClose, onSave }) {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [form, setForm] = useState(client)
   const [logoFile, setLogoFile] = useState(null)
@@ -164,7 +167,7 @@ function ClientModal({ client, onClose, onSave }) {
       const err = await onSave({ ...form, logo_url })
       if (err) throw err
     } catch (err) {
-      setError(missingColumnError(err) || err?.message || 'No se pudo guardar.')
+      setError(missingColumnError(err) || err?.message || t('campos.noSePudoGuardar'))
     } finally {
       setSaving(false)
     }
@@ -177,26 +180,26 @@ function ClientModal({ client, onClose, onSave }) {
         onSubmit={submit}
         className="relative w-full max-w-md rounded-t-xl2 border border-line bg-surface p-6 shadow-soft sm:rounded-xl2"
       >
-        <h2 className="font-display text-xl font-medium text-ink">{client.name ? 'Editar cliente' : 'Nuevo cliente'}</h2>
+        <h2 className="font-display text-xl font-medium text-ink">{client.name ? t('clientes.editarCliente') : t('clientes.nuevoCliente')}</h2>
 
         <div className="mt-4 flex items-center gap-4">
           <ClientAvatar client={{ ...form, logo_url: preview }} size="h-14 w-14" />
           <div>
             <label className="cursor-pointer text-sm font-medium text-brand-600 hover:underline">
-              {preview ? 'Cambiar logo' : 'Subir logo'}
+              {preview ? t('clientes.cambiarLogo') : t('clientes.subirLogo')}
               <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
             </label>
             {preview && (
               <button type="button" onClick={removeLogo} className="ml-3 text-sm font-medium text-ink-soft hover:text-rust-500">
-                Quitar
+                {t('clientes.quitar')}
               </button>
             )}
-            <p className="text-xs text-ink-faint">Opcional. Solo si ese cliente tiene logo propio.</p>
+            <p className="text-xs text-ink-faint">{t('clientes.logoAyuda')}</p>
           </div>
         </div>
 
         <div className="mt-4 space-y-3">
-          <Field label="Nombre *">
+          <Field label={t('campos.nombre')}>
             <input
               required
               type="text"
@@ -206,7 +209,7 @@ function ClientModal({ client, onClose, onSave }) {
             />
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Email">
+            <Field label={t('campos.email')}>
               <input
                 type="email"
                 value={form.email || ''}
@@ -214,7 +217,7 @@ function ClientModal({ client, onClose, onSave }) {
                 className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
               />
             </Field>
-            <Field label="Teléfono">
+            <Field label={t('campos.telefono')}>
               <input
                 type="text"
                 value={form.phone || ''}
@@ -223,7 +226,7 @@ function ClientModal({ client, onClose, onSave }) {
               />
             </Field>
           </div>
-          <Field label="CUIT / ID fiscal">
+          <Field label={t('campos.cuit')}>
             <input
               type="text"
               value={form.tax_id || ''}
@@ -231,7 +234,7 @@ function ClientModal({ client, onClose, onSave }) {
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
-          <Field label="Dirección">
+          <Field label={t('campos.direccion')}>
             <input
               type="text"
               value={form.address || ''}
@@ -248,10 +251,10 @@ function ClientModal({ client, onClose, onSave }) {
             disabled={saving}
             className="flex-1 rounded-md bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
-            {saving ? 'Guardando...' : 'Guardar'}
+            {saving ? t('comun.guardando') : t('comun.guardar')}
           </button>
           <button type="button" onClick={onClose} className="rounded-md border border-line px-4 py-2.5 text-sm text-ink-soft">
-            Cancelar
+            {t('comun.cancelar')}
           </button>
         </div>
       </form>

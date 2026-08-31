@@ -72,11 +72,13 @@ export const PREMIUM_PRICE_FULL = `${PREMIUM_PRICE}/mes`
 export const PAYMENT_URL = ''
 
 // Lista de beneficios premium (se muestran en el paywall / página /premium).
+// Claves del catálogo de idiomas, no texto: la lista se muestra en el
+// paywall y en la página de planes, las dos traducidas.
 export const PREMIUM_FEATURES = [
-  'Catálogo de productos y servicios reutilizables',
-  'Plantillas de presupuesto',
-  'Enlace público + QR para que el cliente vea y acepte',
-  'Seguimiento: visto / aceptado / rechazado',
-  'PDF con tu marca (color, prefijo, sin “Generado con Numera”)',
-  'Reportes y exportación a Excel/CSV'
+  'premium.features.catalogo',
+  'premium.features.plantillas',
+  'premium.features.enlace',
+  'premium.features.seguimiento',
+  'premium.features.marca',
+  'premium.features.reportes'
 ]

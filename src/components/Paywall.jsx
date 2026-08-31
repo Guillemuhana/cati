@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
 import { usePlan } from '../hooks/usePlan'
 import { PREMIUM_FEATURES, PREMIUM_PRICE_FULL } from '../lib/config'
 
@@ -10,27 +11,32 @@ export function PremiumGate({ children, title }) {
   return <Paywall title={title} />
 }
 
-export default function Paywall({ title = 'Función premium' }) {
+export default function Paywall({ title }) {
+  const { t } = useTranslation()
   return (
     <div className="mx-auto max-w-lg rounded-xl2 border border-line bg-surface p-8 text-center shadow-soft">
       <img src="/numera-icon.png" alt="" className="mx-auto mb-4 h-20 w-20" />
       <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-500/10 px-3 py-1 text-xs font-semibold text-brand-700">
-        🔒 {title}
+        🔒 {title || t('premium.funcionPremium')}
       </span>
-      <h2 className="mt-3 font-display text-2xl font-medium text-ink">Desbloqueá Numera completo</h2>
+      <h2 className="mt-3 font-display text-2xl font-medium text-ink">{t('premium.desbloquea')}</h2>
       <p className="mt-2 text-sm text-ink-soft">
-        Tu período gratis terminó. Activá todas las funciones premium por <b>{PREMIUM_PRICE_FULL}</b>.
+        <Trans
+          i18nKey="premium.terminoDetalle"
+          values={{ precio: PREMIUM_PRICE_FULL }}
+          components={[<span key="0" />, <b key="1" />]}
+        />
       </p>
       <ul className="mx-auto mt-5 max-w-xs space-y-2 text-left text-sm text-ink-soft">
         {PREMIUM_FEATURES.map((f) => (
           <li key={f} className="flex gap-2">
             <span className="mt-0.5 text-teal-500">✓</span>
-            <span>{f}</span>
+            <span>{t(f)}</span>
           </li>
         ))}
       </ul>
       <Link to="/premium" className="btn-primary mt-6 inline-block rounded-md px-6 py-3 text-sm font-semibold">
-        Suscribirme por {PREMIUM_PRICE_FULL}
+        {t('premium.suscribirmePor', { precio: PREMIUM_PRICE_FULL })}
       </Link>
     </div>
   )

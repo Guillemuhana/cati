@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export default function ClientPicker({ clients, value, onChange, onCreateClient }) {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -32,7 +34,7 @@ export default function ClientPicker({ clients, value, onChange, onCreateClient 
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center justify-between rounded-md border border-line bg-white px-3 py-2.5 text-left text-sm"
       >
-        <span className={selected ? 'text-ink' : 'text-ink-faint'}>{selected ? selected.name : 'Seleccionar cliente'}</span>
+        <span className={selected ? 'text-ink' : 'text-ink-faint'}>{selected ? selected.name : t('selector.seleccionarCliente')}</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16" className="text-ink-faint">
           <path d="M6 9l6 6 6-6" />
         </svg>
@@ -46,7 +48,7 @@ export default function ClientPicker({ clients, value, onChange, onCreateClient 
                 <input
                   autoFocus
                   type="text"
-                  placeholder="Buscar cliente..."
+                  placeholder={t('selector.buscarCliente')}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className="w-full rounded-md border border-line px-2.5 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
@@ -69,14 +71,16 @@ export default function ClientPicker({ clients, value, onChange, onCreateClient 
                     )}
                   </button>
                 ))}
-                {filtered.length === 0 && <p className="px-3 py-2 text-sm text-ink-faint">Sin resultados.</p>}
+                {filtered.length === 0 && (
+                  <p className="px-3 py-2 text-sm text-ink-faint">{t('selector.sinResultados')}</p>
+                )}
               </div>
               <button
                 type="button"
                 onClick={() => setCreating(true)}
                 className="flex w-full items-center gap-2 border-t border-line px-3 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-500/[0.05]"
               >
-                + Nuevo cliente
+                {t('selector.nuevoCliente')}
               </button>
             </>
           ) : (
@@ -84,21 +88,21 @@ export default function ClientPicker({ clients, value, onChange, onCreateClient 
               <input
                 autoFocus
                 type="text"
-                placeholder="Nombre *"
+                placeholder={t('selector.nombreObligatorio')}
                 value={newClient.name}
                 onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
                 className="w-full rounded-md border border-line px-2.5 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
               />
               <input
                 type="email"
-                placeholder="Email"
+                placeholder={t('auth.email')}
                 value={newClient.email}
                 onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
                 className="w-full rounded-md border border-line px-2.5 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
               />
               <input
                 type="text"
-                placeholder="Teléfono"
+                placeholder={t('selector.telefono')}
                 value={newClient.phone}
                 onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
                 className="w-full rounded-md border border-line px-2.5 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
@@ -109,14 +113,14 @@ export default function ClientPicker({ clients, value, onChange, onCreateClient 
                   onClick={handleCreate}
                   className="flex-1 rounded-md bg-brand-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-600"
                 >
-                  Crear y usar
+                  {t('selector.crearYUsar')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setCreating(false)}
                   className="rounded-md border border-line px-3 py-1.5 text-sm text-ink-soft"
                 >
-                  Volver
+                  {t('comun.volver')}
                 </button>
               </div>
             </div>

@@ -538,7 +538,7 @@ export async function downloadBudgetPdf({ budget, items, client, profile }) {
 }
 
 // ── Factura / comprobante (no fiscal) ──────────────────────────
-const INVOICE_STATUS = { emitida: 'Emitida', pagada: 'Pagada', anulada: 'Anulada' }
+const INVOICE_STATUS = { emitida: 'facturas.emitida', pagada: 'facturas.pagada', anulada: 'facturas.anulada' }
 
 export async function generateInvoicePdfBlob({ invoice, client, profile }) {
   const doc = (
@@ -549,7 +549,7 @@ export async function generateInvoicePdfBlob({ invoice, client, profile }) {
       profile={profile}
       docLabel="Comprobante"
       numberPrefix="FAC"
-      statusText={INVOICE_STATUS[invoice.status] || 'Emitida'}
+      statusText={i18n.t(INVOICE_STATUS[invoice.status] || 'facturas.emitida')}
     />
   )
   return pdf(doc).toBlob()

@@ -19,7 +19,8 @@
     "si": "Sí",
     "no": "No",
     "error": "Ocurrió un error. Probá de nuevo.",
-    "reintentar": "Probá de nuevo"
+    "reintentar": "Probá de nuevo",
+    "cargandoAria": "Cargando"
   },
   "nav": {
     "panel": "Panel",
@@ -267,5 +268,78 @@
     "bajada": "Todo lo que fuiste armando, en un solo lugar.",
     "buscar": "Buscar por cliente o número...",
     "sinResultados": "No hay presupuestos que coincidan."
+  },
+  "premium": {
+    "funcionPremium": "Función premium",
+    "desbloquea": "Desbloqueá Numera completo",
+    "terminoDetalle": "Tu período gratis terminó. Activá todas las funciones premium por <1>{{precio}}</1>.",
+    "suscribirmePor": "Suscribirme por {{precio}}",
+    "features": {
+      "catalogo": "Catálogo de productos y servicios reutilizables",
+      "plantillas": "Plantillas de presupuesto",
+      "enlace": "Enlace público + QR para que el cliente vea y acepte",
+      "seguimiento": "Seguimiento: visto / aceptado / rechazado",
+      "marca": "PDF con tu marca (color, prefijo, sin «Generado con Numera»)",
+      "reportes": "Reportes y exportación a Excel/CSV"
+    },
+    "titulo": "Numera Premium",
+    "bajada": "Todo lo que necesitás para cerrar más presupuestos.",
+    "todoGratis": "🎉 Todas las funciones están <1>gratis y desbloqueadas</1>, sin tarjeta, hasta el <3>{{fecha}}</3>. Después sigue por {{precio}}. Faltan {{dias}} días.",
+    "activaHasta": "✓ Suscripción activa hasta el {{fecha}}. ¡Gracias!",
+    "activa": "✓ Suscripción activa. ¡Gracias!",
+    "enPrueba": "Estás en tus <1>{{promo}} gratis</1>. Te quedan <3>{{restante}}</3> con todo desbloqueado.",
+    "termino": "Tu período gratis terminó. Seguí con todo desbloqueado por {{precio}}.",
+    "queIncluye": "Qué incluye",
+    "precioLanzamiento": "Precio de lanzamiento",
+    "suscripcionMensual": "Suscripción mensual",
+    "gratis": "Gratis",
+    "porMes": " /mes",
+    "sinCostoHasta": "Sin costo hasta el {{fecha}}. A partir de esa fecha, {{precio}}.",
+    "primerosGratis": "Primeros {{promo}} gratis · Cancelás cuando quieras.",
+    "yaDesbloqueado": "Ya tenés todo desbloqueado ✓",
+    "suscripcionActiva": "Suscripción activa ✓",
+    "pagoProximamente": "Pago próximamente",
+    "notaGratis": "No hace falta hacer nada ni cargar tarjeta: usá la app con todo incluido. Te vamos a avisar antes de que empiece a cobrarse.",
+    "notaPago": "Después de pagar, activamos tu cuenta a la brevedad (beta).",
+    "notaSinPago": "Estamos habilitando el medio de pago. Mientras tanto, escribinos.",
+    "tuCuenta": "Tu cuenta: {{email}}",
+    "invitaGana": "🎁 <1>Invitá a 3 y ganá 3 meses</1> de premium, sin pagar nada.",
+    "verMiLink": "Ver mi link →"
+  },
+  "selector": {
+    "delCatalogo": "Del catálogo",
+    "buscarProducto": "Buscar producto...",
+    "sinProductos": "No hay productos. Cargá algunos en Catálogo.",
+    "seleccionarCliente": "Seleccionar cliente",
+    "buscarCliente": "Buscar cliente...",
+    "sinResultados": "Sin resultados.",
+    "nuevoCliente": "+ Nuevo cliente",
+    "nombreObligatorio": "Nombre *",
+    "telefono": "Teléfono",
+    "crearYUsar": "Crear y usar"
+  },
+  "catalogo": {
+    "gate": "Catálogo de productos",
+    "titulo": "Catálogo",
+    "bajada": "Cargá tus productos y servicios una vez y reutilizalos en cada presupuesto.",
+    "nuevo": "+ Nuevo producto",
+    "buscar": "Buscar en el catálogo...",
+    "vacio": "Todavía no cargaste productos ni servicios.",
+    "confirmarBorrado": "¿Eliminar «{{nombre}}» del catálogo?",
+    "editarProducto": "Editar producto",
+    "nuevoProducto": "Nuevo producto",
+    "nombre": "Nombre *",
+    "descripcion": "Descripción",
+    "precioUnitario": "Precio unitario"
+  },
+  "facturas": {
+    "gate": "Facturas y comprobantes",
+    "titulo": "Facturas y comprobantes",
+    "bajada": "Comprobantes internos (no fiscales). Se generan desde un presupuesto aceptado.",
+    "vacio": "Todavía no generaste comprobantes.",
+    "vacioDetalle": "Abrí un presupuesto y tocá «Convertir en factura».",
+    "emitida": "Emitida",
+    "pagada": "Pagada",
+    "anulada": "Anulada"
   }
 }

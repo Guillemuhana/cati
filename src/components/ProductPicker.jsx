@@ -1,8 +1,10 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { formatMoney } from '../lib/utils'
 
 // Selector para insertar un ítem desde el catálogo de productos.
 export default function ProductPicker({ products, currency, onPick }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const ref = useRef(null)
@@ -32,7 +34,7 @@ export default function ProductPicker({ products, currency, onPick }) {
           <path d="M3 12V4a1 1 0 0 1 1-1h8l8 8-9 9z" />
           <circle cx="7.5" cy="7.5" r="1.5" />
         </svg>
-        Del catálogo
+        {t('selector.delCatalogo')}
       </button>
 
       {open && (
@@ -41,7 +43,7 @@ export default function ProductPicker({ products, currency, onPick }) {
             <input
               autoFocus
               type="text"
-              placeholder="Buscar producto..."
+              placeholder={t('selector.buscarProducto')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full rounded-md border border-line px-2.5 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
@@ -49,7 +51,7 @@ export default function ProductPicker({ products, currency, onPick }) {
           </div>
           <div className="max-h-56 overflow-y-auto pb-1">
             {filtered.length === 0 ? (
-              <p className="px-3 py-3 text-sm text-ink-faint">No hay productos. Cargá algunos en Catálogo.</p>
+              <p className="px-3 py-3 text-sm text-ink-faint">{t('selector.sinProductos')}</p>
             ) : (
               filtered.map((p) => (
                 <button

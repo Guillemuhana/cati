@@ -19,7 +19,8 @@
     "si": "Yes",
     "no": "No",
     "error": "Something went wrong. Please try again.",
-    "reintentar": "Try again"
+    "reintentar": "Try again",
+    "cargandoAria": "Loading"
   },
   "nav": {
     "panel": "Dashboard",
@@ -267,5 +268,78 @@
     "bajada": "Everything you have built, all in one place.",
     "buscar": "Search by client or number...",
     "sinResultados": "No quotes match that."
+  },
+  "premium": {
+    "funcionPremium": "Premium feature",
+    "desbloquea": "Unlock all of Numera",
+    "terminoDetalle": "Your free period ended. Turn on every premium feature for <1>{{precio}}</1>.",
+    "suscribirmePor": "Subscribe for {{precio}}",
+    "features": {
+      "catalogo": "A reusable catalog of products and services",
+      "plantillas": "Quote templates",
+      "enlace": "Public link + QR so your client can view and accept",
+      "seguimiento": "Tracking: seen / accepted / declined",
+      "marca": "PDF with your brand (color, prefix, no \"Made with Numera\")",
+      "reportes": "Reports and export to Excel/CSV"
+    },
+    "titulo": "Numera Premium",
+    "bajada": "Everything you need to close more quotes.",
+    "todoGratis": "🎉 Every feature is <1>free and unlocked</1>, no card needed, until <3>{{fecha}}</3>. After that it continues at {{precio}}. {{dias}} days to go.",
+    "activaHasta": "✓ Subscription active until {{fecha}}. Thank you!",
+    "activa": "✓ Subscription active. Thank you!",
+    "enPrueba": "You're in your <1>{{promo}} free</1>. You have <3>{{restante}}</3> left with everything unlocked.",
+    "termino": "Your free period ended. Keep everything unlocked for {{precio}}.",
+    "queIncluye": "What's included",
+    "precioLanzamiento": "Launch price",
+    "suscripcionMensual": "Monthly subscription",
+    "gratis": "Free",
+    "porMes": " /month",
+    "sinCostoHasta": "No charge until {{fecha}}. From then on, {{precio}}.",
+    "primerosGratis": "First {{promo}} free · Cancel anytime.",
+    "yaDesbloqueado": "Everything is already unlocked ✓",
+    "suscripcionActiva": "Subscription active ✓",
+    "pagoProximamente": "Payment coming soon",
+    "notaGratis": "Nothing to do and no card to enter: use the app with everything included. We will tell you before billing starts.",
+    "notaPago": "After you pay, we activate your account shortly (beta).",
+    "notaSinPago": "We are setting up the payment method. In the meantime, write to us.",
+    "tuCuenta": "Your account: {{email}}",
+    "invitaGana": "🎁 <1>Refer 3 people and earn 3 months</1> of premium, at no cost.",
+    "verMiLink": "See my link →"
+  },
+  "selector": {
+    "delCatalogo": "From catalog",
+    "buscarProducto": "Search products...",
+    "sinProductos": "No products yet. Add some in Catalog.",
+    "seleccionarCliente": "Select a client",
+    "buscarCliente": "Search clients...",
+    "sinResultados": "No matches.",
+    "nuevoCliente": "+ New client",
+    "nombreObligatorio": "Name *",
+    "telefono": "Phone",
+    "crearYUsar": "Create and use"
+  },
+  "catalogo": {
+    "gate": "Product catalog",
+    "titulo": "Catalog",
+    "bajada": "Add your products and services once and reuse them in every quote.",
+    "nuevo": "+ New product",
+    "buscar": "Search the catalog...",
+    "vacio": "You haven't added any products or services yet.",
+    "confirmarBorrado": "Delete \"{{nombre}}\" from the catalog?",
+    "editarProducto": "Edit product",
+    "nuevoProducto": "New product",
+    "nombre": "Name *",
+    "descripcion": "Description",
+    "precioUnitario": "Unit price"
+  },
+  "facturas": {
+    "gate": "Invoices and receipts",
+    "titulo": "Invoices and receipts",
+    "bajada": "Internal documents (not tax invoices). They are created from an accepted quote.",
+    "vacio": "You haven't created any documents yet.",
+    "vacioDetalle": "Open a quote and tap \"Turn into an invoice\".",
+    "emitida": "Issued",
+    "pagada": "Paid",
+    "anulada": "Voided"
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import Spinner from '../components/Spinner'
@@ -8,14 +9,16 @@ import { formatMoney } from '../lib/utils'
 const emptyProduct = { name: '', description: '', unit_price: 0 }
 
 export default function Productos() {
+  const { t } = useTranslation()
   return (
-    <PremiumGate title="Catálogo de productos">
+    <PremiumGate title={t('catalogo.gate')}>
       <ProductosInner />
     </PremiumGate>
   )
 }
 
 function ProductosInner() {
+  const { t } = useTranslation()
   const { user, profile } = useAuth()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -49,7 +52,7 @@ function ProductosInner() {
   }
 
   const handleDelete = async (product) => {
-    if (!window.confirm(`¿Eliminar "${product.name}" del catálogo?`)) return
+    if (!window.confirm(t('catalogo.confirmarBorrado', { nombre: product.name }))) return
     await supabase.from('products').delete().eq('id', product.id)
     load()
   }
@@ -58,17 +61,17 @@ function ProductosInner() {
     <div>
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl font-medium text-ink">Catálogo</h1>
-          <p className="mt-1 text-sm text-ink-soft">Cargá tus productos y servicios una vez y reutilizalos en cada presupuesto.</p>
+          <h1 className="font-display text-3xl font-medium text-ink">{t('catalogo.titulo')}</h1>
+          <p className="mt-1 text-sm text-ink-soft">{t('catalogo.bajada')}</p>
         </div>
         <button onClick={() => setEditing('new')} className="btn-primary inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold">
-          + Nuevo producto
+          {t('catalogo.nuevo')}
         </button>
       </header>
 
       <input
         type="text"
-        placeholder="Buscar en el catálogo..."
+        placeholder={t('catalogo.buscar')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         className="mb-4 w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none sm:w-72"
@@ -80,7 +83,7 @@ function ProductosInner() {
             <Spinner />
           </div>
         ) : filtered.length === 0 ? (
-          <p className="px-6 py-14 text-center text-sm text-ink-soft">Todavía no cargaste productos ni servicios.</p>
+          <p className="px-6 py-14 text-center text-sm text-ink-soft">{t('catalogo.vacio')}</p>
         ) : (
           <ul className="divide-y divide-line">
             {filtered.map((p) => (
@@ -92,10 +95,10 @@ function ProductosInner() {
                 <div className="flex shrink-0 items-center gap-4">
                   <span className="font-mono text-sm text-ink">{formatMoney(p.unit_price, profile?.currency)}</span>
                   <button onClick={() => setEditing(p)} className="text-sm font-medium text-ink-soft hover:text-ink">
-                    Editar
+                    {t('comun.editar')}
                   </button>
                   <button onClick={() => handleDelete(p)} className="text-sm font-medium text-rust-500 hover:text-rust-500/80">
-                    Eliminar
+                    {t('comun.eliminar')}
                   </button>
                 </div>
               </li>
@@ -110,6 +113,7 @@ function ProductosInner() {
 }
 
 function ProductModal({ product, onClose, onSave }) {
+  const { t } = useTranslation()
   const [form, setForm] = useState(product)
   const [saving, setSaving] = useState(false)
 
@@ -124,9 +128,9 @@ function ProductModal({ product, onClose, onSave }) {
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       <div className="absolute inset-0 bg-ink/30" onClick={onClose} />
       <form onSubmit={submit} className="relative w-full max-w-md rounded-t-xl2 border border-line bg-surface p-6 shadow-soft sm:rounded-xl2">
-        <h2 className="font-display text-xl font-medium text-ink">{product.name ? 'Editar producto' : 'Nuevo producto'}</h2>
+        <h2 className="font-display text-xl font-medium text-ink">{product.name ? t('catalogo.editarProducto') : t('catalogo.nuevoProducto')}</h2>
         <div className="mt-4 space-y-3">
-          <Field label="Nombre *">
+          <Field label={t('catalogo.nombre')}>
             <input
               required
               type="text"
@@ -135,7 +139,7 @@ function ProductModal({ product, onClose, onSave }) {
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
-          <Field label="Descripción">
+          <Field label={t('catalogo.descripcion')}>
             <textarea
               rows={2}
               value={form.description || ''}
@@ -143,7 +147,7 @@ function ProductModal({ product, onClose, onSave }) {
               className="w-full rounded-md border border-line px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             />
           </Field>
-          <Field label="Precio unitario">
+          <Field label={t('catalogo.precioUnitario')}>
             <input
               type="number"
               inputMode="decimal"
@@ -157,10 +161,10 @@ function ProductModal({ product, onClose, onSave }) {
         </div>
         <div className="mt-5 flex gap-2">
           <button type="submit" disabled={saving} className="btn-primary flex-1 rounded-md py-2.5 text-sm font-semibold">
-            {saving ? 'Guardando...' : 'Guardar'}
+            {saving ? t('comun.guardando') : t('comun.guardar')}
           </button>
           <button type="button" onClick={onClose} className="rounded-md border border-line px-4 py-2.5 text-sm text-ink-soft">
-            Cancelar
+            {t('comun.cancelar')}
           </button>
         </div>
       </form>

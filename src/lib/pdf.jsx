@@ -2,7 +2,15 @@ import { Document, Page, Text, View, StyleSheet, Image, Font, Svg, Path, pdf } f
 // El PDF se arma fuera de React (desde un botón, no desde un componente),
 // así que el idioma se lee de la instancia y no del hook.
 import i18n from '../i18n'
-import { formatMoney, formatDate, formatNumero, STATUS, safeImages, isSafeImageUrl } from './utils'
+import {
+  formatMoney,
+  formatDate,
+  formatNumero,
+  STATUS,
+  safeImages,
+  isSafeImageUrl,
+  sinTituloRepetido
+} from './utils'
 import { cleanDetails } from '../components/BudgetDetails'
 import { canalesDe } from './redes'
 
@@ -248,11 +256,14 @@ const SILUETAS = {
 }
 
 function Field({ label, value, always = false }) {
-  if (!value && !always) return null
+  // Si el usuario encabezó su texto con el mismo rótulo, se saca: si no
+  // sale «CONDICION DE PAGO: Condiciones de pago:» y queda de amateur.
+  const texto = sinTituloRepetido(value, label)
+  if (!texto && !always) return null
   return (
     <View style={styles.fieldRow}>
       <Text style={styles.fieldLabel}>{label}: </Text>
-      <Text style={styles.fieldValue}>{value || ''}</Text>
+      <Text style={styles.fieldValue}>{texto || ''}</Text>
     </View>
   )
 }
@@ -274,11 +285,12 @@ function SignBox({ firma, nombre, cargo, label }) {
 }
 
 function PayCol({ title, text }) {
-  if (!text) return null
+  const texto = sinTituloRepetido(text, title)
+  if (!texto) return null
   return (
     <View style={styles.payCol}>
       <Text style={styles.notesTitle}>{title}</Text>
-      <Text style={styles.notesText}>{text}</Text>
+      <Text style={styles.notesText}>{texto}</Text>
     </View>
   )
 }
@@ -461,13 +473,13 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
             {budget.notes && (
               <>
                 <Text style={styles.notesTitle}>Notas</Text>
-                <Text style={styles.notesText}>{budget.notes}</Text>
+                <Text style={styles.notesText}>{sinTituloRepetido(budget.notes, 'Notas')}</Text>
               </>
             )}
             {budget.terms && (
               <>
                 <Text style={[styles.notesTitle, { marginTop: 12 }]}>Condiciones</Text>
-                <Text style={styles.notesText}>{budget.terms}</Text>
+                <Text style={styles.notesText}>{sinTituloRepetido(budget.terms, 'Condiciones')}</Text>
               </>
             )}
           </View>

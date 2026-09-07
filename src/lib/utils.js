@@ -355,3 +355,58 @@ export function partirDescripcion(texto) {
   if (corte === -1) return { titulo: '', cuerpo: limpio }
   return { titulo: limpio.slice(0, corte).trim(), cuerpo: limpio.slice(corte + 1).trim() }
 }
+
+
+// ------------------------------------------------------------
+// Títulos repetidos dentro del propio texto.
+//
+// El formulario tiene un campo rotulado «Condiciones de pago», así que
+// mucha gente escribe adentro «Condiciones de pago:» y abajo el detalle.
+// Es razonable: cuando lo escribís no ves que el documento va a poner el
+// rótulo por su cuenta. Después el PDF sale con
+//
+//     CONDICION DE PAGO: Condiciones de pago:
+//                        Seña: 10%
+//
+// y queda de amateur. Esto saca ese primer renglón cuando dice lo mismo
+// que el rótulo que está por imprimirse al lado.
+//
+// Se hace al DIBUJAR y no al guardar, a propósito: el texto del usuario
+// no se toca nunca: si mañana el rótulo cambia, su párrafo sigue entero.
+// Y solo se saca cuando coincide de verdad — un renglón que dice otra
+// cosa se respeta aunque termine en dos puntos.
+// ------------------------------------------------------------
+
+// «Condiciones de pago» y «CONDICION DE PAGO» tienen que dar lo mismo:
+// fuera acentos, mayúsculas, puntuación y el plural.
+function normalizarRotulo(texto) {
+  return `${texto || ''}`
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // acentos
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((p) => {
+      // Singular tosco, suficiente para rótulos: condiciones → condicion.
+      // El corte en 4 evita comerse palabras cortas («mes» → «m»).
+      if (p.length > 5 && p.endsWith('es')) return p.slice(0, -2)
+      if (p.length > 4 && p.endsWith('s')) return p.slice(0, -1)
+      return p
+    })
+    .join(' ')
+}
+
+export function sinTituloRepetido(texto, rotulo) {
+  const valor = `${texto || ''}`
+  if (!valor.trim() || !rotulo) return valor
+
+  const corte = valor.indexOf('\n')
+  const primera = corte === -1 ? valor : valor.slice(0, corte)
+
+  // Si el texto es UNA sola línea, no se toca: sería borrarlo entero.
+  if (corte === -1) return valor
+  if (normalizarRotulo(primera) !== normalizarRotulo(rotulo)) return valor
+
+  return valor.slice(corte + 1).replace(/^\s*\n/, '')
+}

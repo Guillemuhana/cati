@@ -6,7 +6,8 @@ import {
   safeImages,
   isSafeImageUrl,
   hayDescripcionLarga,
-  partirDescripcion
+  partirDescripcion,
+  sinTituloRepetido
 } from '../lib/utils'
 import { cleanDetails } from './BudgetDetails'
 import { lineAmount } from './ItemsTable'
@@ -288,11 +289,13 @@ function Row({ label, value }) {
 }
 
 function PreviewBlock({ title, text }) {
-  if (!text) return null
+  // El mismo rótulo escrito dentro del texto se saca: ya está arriba.
+  const texto = sinTituloRepetido(text, title)
+  if (!texto) return null
   return (
     <div>
       <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">{title}</p>
-      <p className="mt-1 whitespace-pre-line text-ink-soft">{text}</p>
+      <p className="mt-1 whitespace-pre-line text-ink-soft">{texto}</p>
     </div>
   )
 }

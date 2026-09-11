@@ -289,7 +289,8 @@ const MIGRACION_POR_COLUMNA = {
   images: 'migration_20_imagenes_presupuesto.sql',
   firma_png: 'migration_27_confidencialidad.sql',
   firma_nombre: 'migration_29_firma_en_presupuestos.sql',
-  firma_cargo: 'migration_29_firma_en_presupuestos.sql'
+  firma_cargo: 'migration_29_firma_en_presupuestos.sql',
+  pagos: 'migration_32_pagos_del_presupuesto.sql'
 }
 
 // Nombre de la columna que falta, o '' si el error es de otra cosa.
@@ -409,4 +410,55 @@ export function sinTituloRepetido(texto, rotulo) {
   if (normalizarRotulo(primera) !== normalizarRotulo(rotulo)) return valor
 
   return valor.slice(corte + 1).replace(/^\s*\n/, '')
+}
+
+
+// ------------------------------------------------------------
+// Etapas de pago del presupuesto (migración 32).
+//
+// El campo `deposit` de siempre alcanza para «mitad y mitad». Para
+// «seña 10%, anticipo 40%, saldo 50%» hace falta saber cuál de las tres
+// ya entró, y eso es lo que guarda budget.pagos.
+//
+// El monto de cada etapa se GUARDA, no se recalcula desde el porcentaje
+// cada vez: si mañana se corrige el total del presupuesto, lo que el
+// cliente ya pagó no cambia de golpe. El porcentaje queda al lado, para
+// mostrarlo, y se usa solo para proponer el monto al crear la etapa.
+// ------------------------------------------------------------
+export const MAX_PAGOS = 12
+
+/** Solo lo que la app sabe dibujar; lo demás se descarta sin romper nada. */
+export function safePagos(pagos) {
+  if (!Array.isArray(pagos)) return []
+  return pagos.slice(0, MAX_PAGOS).map((p) => ({
+    label: `${p?.label || ''}`.slice(0, 80),
+    percent: p?.percent === '' || p?.percent == null ? null : Number(p.percent) || 0,
+    amount: Math.max(0, Number(p?.amount) || 0),
+    // null = todavía no se cobró. Es el único dato que decide el estado.
+    paid_at: p?.paid_at || null,
+    method: `${p?.method || ''}`.slice(0, 60),
+    comprobante: isSafeImageUrl(p?.comprobante) ? p.comprobante : ''
+  }))
+}
+
+/** Cuánto entró, cuánto falta, y cuánto del total quedó sin repartir. */
+export function resumenDePagos(pagos, total) {
+  const etapas = safePagos(pagos)
+  const bruto = Math.max(0, Number(total) || 0)
+  const cobrado = etapas.filter((p) => p.paid_at).reduce((acc, p) => acc + p.amount, 0)
+  const pendiente = etapas.filter((p) => !p.paid_at).reduce((acc, p) => acc + p.amount, 0)
+  return {
+    etapas,
+    cobrado: round2(cobrado),
+    pendiente: round2(pendiente),
+    // Lo que no está en ninguna etapa. Sirve para avisar que las etapas
+    // no suman el total: es el error más fácil de cometer cargándolas.
+    sinAsignar: round2(bruto - cobrado - pendiente),
+    falta: round2(bruto - cobrado)
+  }
+}
+
+/** El monto que le toca a un porcentaje del total. */
+export function montoDePorcentaje(total, percent) {
+  return round2((Math.max(0, Number(total) || 0) * (Math.max(0, Number(percent) || 0))) / 100)
 }

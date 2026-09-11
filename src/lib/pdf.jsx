@@ -9,7 +9,8 @@ import {
   STATUS,
   safeImages,
   isSafeImageUrl,
-  sinTituloRepetido
+  sinTituloRepetido,
+  resumenDePagos
 } from './utils'
 import { cleanDetails } from '../components/BudgetDetails'
 import { canalesDe } from './redes'
@@ -149,6 +150,33 @@ const styles = StyleSheet.create({
   colPrice: { width: 70, textAlign: 'right' },
   colDisc: { width: 42, textAlign: 'right' },
   colTotal: { width: 80, textAlign: 'right' },
+
+  // ── Pagos ya cobrados ─────────────────────────────────────
+  // Debajo de los totales: cuando el cliente pregunta «cuánto falta»,
+  // esto es la respuesta y tiene que estar en el papel, no en un chat.
+  pagosBox: {
+    marginTop: 10,
+    alignSelf: 'flex-end',
+    minWidth: 240,
+    borderWidth: 1,
+    borderColor: LINE,
+    paddingHorizontal: 6,
+    paddingVertical: 5
+  },
+  pagosTitulo: { fontSize: 7.5, fontFamily: 'Helvetica-Bold', marginBottom: 3 },
+  pagosRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 1.5 },
+  pagosLabel: { fontSize: 8, color: SOFT },
+  pagosLabelCobrado: { fontSize: 8, color: LINE },
+  pagosValue: { fontSize: 8 },
+  pagosFaltaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 3,
+    paddingTop: 3,
+    borderTopWidth: 0.8,
+    borderTopColor: LINE
+  },
+  pagosFaltaLabel: { fontSize: 8.5, fontFamily: 'Helvetica-Bold' },
 
   // Debajo de la caja de totales, alineada con ella: qué pasa cuando la
   // seña se paga. Es la pregunta que el cliente hace por WhatsApp apenas
@@ -301,6 +329,9 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
   const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)
   const rows = normalizeItems(items)
   const qtyTotal = rows.reduce((acc, it) => acc + (Number(it.quantity) || 0), 0)
+  // Las etapas de pago (migración 32). El comprobante NO se imprime:
+  // acá va lo que se debe, no el resguardo bancario del cliente.
+  const pagos = resumenDePagos(budget.pagos, budget.total)
   // Solo del Storage nuestro: si la URL no es de ahí, el PDF sale sin el
   // logo en vez de romperse entero al no poder bajar la imagen.
   const logoCliente = isSafeImageUrl(client?.logo_url) ? client.logo_url : ''
@@ -459,6 +490,26 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
           <Text style={styles.depositNote}>
             El trabajo comienza una vez recibida la seña.
           </Text>
+        )}
+
+        {pagos.etapas.length > 0 && (
+          <View style={styles.pagosBox} wrap={false}>
+            <Text style={styles.pagosTitulo}>PAGOS</Text>
+            {pagos.etapas.map((p, i) => (
+              <View key={i} style={styles.pagosRow}>
+                <Text style={p.paid_at ? styles.pagosLabelCobrado : styles.pagosLabel}>
+                  {p.paid_at ? '✓ ' : ''}
+                  {p.label}
+                  {p.percent ? ` (${p.percent}%)` : ''}
+                </Text>
+                <Text style={styles.pagosValue}>{formatMoney(p.amount, budget.currency)}</Text>
+              </View>
+            ))}
+            <View style={styles.pagosFaltaRow}>
+              <Text style={styles.pagosFaltaLabel}>FALTA PAGAR:</Text>
+              <Text style={styles.pagosFaltaLabel}>{formatMoney(pagos.falta, budget.currency)}</Text>
+            </View>
+          </View>
         )}
 
         {/* Condiciones, formas de pago y plazo ya van en los recuadros de arriba. */}

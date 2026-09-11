@@ -10,6 +10,7 @@ import StatusBadge from '../components/StatusBadge'
 import Spinner from '../components/Spinner'
 import { cleanDetails } from '../components/BudgetDetails'
 import CompartirModal from '../components/CompartirModal'
+import PagosPresupuesto from '../components/PagosPresupuesto'
 import { downloadBudgetPdf, generateBudgetPdfBlob } from '../lib/pdf'
 import {
   formatDate,
@@ -20,7 +21,9 @@ import {
   safePdfUrl,
   storagePathFromUrl,
   hayDescripcionLarga,
-  partirDescripcion
+  partirDescripcion,
+  safePagos,
+  missingColumnError
 } from '../lib/utils'
 import { CLAVES, marcar } from '../lib/onboarding'
 
@@ -40,6 +43,7 @@ export default function PresupuestoDetail() {
   const [qr, setQr] = useState('')
   const [invoiceId, setInvoiceId] = useState(null)
   const [pdfError, setPdfError] = useState('')
+  const [guardandoPagos, setGuardandoPagos] = useState(false)
 
   useEffect(() => {
     if (!user || !id) return
@@ -226,6 +230,18 @@ export default function PresupuestoDetail() {
     } finally {
       setBusy(false)
     }
+  }
+
+  // Los pagos se guardan apenas se tocan: anotar que cobraste la seña no
+  // es llenar un formulario, es tildar algo.
+  const guardarPagos = async (pagos) => {
+    const limpios = safePagos(pagos)
+    setBudget((b) => ({ ...b, pagos: limpios }))
+    setGuardandoPagos(true)
+    setPdfError('')
+    const { error } = await supabase.from('budgets').update({ pagos: limpios }).eq('id', id)
+    if (error) setPdfError(missingColumnError(error) || error.message || t('pagos.errorGuardar'))
+    setGuardandoPagos(false)
   }
 
   const handleDelete = async () => {
@@ -441,6 +457,15 @@ export default function PresupuestoDetail() {
               )}
             </div>
           </div>
+
+          <PagosPresupuesto
+            userId={user?.id}
+            total={budget.total}
+            currency={budget.currency}
+            value={budget.pagos}
+            onChange={guardarPagos}
+            guardando={guardandoPagos}
+          />
 
           {/* Al costado ya no se comparte nada: acá solo se ve qué hizo el
               cliente con el enlace, que es lo que uno vuelve a mirar. */}

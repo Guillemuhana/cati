@@ -25,7 +25,8 @@ import {
   safePdfUrl,
   hayDescripcionLarga,
   partirDescripcion,
-  sinTituloRepetido
+  sinTituloRepetido,
+  resumenDePagos
 } from '../lib/utils'
 import { lineAmount } from '../components/ItemsTable'
 import { useSeo } from '../lib/seo'
@@ -127,6 +128,10 @@ export default function PublicBudget() {
   // Con una memoria descriptiva larga la tabla de columnas no sirve: ver
   // hayDescripcionLarga() en lib/utils.
   const textoLargo = hayDescripcionLarga(items)
+  // Las etapas de pago. El comprobante NO se muestra acá: es el
+  // resguardo bancario del cliente y este enlace se reenvía por
+  // WhatsApp. Acá va cuánto pagó y cuánto le falta, nada más.
+  const pagos = resumenDePagos(budget.pagos, budget.total)
   const decided = budget.status === 'aceptado' || budget.status === 'rechazado'
 
   return (
@@ -392,6 +397,36 @@ export default function PublicBudget() {
                     <p className="text-xs italic leading-relaxed text-ink-faint">
                       El trabajo comienza una vez recibida la seña.
                     </p>
+                  </div>
+                )}
+
+                {pagos.etapas.length > 0 && (
+                  <div className="mt-4 space-y-2 border-t border-line pt-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-faint">
+                      {t('pagos.titulo')}
+                    </p>
+                    {pagos.etapas.map((p, i) => (
+                      <div key={i} className="flex items-baseline justify-between gap-3 text-sm">
+                        <span className={p.paid_at ? 'text-teal-600' : 'text-ink-soft'}>
+                          {p.paid_at ? '✓ ' : ''}
+                          {p.label}
+                          {p.percent ? ` (${p.percent}%)` : ''}
+                        </span>
+                        <span
+                          className={`whitespace-nowrap tabular-nums ${
+                            p.paid_at ? 'text-teal-600 line-through' : 'text-ink'
+                          }`}
+                        >
+                          {formatMoney(p.amount, currency)}
+                        </span>
+                      </div>
+                    ))}
+                    <div className="flex items-baseline justify-between gap-3 border-t border-line pt-2">
+                      <span className="font-sans font-semibold text-ink">{t('pagos.falta')}</span>
+                      <span className="whitespace-nowrap font-semibold tabular-nums text-ink">
+                        {formatMoney(pagos.falta, currency)}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>

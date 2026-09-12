@@ -617,6 +617,7 @@
     "ejemploSena": "e.g. Deposit",
     "porcentaje": "%",
     "monto": "Amount",
+    "yaCobrada": "This one is already paid",
     "agregarEtapa": "Add",
     "quitarEtapa": "Remove stage",
     "confirmarQuitar": "Remove \"{{nombre}}\"? If it had a receipt, the file stays on the server.",

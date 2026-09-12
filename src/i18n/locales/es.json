@@ -617,6 +617,7 @@
     "ejemploSena": "Ej: Seña",
     "porcentaje": "%",
     "monto": "Monto",
+    "yaCobrada": "Esta ya me la pagó",
     "agregarEtapa": "Agregar",
     "quitarEtapa": "Quitar etapa",
     "confirmarQuitar": "¿Quitar «{{nombre}}»? Si tenía comprobante, el archivo queda en el servidor.",

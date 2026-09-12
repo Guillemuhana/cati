@@ -176,9 +176,11 @@ export default function PagosPresupuesto({ userId, total, currency, value, onCha
 
       {agregando && (
         <FormularioEtapa
+          userId={userId}
           total={total}
           currency={currency}
           onCancel={() => setAgregando(false)}
+          onError={setError}
           onSave={agregarEtapa}
         />
       )}
@@ -214,14 +216,28 @@ export default function PagosPresupuesto({ userId, total, currency, value, onCha
   )
 }
 
-/** Alta de una etapa. El monto se propone desde el porcentaje, y se puede pisar. */
-function FormularioEtapa({ total, currency, onCancel, onSave }) {
+/**
+ * Alta de una etapa.
+ *
+ * El monto se propone desde el porcentaje y se puede pisar. Y si la etapa
+ * que se está cargando ya se cobró —el caso más común: uno anota la seña
+ * DESPUÉS de que entró— se tilda acá mismo y el comprobante se adjunta en
+ * el mismo paso, sin guardar primero y volver a entrar por «ya me lo pagó».
+ */
+function FormularioEtapa({ userId, total, currency, onCancel, onSave, onError }) {
   const { t } = useTranslation()
+  const hoy = new Date().toISOString().slice(0, 10)
   const [label, setLabel] = useState('')
   const [percent, setPercent] = useState('')
   const [amount, setAmount] = useState('')
   // Mientras no toque el monto a mano, sigue al porcentaje.
   const [montoManual, setMontoManual] = useState(false)
+
+  const [cobrada, setCobrada] = useState(false)
+  const [fecha, setFecha] = useState(hoy)
+  const [metodo, setMetodo] = useState('')
+  const [comprobante, setComprobante] = useState('')
+  const [subiendo, setSubiendo] = useState(false)
 
   const montoMostrado = montoManual ? amount : percent === '' ? '' : montoDePorcentaje(total, percent)
 
@@ -232,9 +248,9 @@ function FormularioEtapa({ total, currency, onCancel, onSave }) {
       label: label.trim(),
       percent: percent === '' ? null : Number(percent) || 0,
       amount: Number(montoMostrado) || 0,
-      paid_at: null,
-      method: '',
-      comprobante: ''
+      paid_at: cobrada ? fecha || hoy : null,
+      method: cobrada ? metodo : '',
+      comprobante: cobrada ? comprobante : ''
     })
   }
 
@@ -280,10 +296,37 @@ function FormularioEtapa({ total, currency, onCancel, onSave }) {
           />
         </Campo>
       </div>
+
+      <label className="mt-3 flex w-fit cursor-pointer items-center gap-2 text-xs font-medium text-ink">
+        <input
+          type="checkbox"
+          checked={cobrada}
+          onChange={(e) => setCobrada(e.target.checked)}
+          className="h-3.5 w-3.5 rounded border-line accent-teal-500"
+        />
+        {t('pagos.yaCobrada')}
+      </label>
+
+      {cobrada && (
+        <div className="mt-2.5 rounded-lg border border-teal-500/30 bg-teal-500/[0.05] p-3">
+          <DatosDelCobro
+            userId={userId}
+            fecha={fecha}
+            setFecha={setFecha}
+            metodo={metodo}
+            setMetodo={setMetodo}
+            comprobante={comprobante}
+            setComprobante={setComprobante}
+            onError={onError}
+            onSubiendo={setSubiendo}
+          />
+        </div>
+      )}
+
       <div className="mt-2.5 flex items-center gap-2">
         <button
           type="submit"
-          disabled={!label.trim()}
+          disabled={!label.trim() || subiendo}
           className="inline-flex items-center gap-1.5 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600 disabled:opacity-50"
         >
           <Plus size={13} aria-hidden="true" />
@@ -300,15 +343,73 @@ function FormularioEtapa({ total, currency, onCancel, onSave }) {
   )
 }
 
-/** Marcar una etapa como cobrada: fecha, medio y el comprobante que mandó el cliente. */
+/** Cobrar una etapa que ya estaba cargada como pendiente. */
 function FormularioCobro({ userId, etapa, onCancel, onSave, onError }) {
   const { t } = useTranslation()
-  const inputRef = useRef(null)
   const hoy = new Date().toISOString().slice(0, 10)
   const [fecha, setFecha] = useState(etapa.paid_at || hoy)
   const [metodo, setMetodo] = useState(etapa.method || '')
   const [comprobante, setComprobante] = useState(etapa.comprobante || '')
   const [subiendo, setSubiendo] = useState(false)
+
+  return (
+    <div className="mt-3 rounded-lg border border-teal-500/30 bg-teal-500/[0.05] p-3">
+      <DatosDelCobro
+        userId={userId}
+        fecha={fecha}
+        setFecha={setFecha}
+        metodo={metodo}
+        setMetodo={setMetodo}
+        comprobante={comprobante}
+        setComprobante={setComprobante}
+        onError={onError}
+        onSubiendo={setSubiendo}
+      />
+
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          type="button"
+          disabled={subiendo}
+          onClick={() => onSave({ paid_at: fecha || hoy, method: metodo, comprobante })}
+          className="rounded-md bg-teal-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-teal-600 disabled:opacity-60"
+        >
+          {t('pagos.confirmarPago')}
+        </button>
+        <button type="button" onClick={onCancel} className="text-xs font-medium text-ink-soft hover:text-ink">
+          {t('comun.cancelar')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Cuándo entró la plata, cómo te pagó y el comprobante.
+ *
+ * Vive aparte porque hace falta en los dos lados: al cargar una etapa que
+ * ya está cobrada y al cobrar una que estaba pendiente. Si el adjuntar
+ * existiera en uno solo, el que carga la seña ya cobrada no tendría dónde
+ * poner el comprobante, que es justo cuando lo tiene a mano.
+ */
+function DatosDelCobro({
+  userId,
+  fecha,
+  setFecha,
+  metodo,
+  setMetodo,
+  comprobante,
+  setComprobante,
+  onError,
+  onSubiendo
+}) {
+  const { t } = useTranslation()
+  const inputRef = useRef(null)
+  const [subiendo, setSubiendo] = useState(false)
+
+  const marcarSubiendo = (v) => {
+    setSubiendo(v)
+    onSubiendo?.(v)
+  }
 
   const elegirArchivo = async (e) => {
     const file = (e.target.files || [])[0]
@@ -325,7 +426,7 @@ function FormularioCobro({ userId, etapa, onCancel, onSave, onError }) {
       return
     }
 
-    setSubiendo(true)
+    marcarSubiendo(true)
     try {
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
       const path = `${userId}/presupuestos/${crypto.randomUUID()}.${ext}`
@@ -338,12 +439,12 @@ function FormularioCobro({ userId, etapa, onCancel, onSave, onError }) {
     } catch (err) {
       onError(err?.message || t('pagos.errorSubir'))
     } finally {
-      setSubiendo(false)
+      marcarSubiendo(false)
     }
   }
 
   return (
-    <div className="mt-3 rounded-lg border border-teal-500/30 bg-teal-500/[0.05] p-3">
+    <>
       <div className="grid gap-2 sm:grid-cols-2">
         <Campo label={t('pagos.fecha')}>
           <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className={entradaCls} />
@@ -403,21 +504,7 @@ function FormularioCobro({ userId, etapa, onCancel, onSave, onError }) {
           className="hidden"
         />
       </div>
-
-      <div className="mt-3 flex items-center gap-2">
-        <button
-          type="button"
-          disabled={subiendo}
-          onClick={() => onSave({ paid_at: fecha || hoy, method: metodo, comprobante })}
-          className="rounded-md bg-teal-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-teal-600 disabled:opacity-60"
-        >
-          {t('pagos.confirmarPago')}
-        </button>
-        <button type="button" onClick={onCancel} className="text-xs font-medium text-ink-soft hover:text-ink">
-          {t('comun.cancelar')}
-        </button>
-      </div>
-    </div>
+    </>
   )
 }
 

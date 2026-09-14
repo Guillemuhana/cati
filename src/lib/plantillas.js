@@ -8,7 +8,7 @@
 // Las imágenes las diseñamos nosotros y viven en public/plantillas/.
 // No hay subida de archivos: si cada uno pudiera poner la suya, la
 // mitad de las facturas saldrían con una foto encima del texto.
-// Cómo preparar una nueva está en public/plantillas/LEEME.md.
+// Cómo preparar una nueva está en disenio/COMO-AGREGAR-UNA-PLANTILLA.md.
 //
 // EL COLOR NO SE GUARDA ACÁ
 //   El perfil ya tiene su `brand_color`, que es lo único que mira el
@@ -32,6 +32,38 @@ export const PLANTILLAS = [
     rubros: ['gasista', 'oficios'],
     fondo: '/plantillas/gasista.jpg',
     color: '#1B3B6F'
+  },
+  {
+    key: 'electricista',
+    label: 'Electricidad',
+    descripcion: 'Tester, cables, pinza y destornilladores.',
+    rubros: ['oficios'],
+    fondo: '/plantillas/electricista.jpg',
+    color: '#B3282D'
+  },
+  {
+    key: 'albanil',
+    label: 'Albañilería y obra',
+    descripcion: 'Casco, cuchara, ladrillos, nivel y plano.',
+    rubros: ['construccion', 'oficios'],
+    fondo: '/plantillas/albanil.jpg',
+    color: '#A15C2B'
+  },
+  {
+    key: 'pintor',
+    label: 'Pintura',
+    descripcion: 'Rodillo, bandeja, latas y pinceles.',
+    rubros: ['construccion', 'oficios'],
+    fondo: '/plantillas/pintor.jpg',
+    color: '#2B6CA3'
+  },
+  {
+    key: 'herrero',
+    label: 'Herrería y metalúrgica',
+    descripcion: 'Máscara de soldar, guantes, maza y perfiles.',
+    rubros: ['herreria', 'oficios'],
+    fondo: '/plantillas/herrero.jpg',
+    color: '#3F4650'
   }
 ]
 

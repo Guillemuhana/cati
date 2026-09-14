@@ -35,9 +35,28 @@ Image.blend(blanco, im, 0.18).save('public/plantillas/NOMBRE.jpg', quality=85, o
 "
 ```
 
-El `0.18` es la fuerza: más alto se ve más, más bajo casi desaparece. En
-la de gasista quedó en 0.18 y pesa 31 KB. Si te pasás de 100 KB, revisá
-el `quality` antes de subirla.
+**La fuerza no es siempre la misma.** Una foto de máscaras de soldar
+negras y una de latas de pintura blancas, aguadas al mismo número, no
+quedan igual: la primera sale oscura y la segunda desaparece. El número
+se calcula por imagen, para que a todas les quede el mismo gris más
+oscuro (224 sobre 255, que es el de la de gasista):
+
+```bash
+python -c "
+from PIL import Image
+h = Image.open('original.png').convert('L').histogram()
+total, acum, p1 = sum(h), 0, 0
+for v, c in enumerate(h):
+    acum += c
+    if acum >= total * 0.01: p1 = v; break
+print('alpha:', round((255 - 224) / max(255 - p1, 1), 3))
+"
+```
+
+Los que salieron hasta ahora: gasista 0.18, pintor 0.191, albañil 0.153,
+electricista 0.144, herrero 0.132.
+
+Si te pasás de 100 KB, revisá el `quality` antes de subirla.
 
 Guardala como **.jpg** (no PNG: el fondo es opaco y pesa la mitad).
 

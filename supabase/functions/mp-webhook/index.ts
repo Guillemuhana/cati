@@ -84,33 +84,59 @@ Deno.serve(async (req) => {
     // ── Cerrojo 2: preguntarle a Mercado Pago ─────────────────
     const sub = await traerSuscripcion(tipo, dataId, accessToken)
 
+    const anotar = (datos: Record<string, unknown>) =>
+      fetch(`${supabaseUrl}/rest/v1/rpc/mp_aplicar_suscripcion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`
+        },
+        body: JSON.stringify(datos)
+      })
+
+    // Un evento que no sabemos leer NO se tira a la basura.
+    //
+    // Mercado Pago agrupa los avisos en el panel, así que no hay forma
+    // de saber de antemano con qué nombre exacto va a llegar el cobro
+    // del mes. Si llega con uno que esta función no maneja y lo
+    // descartáramos en silencio, el premium dejaría de renovarse y
+    // nadie se enteraría hasta que un cliente reclame.
+    //
+    // Anotado, en cambio, aparece en mp_eventos como no resuelto y se
+    // ve qué mandaron de verdad.
     if (!sub) {
-      // Un evento que no sabemos leer no es un error: se contesta 200
-      // para que no reintente para siempre.
-      return new Response('OK (evento ignorado)', { status: 200 })
+      await anotar({
+        p_tipo: tipo,
+        p_accion: accion,
+        p_recurso_id: dataId,
+        p_preapproval_id: null,
+        p_plan_id: null,
+        p_estado: 'sin_procesar',
+        p_payer_email: null,
+        p_external_ref: null,
+        p_hasta: null,
+        p_payload: aviso
+      })
+      console.log('[mp-webhook] evento sin procesar', tipo, dataId)
+      // 200 igual: que no reintente para siempre por algo que no es un
+      // error de Mercado Pago ni nuestro.
+      return new Response('OK (evento anotado sin procesar)', { status: 200 })
     }
 
     const hasta = calcularHasta(sub)
 
-    const r = await fetch(`${supabaseUrl}/rest/v1/rpc/mp_aplicar_suscripcion`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`
-      },
-      body: JSON.stringify({
-        p_tipo: tipo,
-        p_accion: accion,
-        p_recurso_id: dataId,
-        p_preapproval_id: sub.id ?? null,
-        p_plan_id: sub.preapproval_plan_id ?? null,
-        p_estado: sub.status ?? null,
-        p_payer_email: sub.payer_email ?? null,
-        p_external_ref: sub.external_reference ?? null,
-        p_hasta: hasta,
-        p_payload: sub
-      })
+    const r = await anotar({
+      p_tipo: tipo,
+      p_accion: accion,
+      p_recurso_id: dataId,
+      p_preapproval_id: sub.id ?? null,
+      p_plan_id: sub.preapproval_plan_id ?? null,
+      p_estado: sub.status ?? null,
+      p_payer_email: sub.payer_email ?? null,
+      p_external_ref: sub.external_reference ?? null,
+      p_hasta: hasta,
+      p_payload: sub
     })
 
     if (!r.ok) {

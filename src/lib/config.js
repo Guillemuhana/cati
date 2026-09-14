@@ -25,11 +25,13 @@ export function freeDaysLeft() {
 }
 
 // Prueba gratis para quien se registre DESPUÉS del 1/11/2026.
-// Tiene que coincidir con el interval de handle_new_user (migración 11):
-// el que manda es el de la base de datos.
-export const TRIAL_DAYS = 30
+// Tiene que coincidir con el interval de handle_new_user: el que manda
+// es el de la base de datos. Se fijó en 7 días por la migración 34;
+// si lo movés acá, movelo allá o la app promete una cosa y la base da
+// otra.
+export const TRIAL_DAYS = 7
 export const TRIAL_HOURS = TRIAL_DAYS * 24
-export const PROMO_LABEL = '30 días'
+export const PROMO_LABEL = '1 semana'
 export const TRIAL_LABEL = `${PROMO_LABEL} gratis`
 // ⚠ Si cobrás con Mercado Pago Argentina, el plan se crea en PESOS:
 // poné acá el mismo número que pusiste en el plan (ej: '$ 2.000') o el
@@ -37,6 +39,13 @@ export const TRIAL_LABEL = `${PROMO_LABEL} gratis`
 export const PREMIUM_PRICE = 'USD 2'
 export const PREMIUM_PERIOD = 'por mes' // suscripción mensual
 export const PREMIUM_PRICE_FULL = `${PREMIUM_PRICE}/mes`
+
+// Plan anual: se pagan 11 meses y se usan 12. El mes bonificado es
+// para el que ya probó la app y se queda; por eso el número está
+// escrito y no calculado, que es como se cobra de verdad.
+export const PREMIUM_MONTHS_YEAR = 11
+export const PREMIUM_PRICE_YEAR = 'USD 22'
+export const PREMIUM_PRICE_YEAR_FULL = `${PREMIUM_PRICE_YEAR}/año`
 
 // ------------------------------------------------------------
 // COBRO · Link de SUSCRIPCIÓN mensual (Mercado Pago)
@@ -70,6 +79,12 @@ export const PREMIUM_PRICE_FULL = `${PREMIUM_PRICE}/mes`
 // Si queda vacío, el botón muestra «Próximamente».
 // ------------------------------------------------------------
 export const PAYMENT_URL = ''
+
+// El mismo trámite que arriba pero con un plan ANUAL de USD 22 en
+// Mercado Pago. Va aparte porque son dos planes distintos y cada uno
+// tiene su propio link de suscripción. Vacío = el anual se muestra
+// como «próximamente» igual que el mensual.
+export const PAYMENT_URL_YEAR = ''
 
 // Lista de beneficios premium (se muestran en el paywall / página /premium).
 // Claves del catálogo de idiomas, no texto: la lista se muestra en el

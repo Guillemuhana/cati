@@ -305,7 +305,10 @@
     "notaSinPago": "We are setting up the payment method. In the meantime, write to us.",
     "tuCuenta": "Your account: {{email}}",
     "invitaGana": "🎁 <1>Refer 3 people and earn 3 months</1> of premium, at no cost.",
-    "verMiLink": "See my link →"
+    "verMiLink": "See my link →",
+    "planAnual": "Yearly plan",
+    "planAnualDetalle": "Pay for 11 months, use 12: one month on us.",
+    "suscribirmeAnual": "Subscribe for {{precio}} a year"
   },
   "selector": {
     "delCatalogo": "From catalog",

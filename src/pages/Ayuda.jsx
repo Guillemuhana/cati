@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { PROMO_LABEL, PREMIUM_PRICE_FULL, FREE_FOR_ALL, FREE_UNTIL_LABEL } from '../lib/config'
+import {
+  PROMO_LABEL,
+  PREMIUM_PRICE_FULL,
+  PREMIUM_PRICE_YEAR_FULL,
+  FREE_FOR_ALL,
+  FREE_UNTIL_LABEL
+} from '../lib/config'
 
 // Instructivo en 5 pasos: el orden recomendado para arrancar de cero.
 const STEPS = [
@@ -147,9 +153,9 @@ const FAQS = [
   {
     q: '¿Cuánto cuesta? ¿Se me vence?',
     a: FREE_FOR_ALL
-      ? `Hasta el ${FREE_UNTIL_LABEL} está todo gratis y desbloqueado, sin tarjeta y sin límite de presupuestos. A partir de esa fecha termina la etapa gratuita y las funciones premium pasan a costar ${PREMIUM_PRICE_FULL}, que se cancela cuando quieras. Te vamos a avisar antes, y lo que ya cargaste no se borra ni se pierde nunca.`
-      : `La etapa gratuita terminó el ${FREE_UNTIL_LABEL}. Las funciones premium siguen por ${PREMIUM_PRICE_FULL} y se cancela cuando quieras. Los presupuestos que ya hiciste no se borran nunca: siempre los podés ver y descargar.`,
-    keywords: 'precio costo pagar gratis premium suscripcion suscripción plan prueba trial noviembre 2026 vence termina'
+      ? `Hasta el ${FREE_UNTIL_LABEL} está todo gratis y desbloqueado, sin tarjeta y sin límite de presupuestos. Después, el que se registra tiene ${PROMO_LABEL} de prueba con todo abierto, y más adelante son ${PREMIUM_PRICE_FULL} con todas las funciones premium incluidas. También hay plan anual a ${PREMIUM_PRICE_YEAR_FULL}: pagás once meses y usás doce. Se cancela cuando quieras, te avisamos antes, y lo que ya cargaste no se borra ni se pierde nunca.`
+      : `El que se registra tiene ${PROMO_LABEL} de prueba con todo abierto. Después son ${PREMIUM_PRICE_FULL} con todas las funciones premium incluidas, o ${PREMIUM_PRICE_YEAR_FULL} el plan anual, que es pagar once meses y usar doce. Se cancela cuando quieras. Los presupuestos que ya hiciste no se borran nunca: siempre los podés ver y descargar.`,
+    keywords: 'precio costo pagar gratis premium suscripcion suscripción plan prueba trial semana anual año mensual dolares vence termina cuanto sale'
   },
   {
     q: '¿Qué pasa el 1 de noviembre de 2026 con lo que ya cargué?',

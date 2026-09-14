@@ -4,6 +4,9 @@ import { usePlan } from '../hooks/usePlan'
 import {
   FREE_FOR_ALL,
   PAYMENT_URL,
+  PAYMENT_URL_YEAR,
+  PREMIUM_PRICE_YEAR,
+  PREMIUM_PRICE_YEAR_FULL,
   PREMIUM_PRICE,
   PREMIUM_PRICE_FULL,
   PREMIUM_FEATURES,
@@ -108,6 +111,28 @@ export default function Premium() {
               ? t('premium.sinCostoHasta', { fecha: FREE_UNTIL_LABEL, precio: PREMIUM_PRICE_FULL })
               : t('premium.primerosGratis', { promo: PROMO_LABEL })}
           </p>
+
+          {/* El anual no compite con el mensual: se muestra como lo que
+              es, el mismo plan pagado de una con un mes de regalo. Por
+              eso va debajo del precio y no como una segunda tarjeta,
+              que obligaría a elegir antes de saber si la app sirve. */}
+          <div className="mt-4 rounded-lg border border-line bg-surface/70 px-3 py-2.5">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-xs font-semibold text-ink">{t('premium.planAnual')}</span>
+              <span className="font-mono text-sm font-semibold text-ink">{PREMIUM_PRICE_YEAR_FULL}</span>
+            </div>
+            <p className="mt-0.5 text-[11px] text-ink-soft">{t('premium.planAnualDetalle')}</p>
+            {!FREE_FOR_ALL && !isPaid && PAYMENT_URL_YEAR && (
+              <a
+                href={PAYMENT_URL_YEAR}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 block rounded-md border border-brand-500/50 py-1.5 text-center text-xs font-semibold text-brand-700 transition hover:bg-brand-500/[0.08]"
+              >
+                {t('premium.suscribirmeAnual', { precio: PREMIUM_PRICE_YEAR })}
+              </a>
+            )}
+          </div>
 
           {FREE_FOR_ALL ? (
             <div className="mt-6 rounded-md bg-teal-500/10 px-4 py-3 text-center text-sm font-medium text-teal-600">

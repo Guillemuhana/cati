@@ -305,7 +305,10 @@
     "notaSinPago": "Estamos habilitando el medio de pago. Mientras tanto, escribinos.",
     "tuCuenta": "Tu cuenta: {{email}}",
     "invitaGana": "🎁 <1>Invitá a 3 y ganá 3 meses</1> de premium, sin pagar nada.",
-    "verMiLink": "Ver mi link →"
+    "verMiLink": "Ver mi link →",
+    "planAnual": "Plan anual",
+    "planAnualDetalle": "Pagás 11 meses y usás 12: un mes bonificado.",
+    "suscribirmeAnual": "Suscribirme por {{precio}} al año"
   },
   "selector": {
     "delCatalogo": "Del catálogo",

@@ -36,7 +36,7 @@ export const TRIAL_LABEL = `${PROMO_LABEL} gratis`
 // ⚠ Si cobrás con Mercado Pago Argentina, el plan se crea en PESOS:
 // poné acá el mismo número que pusiste en el plan (ej: '$ 2.000') o el
 // usuario ve un precio y le aparece otro en el checkout.
-export const PREMIUM_PRICE = 'USD 2'
+export const PREMIUM_PRICE = '$ 4,99'
 export const PREMIUM_PERIOD = 'por mes' // suscripción mensual
 export const PREMIUM_PRICE_FULL = `${PREMIUM_PRICE}/mes`
 
@@ -44,7 +44,7 @@ export const PREMIUM_PRICE_FULL = `${PREMIUM_PRICE}/mes`
 // para el que ya probó la app y se queda; por eso el número está
 // escrito y no calculado, que es como se cobra de verdad.
 export const PREMIUM_MONTHS_YEAR = 11
-export const PREMIUM_PRICE_YEAR = 'USD 22'
+export const PREMIUM_PRICE_YEAR = '$ 54,89'
 export const PREMIUM_PRICE_YEAR_FULL = `${PREMIUM_PRICE_YEAR}/año`
 
 // ------------------------------------------------------------

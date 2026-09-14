@@ -21,6 +21,22 @@ const TIPOS = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf']
  * de golpe. El porcentaje queda al lado, para mostrarlo y para proponer
  * el monto al crear la etapa.
  */
+/**
+ * Los repartos que se usan de verdad.
+ *
+ * Cargar tres pagos a mano —nombre, porcentaje y monto de cada uno— es
+ * mucho trabajo para algo que casi siempre es una de estas tres
+ * combinaciones. Con un toque quedan los tres hechos y lo único que
+ * falta es tildar cuál ya entró.
+ *
+ * No son una regla: después se edita, se borra o se agrega lo que sea.
+ */
+const REPARTOS = [
+  { clave: 'mitades', partes: [['Anticipo', 50], ['Saldo', 50]] },
+  { clave: 'tercios', partes: [['Seña', 10], ['Anticipo', 40], ['Saldo', 50]] },
+  { clave: 'unico', partes: [['Pago único', 100]] }
+]
+
 export default function PagosPresupuesto({ userId, total, currency, value, onChange, guardando }) {
   const { t } = useTranslation()
   const { etapas, cobrado, falta, sinAsignar } = resumenDePagos(value, total)
@@ -37,6 +53,19 @@ export default function PagosPresupuesto({ userId, total, currency, value, onCha
   const agregarEtapa = (etapa) => {
     guardar([...etapas, etapa].slice(0, MAX_PAGOS))
     setAgregando(false)
+  }
+
+  const usarReparto = (reparto) => {
+    guardar(
+      reparto.partes.map(([label, percent]) => ({
+        label,
+        percent,
+        amount: montoDePorcentaje(total, percent),
+        paid_at: null,
+        method: '',
+        comprobante: ''
+      }))
+    )
   }
 
   const quitarEtapa = (i) => {
@@ -77,6 +106,19 @@ export default function PagosPresupuesto({ userId, total, currency, value, onCha
         <div className="mt-4 rounded-lg border border-dashed border-line px-4 py-5 text-center">
           <p className="text-sm text-ink-soft">{t('pagos.vacio')}</p>
           <p className="mt-1 text-xs text-ink-faint">{t('pagos.vacioAyuda')}</p>
+
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {REPARTOS.map((r) => (
+              <button
+                key={r.clave}
+                type="button"
+                onClick={() => usarReparto(r)}
+                className="rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink transition hover:border-brand-500 hover:text-brand-700"
+              >
+                {t(`pagos.reparto.${r.clave}`)}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -178,6 +220,7 @@ export default function PagosPresupuesto({ userId, total, currency, value, onCha
         <FormularioEtapa
           userId={userId}
           total={total}
+          falta={sinAsignar}
           currency={currency}
           onCancel={() => setAgregando(false)}
           onError={setError}
@@ -224,7 +267,7 @@ export default function PagosPresupuesto({ userId, total, currency, value, onCha
  * DESPUÉS de que entró— se tilda acá mismo y el comprobante se adjunta en
  * el mismo paso, sin guardar primero y volver a entrar por «ya me lo pagó».
  */
-function FormularioEtapa({ userId, total, currency, onCancel, onSave, onError }) {
+function FormularioEtapa({ userId, total, falta, currency, onCancel, onSave, onError }) {
   const { t } = useTranslation()
   const hoy = new Date().toISOString().slice(0, 10)
   const [label, setLabel] = useState('')
@@ -239,7 +282,17 @@ function FormularioEtapa({ userId, total, currency, onCancel, onSave, onError })
   const [comprobante, setComprobante] = useState('')
   const [subiendo, setSubiendo] = useState(false)
 
-  const montoMostrado = montoManual ? amount : percent === '' ? '' : montoDePorcentaje(total, percent)
+  // Con el porcentaje en blanco se propone lo que falta para llegar al
+  // total. Es la cuenta que uno hace de memoria al cargar el último
+  // pago, y es justo donde se equivoca.
+  const restante = Math.max(0, Number(falta) || 0)
+  const montoMostrado = montoManual
+    ? amount
+    : percent === ''
+      ? restante > 0
+        ? restante
+        : ''
+      : montoDePorcentaje(total, percent)
 
   const submit = (e) => {
     e.preventDefault()

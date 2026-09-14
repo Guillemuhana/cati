@@ -76,6 +76,10 @@ export default function PresupuestoForm() {
   const [savedMsg, setSavedMsg] = useState('')
   const [showPreview, setShowPreview] = useState(false)
   const [masOpciones, setMasOpciones] = useState(false)
+  // El nombre de la plantilla se pide en la página y no con el cuadro
+  // gris del navegador: ese en el celular sale mal, no se puede
+  // cancelar con el dedo y no se parece en nada al resto de la app.
+  const [nombrePlantilla, setNombrePlantilla] = useState(null)
 
   const dirtyRef = useRef(false)
   const prefilledRef = useRef(false)
@@ -126,9 +130,9 @@ export default function PresupuestoForm() {
   }
 
   // Guardar el presupuesto actual como plantilla reutilizable
-  const saveTemplate = async () => {
-    const name = window.prompt(t('form.nombrePlantilla'))
+  const saveTemplate = async (name) => {
     if (!name || !name.trim()) return
+    setNombrePlantilla(null)
     const data = {
       budget: {
         title: budget.title,
@@ -438,16 +442,50 @@ export default function PresupuestoForm() {
               ))}
             </select>
           )}
-          {isPremium && (
+          {isPremium && nombrePlantilla === null && (
             <button
               type="button"
-              onClick={saveTemplate}
+              onClick={() => setNombrePlantilla('')}
               className="rounded-md border border-line px-2.5 py-1.5 text-xs font-medium text-ink-soft transition hover:border-ink-faint hover:text-ink"
             >
               {t('form.guardarPlantilla')}
             </button>
           )}
         </div>
+
+        {isPremium && nombrePlantilla !== null && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              saveTemplate(nombrePlantilla)
+            }}
+            className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface p-2.5"
+          >
+            <input
+              autoFocus
+              type="text"
+              value={nombrePlantilla}
+              onChange={(e) => setNombrePlantilla(e.target.value)}
+              placeholder={t('form.nombrePlantilla')}
+              maxLength={60}
+              className="min-w-0 flex-1 rounded-md border border-line px-2.5 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={!nombrePlantilla.trim()}
+              className="btn-primary shrink-0 rounded-md px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+            >
+              {t('comun.guardar')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setNombrePlantilla(null)}
+              className="shrink-0 text-xs font-medium text-ink-soft hover:text-ink"
+            >
+              {t('comun.cancelar')}
+            </button>
+          </form>
+        )}
       </header>
 
       <div className="grid gap-6 lg:grid-cols-3">

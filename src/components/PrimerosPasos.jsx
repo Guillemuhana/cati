@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
@@ -15,6 +16,7 @@ import { CLAVES, marcar, estaMarcado } from '../lib/onboarding'
  * Cuando están los cinco, la tarjeta desaparece sola.
  */
 export default function PrimerosPasos({ budgets = [], cargando = false }) {
+  const { t } = useTranslation()
   const { user, profile } = useAuth()
   const [clientes, setClientes] = useState(null)
   const [oculta, setOculta] = useState(() => estaMarcado(CLAVES.pasosOcultos))
@@ -41,41 +43,36 @@ export default function PrimerosPasos({ budgets = [], cargando = false }) {
 
   const pasos = [
     {
-      titulo: 'Poné el nombre de tu negocio',
-      detalle: 'Es lo que el cliente lee arriba del presupuesto.',
+      clave: 'negocio',
       hecho: !!profile?.business_name,
-      a: '/perfil',
-      cta: 'Completar'
+      a: '/perfil'
     },
     {
-      titulo: 'Subí tu logo',
-      detalle: 'Sale en el PDF y en la vista previa del link.',
+      clave: 'logo',
       hecho: !!profile?.logo_url,
-      a: '/perfil',
-      cta: 'Subir logo'
+      a: '/perfil'
     },
     {
-      titulo: 'Cargá tu primer cliente',
-      detalle: 'Con el nombre alcanza; el teléfono te sirve para mandarle el presupuesto.',
+      clave: 'cliente',
       hecho: (clientes ?? 0) > 0,
-      a: '/clientes',
-      cta: 'Cargar cliente'
+      a: '/clientes'
     },
     {
-      titulo: 'Armá tu primer presupuesto',
-      detalle: 'Ítems, cantidades y precio: los totales se calculan solos.',
+      clave: 'presupuesto',
       hecho: budgets.length > 0,
-      a: '/presupuestos/nuevo',
-      cta: 'Crear'
+      a: '/presupuestos/nuevo'
     },
     {
-      titulo: 'Mandáselo al cliente',
-      detalle: 'Por WhatsApp, email o PDF, desde el botón «Compartir».',
+      clave: 'compartir',
       hecho: compartido,
-      a: budgets[0] ? `/presupuestos/${budgets[0].id}` : '/presupuestos',
-      cta: 'Compartir'
+      a: budgets[0] ? `/presupuestos/${budgets[0].id}` : '/presupuestos'
     }
-  ]
+  ].map((p) => ({
+    ...p,
+    titulo: t(`pasos.${p.clave}.titulo`),
+    detalle: t(`pasos.${p.clave}.detalle`),
+    cta: t(`pasos.${p.clave}.cta`)
+  }))
 
   const hechos = pasos.filter((p) => p.hecho).length
   const siguiente = pasos.find((p) => !p.hecho)
@@ -93,18 +90,17 @@ export default function PrimerosPasos({ budgets = [], cargando = false }) {
     <section className="mb-8 overflow-hidden rounded-xl2 border border-brand-500/25 bg-gradient-to-br from-brand-500/[0.07] to-brass-400/[0.10] p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-display text-lg font-medium text-ink">Primeros pasos</h2>
-          <p className="mt-0.5 text-sm text-ink-soft">
-            Cinco cosas cortas y tu negocio queda listo para presupuestar.
-          </p>
+          <h2 className="font-display text-lg font-medium text-ink">{t('pasos.titulo')}</h2>
+          <p className="mt-0.5 text-sm text-ink-soft">{t('pasos.bajada')}</p>
         </div>
         <div className="flex items-center gap-3">
           <p className="font-mono text-sm text-ink-soft">
-            <span className="text-lg font-semibold text-brand-600">{hechos}</span> de {pasos.length}
+            <span className="text-lg font-semibold text-brand-600">{hechos}</span>{' '}
+            {t('pasos.de', { total: pasos.length })}
           </p>
           <button
             onClick={esconder}
-            aria-label="Ocultar primeros pasos"
+            aria-label={t('pasos.ocultar')}
             className="rounded-md p-1 text-ink-faint transition hover:bg-ink/5 hover:text-ink-soft"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16">
@@ -126,7 +122,7 @@ export default function PrimerosPasos({ budgets = [], cargando = false }) {
           const esSiguiente = p === siguiente
           return (
             <li
-              key={p.titulo}
+              key={p.clave}
               className={`flex items-center gap-3 rounded-xl2 px-3 py-2.5 transition ${
                 esSiguiente ? 'border border-line bg-surface shadow-soft' : ''
               }`}

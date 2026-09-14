@@ -425,7 +425,7 @@
     "usarPlantilla": "Usar plantilla",
     "usarPlantillaOpcion": "Usar plantilla…",
     "guardarPlantilla": "Guardar como plantilla",
-    "nombrePlantilla": "Nombre de la plantilla:",
+    "nombrePlantilla": "Nombre de la plantilla",
     "plantillaGuardada": "Plantilla guardada",
     "errorPlantillas": "Las plantillas todavía no están habilitadas en tu cuenta.",
     "datosGenerales": "Datos generales",
@@ -620,16 +620,16 @@
   "pagos": {
     "titulo": "Pagos",
     "desc": "Anotá lo que el cliente ya te pagó y lo que falta. Se ve en el PDF y en el enlace que abre él.",
-    "vacio": "Todavía no cargaste etapas de pago.",
-    "vacioAyuda": "Si cobrás en partes —una seña, un anticipo, el saldo—, cargalas y marcá cuál entró.",
-    "agregar": "+ Agregar etapa",
+    "vacio": "Todavía no cargaste los pagos.",
+    "vacioAyuda": "Si cobrás en partes, elegí cómo y después tildás cuál entró.",
+    "agregar": "+ Agregar pago",
     "nombreEtapa": "Nombre",
     "ejemploSena": "Ej: Seña",
     "porcentaje": "%",
     "monto": "Monto",
     "yaCobrada": "Esta ya me la pagó",
     "agregarEtapa": "Agregar",
-    "quitarEtapa": "Quitar etapa",
+    "quitarEtapa": "Quitar pago",
     "confirmarQuitar": "¿Quitar «{{nombre}}»? Si tenía comprobante, el archivo queda en el servidor.",
     "cobreEsto": "Ya me lo pagó",
     "cobradoEl": "Cobrado el {{fecha}}",
@@ -653,6 +653,42 @@
     "migracion32": "Los pagos todavía no están habilitados en tu cuenta.",
     "errorGuardar": "No se pudieron guardar los pagos.",
     "pagado": "Pagado",
-    "pendiente": "Pendiente"
+    "pendiente": "Pendiente",
+    "reparto": {
+      "mitades": "Mitad y mitad",
+      "tercios": "10 / 40 / 50",
+      "unico": "Un solo pago"
+    }
+  },
+  "pasos": {
+    "titulo": "Primeros pasos",
+    "bajada": "Cinco cosas cortas y tu negocio queda listo para presupuestar.",
+    "de": "de {{total}}",
+    "ocultar": "Ocultar primeros pasos",
+    "negocio": {
+      "titulo": "Poné el nombre de tu negocio",
+      "detalle": "Es lo que el cliente lee arriba del presupuesto.",
+      "cta": "Completar"
+    },
+    "logo": {
+      "titulo": "Subí tu logo",
+      "detalle": "Sale en el PDF y en la vista previa del link.",
+      "cta": "Subir logo"
+    },
+    "cliente": {
+      "titulo": "Cargá tu primer cliente",
+      "detalle": "Con el nombre alcanza; el teléfono te sirve para mandarle el presupuesto.",
+      "cta": "Cargar cliente"
+    },
+    "presupuesto": {
+      "titulo": "Armá tu primer presupuesto",
+      "detalle": "Ítems, cantidades y precio: los totales se calculan solos.",
+      "cta": "Crear"
+    },
+    "compartir": {
+      "titulo": "Mandáselo al cliente",
+      "detalle": "Por WhatsApp, email o PDF, desde el botón «Compartir».",
+      "cta": "Compartir"
+    }
   }
 }

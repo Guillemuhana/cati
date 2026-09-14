@@ -425,7 +425,7 @@
     "usarPlantilla": "Use a template",
     "usarPlantillaOpcion": "Use a template…",
     "guardarPlantilla": "Save as template",
-    "nombrePlantilla": "Template name:",
+    "nombrePlantilla": "Template name",
     "plantillaGuardada": "Template saved",
     "errorPlantillas": "Templates aren't enabled on your account yet.",
     "datosGenerales": "General details",
@@ -620,17 +620,17 @@
   "pagos": {
     "titulo": "Payments",
     "desc": "Record what your client has already paid and what is left. It shows on the PDF and on the link they open.",
-    "vacio": "You haven't added any payment stages yet.",
-    "vacioAyuda": "If you charge in parts —a deposit, an advance, the balance— add them and mark which ones came in.",
-    "agregar": "+ Add stage",
+    "vacio": "You haven't added any payments yet.",
+    "vacioAyuda": "If you charge in parts, pick how and then tick off what came in.",
+    "agregar": "+ Add payment",
     "nombreEtapa": "Name",
     "ejemploSena": "e.g. Deposit",
     "porcentaje": "%",
     "monto": "Amount",
     "yaCobrada": "This one is already paid",
     "agregarEtapa": "Add",
-    "quitarEtapa": "Remove stage",
-    "confirmarQuitar": "Remove \"{{nombre}}\"? If it had a receipt, the file stays on the server.",
+    "quitarEtapa": "Remove payment",
+    "confirmarQuitar": "Remove “{{nombre}}”? If it had a receipt, the file stays on the server.",
     "cobreEsto": "They paid this",
     "cobradoEl": "Received on {{fecha}}",
     "marcarNoCobrado": "Mark as not received",
@@ -653,6 +653,42 @@
     "migracion32": "Payments aren't enabled on your account yet.",
     "errorGuardar": "The payments couldn't be saved.",
     "pagado": "Paid",
-    "pendiente": "Pending"
+    "pendiente": "Pending",
+    "reparto": {
+      "mitades": "Half and half",
+      "tercios": "10 / 40 / 50",
+      "unico": "Single payment"
+    }
+  },
+  "pasos": {
+    "titulo": "First steps",
+    "bajada": "Five short things and your business is ready to quote.",
+    "de": "of {{total}}",
+    "ocultar": "Hide first steps",
+    "negocio": {
+      "titulo": "Add your business name",
+      "detalle": "It is what the client reads at the top of the quote.",
+      "cta": "Complete"
+    },
+    "logo": {
+      "titulo": "Upload your logo",
+      "detalle": "It shows on the PDF and on the link preview.",
+      "cta": "Upload logo"
+    },
+    "cliente": {
+      "titulo": "Add your first client",
+      "detalle": "The name is enough; the phone helps you send the quote.",
+      "cta": "Add client"
+    },
+    "presupuesto": {
+      "titulo": "Build your first quote",
+      "detalle": "Items, quantities and price: totals add up on their own.",
+      "cta": "Create"
+    },
+    "compartir": {
+      "titulo": "Send it to the client",
+      "detalle": "By WhatsApp, email or PDF, from the “Share” button.",
+      "cta": "Share"
+    }
   }
 }

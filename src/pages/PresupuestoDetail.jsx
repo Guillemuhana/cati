@@ -23,7 +23,8 @@ import {
   hayDescripcionLarga,
   partirDescripcion,
   safePagos,
-  missingColumnError
+  missingColumnError,
+  avisarMigracion
 } from '../lib/utils'
 import { CLAVES, marcar } from '../lib/onboarding'
 
@@ -102,7 +103,8 @@ export default function PresupuestoDetail() {
       if (error) throw error
       navigate(`/facturas/${data.id}`)
     } catch (err) {
-      window.alert(err.message || t('detalle.errorFactura'))
+      avisarMigracion('migration_06.sql', err?.message || '')
+      window.alert(t('detalle.errorFactura'))
     } finally {
       setBusy(false)
     }

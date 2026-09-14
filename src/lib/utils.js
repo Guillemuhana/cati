@@ -1,3 +1,5 @@
+import i18n from '../i18n'
+
 export const CURRENCIES = ['ARS', 'USD', 'EUR', 'UYU', 'CLP', 'MXN', 'BRL']
 
 // Presets de IVA / impuesto para el selector rápido.
@@ -304,15 +306,37 @@ export function missingColumn(err) {
   return m ? m[1] : ''
 }
 
+// ------------------------------------------------------------
+// Cuando falta correr una migración.
+//
+// El nombre del archivo .sql es un dato NUESTRO, no de quien está
+// usando la app. A alguien que está facturando, «corré
+// migration_32_pagos.sql en Supabase» no le dice qué hacer: le dice
+// que algo se rompió y que el arreglo está en un lugar donde no
+// entra. Peor todavía, suena a que fue culpa suya.
+//
+// Así que se parte en dos. Al usuario se le dice qué función no está
+// disponible y que reintentar no la va a activar. El archivo exacto va
+// a la consola, que es donde lo busca quien administra la app.
+// ------------------------------------------------------------
+export function avisarMigracion(archivo, detalle = '') {
+  console.warn(
+    `[Numera] Falta correr supabase/${archivo} en Supabase.${detalle ? ` (${detalle})` : ''}`
+  )
+}
+
 // Mensaje listo para mostrar, o '' si el error no es de columna.
 export function missingColumnError(err) {
   const col = missingColumn(err)
   if (!col && err?.code !== 'PGRST204' && err?.code !== '42703') return ''
   const archivo = MIGRACION_POR_COLUMNA[col]
-  if (archivo) return `Falta la columna «${col}» en la base: corré supabase/${archivo} en Supabase.`
-  return col
-    ? `Falta la columna «${col}» en la base. Fijate qué migración de supabase/ la crea y correla.`
-    : 'Falta una columna nueva en la base. Corré las migraciones pendientes de supabase/.'
+  if (archivo) avisarMigracion(archivo, `falta la columna «${col}»`)
+  else
+    console.warn(
+      `[Numera] Falta la columna «${col || '?'}» en la base. ` +
+        'Fijate qué migración de supabase/ la crea y correla.'
+    )
+  return i18n.t('comun.funcionNoHabilitada')
 }
 
 

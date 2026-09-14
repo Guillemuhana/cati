@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useRef, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { avisarMigracion } from '../lib/utils'
 
 export const MAX_IMAGES = 4
 const MAX_BYTES = 5 * 1024 * 1024 // igual que el límite del bucket (migración 20)
@@ -56,11 +57,9 @@ export default function BudgetImages({ userId, value = [], onChange }) {
       onChange([...images, ...nuevas])
     } catch (err) {
       const msg = `${err?.message || ''}`.toLowerCase()
-      setError(
-        msg.includes('bucket') || msg.includes('not found')
-          ? t('adjuntos.migracion20')
-          : err?.message || t('adjuntos.errorImagen')
-      )
+      const faltaBucket = msg.includes('bucket') || msg.includes('not found')
+      if (faltaBucket) avisarMigracion('migration_20_imagenes_presupuesto.sql', 'no existe el bucket')
+      setError(faltaBucket ? t('adjuntos.migracion20') : err?.message || t('adjuntos.errorImagen'))
     } finally {
       setSubiendo(false)
     }

@@ -29,7 +29,8 @@ import {
   getBudgetErrors,
   safeImages,
   safePdfUrl,
-  storagePathFromUrl
+  storagePathFromUrl,
+  avisarMigracion
 } from '../lib/utils'
 import { getRubro } from '../lib/rubros'
 
@@ -74,6 +75,7 @@ export default function PresupuestoForm() {
   const [errors, setErrors] = useState({})
   const [savedMsg, setSavedMsg] = useState('')
   const [showPreview, setShowPreview] = useState(false)
+  const [masOpciones, setMasOpciones] = useState(false)
 
   const dirtyRef = useRef(false)
   const prefilledRef = useRef(false)
@@ -150,6 +152,7 @@ export default function PresupuestoForm() {
     }
     const { error: err } = await supabase.from('budget_templates').insert({ user_id: user.id, name: name.trim(), data })
     if (err) {
+      if (isMissingColumn(err)) avisarMigracion('migration_03.sql')
       setError(isMissingColumn(err) ? t('form.errorPlantillas') : err.message)
       return
     }
@@ -377,6 +380,7 @@ export default function PresupuestoForm() {
       }
     } catch (err) {
       if (isMissingColumn(err)) {
+        avisarMigracion('migration_02.sql', err?.message || '')
         setError(t('form.errorColumnas'))
       } else {
         setError(err.message || t('campos.noSePudoGuardar'))
@@ -723,24 +727,77 @@ export default function PresupuestoForm() {
               {error && <p className="mt-4 rounded-md bg-rust-500/10 px-3 py-2 text-sm text-rust-500">{error}</p>}
               {savedMsg && <p className="mt-4 text-sm text-teal-600">{savedMsg} ✓</p>}
 
+              {/* Terminar el presupuesto tenia cinco botones del mismo
+                  tamano: crear, vista previa, crear PDF, crear y enviar,
+                  guardar y seguir. Cinco caminos servidos a la vez, en el
+                  momento en que uno ya termino y lo unico que quiere es
+                  sacarselo de encima.
+
+                  Ahora hay uno solo grande —crear, que lleva al detalle,
+                  donde esta el compartir— y la vista previa al lado, que
+                  es la que mas se toca y no guarda nada. Las otras tres
+                  siguen existiendo, abajo, para el que las busca. */}
               <div className="mt-5 space-y-2">
                 <button onClick={() => handleSave({ status: budget.status, mode: 'final', after: 'detail' })} disabled={saving} className="btn-primary w-full rounded-md py-2.5 text-sm font-semibold">
                   {saving ? t('comun.guardando') : isEdit ? t('form.guardarCambios') : t('form.crearPresupuesto')}
                 </button>
-                <div className="grid grid-cols-2 gap-2">
-                  <SecondaryBtn onClick={() => setShowPreview(true)} disabled={saving}>
-                    {t('form.vistaPrevia')}
-                  </SecondaryBtn>
-                  <SecondaryBtn onClick={() => handleSave({ status: budget.status, mode: 'final', after: 'download' })} disabled={saving}>
-                    {t('form.crearPdf')}
-                  </SecondaryBtn>
-                  <SecondaryBtn onClick={() => handleSave({ status: 'enviado', mode: 'final', after: 'share' })} disabled={saving}>
-                    {t('form.crearEnviar')}
-                  </SecondaryBtn>
-                  <SecondaryBtn onClick={() => handleSave({ status: budget.status, mode: 'draft', after: 'editar' })} disabled={saving}>
-                    {t('form.guardarSeguir')}
-                  </SecondaryBtn>
+
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(true)}
+                  disabled={saving}
+                  className="w-full whitespace-nowrap rounded-md border border-line px-2 py-2 text-[13px] font-medium text-ink transition hover:border-ink-faint hover:bg-ink/[0.02] disabled:opacity-50"
+                >
+                  {t('form.vistaPrevia')}
+                </button>
+
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setMasOpciones((o) => !o)}
+                    disabled={saving}
+                    aria-expanded={masOpciones}
+                    className="flex w-full items-center justify-center gap-1 rounded-md px-4 py-2 text-[13px] font-medium text-ink-soft transition hover:text-ink disabled:opacity-50"
+                  >
+                    {t('form.masOpciones')}
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      width="14"
+                      height="14"
+                      className={masOpciones ? 'rotate-180 transition' : 'transition'}
+                      aria-hidden="true"
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+
+                  {masOpciones && (
+                    <div className="mt-1 overflow-hidden rounded-lg border border-line bg-surface">
+                      <OpcionFinal
+                        onClick={() => handleSave({ status: 'enviado', mode: 'final', after: 'share' })}
+                        disabled={saving}
+                      >
+                        {t('form.crearEnviar')}
+                      </OpcionFinal>
+                      <OpcionFinal
+                        onClick={() => handleSave({ status: budget.status, mode: 'final', after: 'download' })}
+                        disabled={saving}
+                      >
+                        {t('form.crearPdf')}
+                      </OpcionFinal>
+                      <OpcionFinal
+                        onClick={() => handleSave({ status: budget.status, mode: 'draft', after: 'editar' })}
+                        disabled={saving}
+                      >
+                        {t('form.guardarSeguir')}
+                      </OpcionFinal>
+                    </div>
+                  )}
                 </div>
+
                 <button onClick={handleCancel} disabled={saving} className="w-full rounded-md px-4 py-2 text-sm font-medium text-ink-soft transition hover:text-rust-500">
                   {t('comun.cancelar')}
                 </button>
@@ -858,13 +915,14 @@ function Chip({ active, onClick, children }) {
 
 // Sin `whitespace-nowrap` «Guardar y seguir» se parte en dos líneas y deja
 // esa fila más alta que la de arriba: la botonera queda torcida.
-function SecondaryBtn({ onClick, disabled, children }) {
+/** Una de las formas menos frecuentes de terminar, dentro de «mas opciones». */
+function OpcionFinal({ onClick, disabled, children }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="whitespace-nowrap rounded-md border border-line px-2 py-2 text-[13px] font-medium text-ink transition hover:border-ink-faint hover:bg-ink/[0.02] disabled:opacity-50"
+      className="block w-full border-b border-line px-3 py-2.5 text-left text-[13px] font-medium text-ink transition last:border-b-0 hover:bg-ink/[0.03] disabled:opacity-50"
     >
       {children}
     </button>

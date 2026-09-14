@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useRef, useState } from 'react'
 import { FileText } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { avisarMigracion } from '../lib/utils'
 import { safePdfUrl } from '../lib/utils'
 
 const MAX_BYTES = 15 * 1024 * 1024 // igual que el límite del bucket (migración 25)
@@ -54,8 +55,10 @@ export default function BudgetPdfPropio({ userId, value = '', onChange }) {
       onChange(data.publicUrl)
     } catch (err) {
       const msg = `${err?.message || ''}`.toLowerCase()
+      const faltaBucket = msg.includes('mime') || msg.includes('bucket') || msg.includes('not found')
+      if (faltaBucket) avisarMigracion('migration_25_pdf_propio.sql', 'el bucket no acepta el archivo')
       setError(
-        msg.includes('mime') || msg.includes('bucket') || msg.includes('not found')
+        faltaBucket
           ? t('adjuntos.migracion25')
           : msg.includes('exceeded') || msg.includes('too large')
             ? t('adjuntos.pdfLimiteServidor')

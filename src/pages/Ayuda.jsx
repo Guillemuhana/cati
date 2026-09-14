@@ -70,6 +70,11 @@ const FAQS = [
     keywords: 'rubro actividad oficio profesion profesión sugerencias condiciones defecto'
   },
   {
+    q: '¿Puedo ponerle un fondo de mi oficio al presupuesto?',
+    a: 'Sí. En «Mi negocio», en «Hoja del PDF», elegís entre doce hojas con herramientas del oficio —gas y plomería, electricidad, albañilería, pintura, herrería, jardinería, taller, fletes, gastronomía, imprenta, textil y fotografía— o dejás la hoja en blanco de siempre. Sale como marca de agua en el presupuesto, en la factura y en el recibo, bien suave para que no compita con los números. Al elegir una te propone un color de títulos que podés cambiar ahí mismo. No estás atado a tu rubro: aparecen primero las del tuyo, pero podés usar cualquiera.',
+    keywords: 'fondo hoja plantilla membrete papel diseño oficio marca agua imagen pdf gasista electricista albañil pintor herrero'
+  },
+  {
     q: '¿Puedo ponerle el logo a un cliente?',
     a: 'Sí. En Clientes, al crear o editar uno, arriba de todo tenés «Subir logo». Es opcional: solo si ese cliente tiene logo propio. Queda visible en la lista de clientes y en el presupuesto.',
     keywords: 'logo cliente imagen marca subir foto isotipo'
@@ -88,6 +93,16 @@ const FAQS = [
     q: '¿Qué significa cada estado?',
     a: 'Enviado: es el estado con el que nace todo presupuesto, listo para mandarle al cliente. Visto: el cliente abrió el enlace público. Aceptado: te dijo que sí. Rechazado: te dijo que no. Vencido: pasó la fecha de validez sin respuesta. Podés cambiarlo a mano desde el presupuesto, en «Cambiar estado».',
     keywords: 'estado estados enviado visto aceptado rechazado vencido significa'
+  },
+  {
+    q: '¿Puedo anotar lo que el cliente me va pagando?',
+    a: 'Sí. Abrí el presupuesto guardado y buscá «Pagos». Ahí cargás las etapas como cobrás de verdad: seña 10%, anticipo 40%, saldo 50%. El monto de cada una se calcula solo desde el porcentaje, y si no suman el total la app te avisa. Cuando la etapa que estás cargando ya te la pagaron, tildás «esta ya me la pagó» y en el mismo paso ponés la fecha, cómo te pagó y adjuntás el comprobante que te mandó (foto o PDF). Abajo te queda siempre cuánto cobraste y cuánto falta.',
+    keywords: 'pagos pago seña señas anticipo saldo cuotas etapas parcial cobrar cobre comprobante transferencia cuanto falta debe resta'
+  },
+  {
+    q: '¿El cliente ve el comprobante que le adjunté a un pago?',
+    a: 'No. En su enlace ve las etapas y cuánto falta, que es lo que le sirve, pero el comprobante queda solo para vos. Es a propósito: un resguardo bancario tiene número de cuenta y ese enlace se reenvía por WhatsApp. En el PDF tampoco sale.',
+    keywords: 'comprobante privado ve cliente enlace seguridad banco cuenta resguardo'
   },
   {
     q: '¿Cómo cargo el descuento, el IVA o la seña?',
@@ -138,7 +153,7 @@ const FAQS = [
   },
   {
     q: '¿Qué pasa el 1 de noviembre de 2026 con lo que ya cargué?',
-    a: 'Nada se borra. Tus presupuestos, clientes, catálogo y comprobantes siguen ahí: los vas a poder ver, buscar y descargar en PDF igual que siempre. Lo que pide suscripción a partir de esa fecha es crear y editar funciones premium (catálogo, plantillas, enlace público, comprobantes y reportes). Es a propósito: si un mes no podés pagar, no perdés tu trabajo.',
+    a: 'Nada se borra. Tus presupuestos, clientes, catálogo y comprobantes siguen ahí: los vas a poder ver, buscar y descargar en PDF igual que siempre. Lo que pide suscripción a partir de esa fecha es crear y editar funciones premium (catálogo, plantillas de presupuesto, enlace público, comprobantes y reportes). Es a propósito: si un mes no podés pagar, no perdés tu trabajo.',
     keywords: 'noviembre 2026 termina vence gratis pierdo datos borra que pasa despues'
   },
   {
@@ -288,7 +303,7 @@ export default function Ayuda() {
             ['Catálogo', 'Tus productos y servicios con precio, para reusarlos.'],
             ['Clientes', 'Tu agenda: nombre, email y teléfono de cada uno.'],
             ['Reportes', 'Números y exportación a Excel/CSV.'],
-            ['Mi negocio', 'Tus datos, logo y condiciones por defecto del PDF.'],
+            ['Mi negocio', 'Tus datos, logo, la hoja del PDF y las condiciones por defecto.'],
             ['Invitar y ganar', 'Tu link para recomendar la app: 3 invitados = 3 meses de premium.'],
             ['Ayuda', 'Esta página. Volvé cuando quieras.']
           ].map(([term, desc]) => (

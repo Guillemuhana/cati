@@ -7,6 +7,7 @@ import NuevaPassword from './pages/NuevaPassword'
 import Dashboard from './pages/Dashboard'
 import Presupuestos from './pages/Presupuestos'
 import PresupuestoForm from './pages/PresupuestoForm'
+import RubroLanding from './pages/RubroLanding'
 import PresupuestoDetail from './pages/PresupuestoDetail'
 import Clientes from './pages/Clientes'
 import Productos from './pages/Productos'
@@ -31,6 +32,9 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/ingresar" element={<Login />} />
       <Route path="/registro" element={<Register />} />
+      {/* Páginas por oficio, públicas y sin login: es lo que encuentra
+          el que busca «presupuesto para gasista» en Google. */}
+      <Route path="/presupuestos-para/:slug" element={<RubroLanding />} />
       {/* Recupero de contraseña: pedir el link y, al volver del mail,
           elegir la nueva. Las dos van sin login, por razones obvias. */}
       <Route path="/recuperar" element={<RecuperarPassword />} />

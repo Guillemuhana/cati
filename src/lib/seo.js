@@ -36,7 +36,27 @@ function setMeta(attr, key, content) {
   tag.setAttribute('content', content)
 }
 
-export function useSeo({ title, description, noindex = false } = {}) {
+// La dirección «oficial» de esta página.
+//
+// Sin esto, la misma página con ?utm_source=... o con una barra de más
+// al final cuenta como páginas distintas y compiten entre ellas. Se
+// pone y se saca: si una pantalla no la declara, se borra la que había
+// dejado la anterior.
+function setCanonical(url) {
+  let tag = document.head.querySelector('link[rel="canonical"]')
+  if (!url) {
+    if (tag) tag.remove()
+    return
+  }
+  if (!tag) {
+    tag = document.createElement('link')
+    tag.setAttribute('rel', 'canonical')
+    document.head.appendChild(tag)
+  }
+  tag.setAttribute('href', url)
+}
+
+export function useSeo({ title, description, noindex = false, canonical = '' } = {}) {
   const { t, i18n } = useTranslation()
   const idioma = i18n.resolvedLanguage
 
@@ -54,7 +74,12 @@ export function useSeo({ title, description, noindex = false } = {}) {
     // Lo que está detrás del login, y el presupuesto de un cliente, no van
     // a Google. `noarchive` además evita la copia en caché.
     setMeta('name', 'robots', noindex ? 'noindex, nofollow, noarchive' : 'index, follow')
-  }, [title, description, noindex, t, idioma])
+
+    // Una página que no se indexa no necesita decir cuál es su dirección
+    // oficial, así que la canónica va solo cuando corresponde.
+    setCanonical(noindex ? '' : canonical)
+    if (canonical && !noindex) setMeta('property', 'og:url', canonical)
+  }, [title, description, noindex, canonical, t, idioma])
 }
 
 // Para lo que está detrás del login: no toca el título, solo pide que

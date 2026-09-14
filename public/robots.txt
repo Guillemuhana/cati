@@ -14,6 +14,10 @@ Allow: /ingresar
 Allow: /registro
 Allow: /recuperar
 
+# Las páginas por oficio: son públicas y están para que las encuentren.
+# La lista completa está en el sitemap, al final de este archivo.
+Allow: /presupuestos-para/
+
 Disallow: /p/
 Disallow: /nueva-contrasena
 Disallow: /panel

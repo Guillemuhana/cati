@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { PAGINAS } from '../lib/landings'
 import { useTranslation } from 'react-i18next'
 import {
   BellRing,
@@ -194,6 +195,32 @@ export default function Home() {
         ))}
 
         <p className="mt-10 max-w-2xl text-sm text-ink-soft">{t('home.cierre')}</p>
+
+        {/*
+          Los oficios, enlazados desde la portada.
+          Sirve para dos cosas a la vez, y las dos importan: el que llega
+          se reconoce en su rubro antes de leer nada, y los buscadores
+          llegan a esas páginas siguiendo enlaces en vez de esperar a que
+          el sitemap les avise.
+        */}
+        <section className="mt-14 w-full max-w-4xl">
+          <h2 className="font-display text-lg font-medium text-ink">Para tu oficio</h2>
+          <p className="mt-1 text-sm text-ink-soft">
+            Cada rubro arranca con sus campos, sus condiciones y su hoja.
+          </p>
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {PAGINAS.map((p) => (
+              <li key={p.slug}>
+                <Link
+                  to={`/presupuestos-para/${p.slug}`}
+                  className="inline-flex rounded-md border border-line bg-surface/80 px-3 py-1.5 text-sm text-ink-soft backdrop-blur-sm transition hover:border-ink-faint hover:text-ink"
+                >
+                  {p.busca}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       </main>
 
       <footer className="py-6 text-center text-xs text-ink-faint">

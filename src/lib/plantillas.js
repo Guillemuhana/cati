@@ -192,6 +192,30 @@ export const PLANTILLAS = [
     rubros: ['marketing', 'diseno'],
     fondo: '/plantillas/marketing.jpg',
     color: '#2563C9'
+  },
+  {
+    key: 'autos',
+    label: 'Concesionaria de autos',
+    descripcion: 'Auto, llave y carpeta de la operación.',
+    rubros: ['automotor', 'comercio'],
+    fondo: '/plantillas/autos.jpg',
+    color: '#1F3A6E'
+  },
+  {
+    key: 'motos',
+    label: 'Concesionaria de motos',
+    descripcion: 'Moto, casco, llave y carpeta.',
+    rubros: ['automotor', 'comercio'],
+    fondo: '/plantillas/motos.jpg',
+    color: '#9B2C2C'
+  },
+  {
+    key: 'ingenieria',
+    label: 'Ingeniería',
+    descripcion: 'Planos, engranajes, casco, calibre y perfil.',
+    rubros: ['arquitectura'],
+    fondo: '/plantillas/ingenieria.jpg',
+    color: '#5A5F4A'
   }
 ]
 

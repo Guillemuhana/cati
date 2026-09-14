@@ -706,5 +706,16 @@
     "acreditado": "Received",
     "gestionar": "Manage or cancel",
     "gestionarAyuda": "Handled from Mercado Pago, who charges you. You can cancel there any time: you keep everything until the date you already paid for."
+  },
+  "elegirPlan": {
+    "titulo": "Choose your plan",
+    "bajada": "All premium features, no limit on quotes.",
+    "mensual": "Monthly",
+    "anual": "Yearly",
+    "anualDetalle": "Pay for 11 months, use 12",
+    "elegir": "Subscribe",
+    "sinPago": "Coming soon",
+    "probarPrimero": "I would rather try first · {{dias}} days free with everything included",
+    "cerrar": "Close and try for free"
   }
 }

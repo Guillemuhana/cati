@@ -9,22 +9,32 @@ import Spinner from '../components/Spinner'
 import PrimerosPasos from '../components/PrimerosPasos'
 import InvitarDestacado from '../components/InvitarDestacado'
 import BienvenidaModal from '../components/BienvenidaModal'
+import ElegirPlanModal from '../components/ElegirPlanModal'
 import { formatMoney, formatDate, formatNumero } from '../lib/utils'
 import { CLAVES, marcar, estaMarcado } from '../lib/onboarding'
+import { usePlan } from '../hooks/usePlan'
 
 export default function Dashboard() {
   const { t } = useTranslation()
   const { user, profile } = useAuth()
+  const { isPaid } = usePlan()
   const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)
   // Si lo saltó, no se lo volvemos a poner adelante en cada recarga: la
   // tarjeta de primeros pasos ya lo lleva al mismo lugar.
+  const [planOfrecido, setPlanOfrecido] = useState(() => estaMarcado(CLAVES.planOfrecido))
   const [saltoBienvenida, setSaltoBienvenida] = useState(() =>
     estaMarcado(CLAVES.bienvenidaSaltada)
   )
 
   // Primera vez: el negocio todavía no tiene nombre.
   const mostrarBienvenida = !!profile && !profile.business_name && !saltoBienvenida
+
+  // Los planes van DESPUÉS de la bienvenida, no antes: sin el nombre
+  // del negocio la app no sirve para nada, y pedir plata antes de que
+  // la persona vea una sola pantalla es la forma más rápida de que se
+  // vaya. Tampoco se le muestra al que ya paga.
+  const mostrarPlanes = !!profile && !mostrarBienvenida && !planOfrecido && !isPaid
 
   useEffect(() => {
     if (!user) return
@@ -59,6 +69,15 @@ export default function Dashboard() {
 
   return (
     <div>
+      {mostrarPlanes && (
+        <ElegirPlanModal
+          onCerrar={() => {
+            marcar(CLAVES.planOfrecido)
+            setPlanOfrecido(true)
+          }}
+        />
+      )}
+
       {mostrarBienvenida && (
         <BienvenidaModal
           onListo={() => setSaltoBienvenida(true)}

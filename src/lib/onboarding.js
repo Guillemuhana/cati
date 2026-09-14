@@ -14,7 +14,8 @@
 export const CLAVES = {
   bienvenidaSaltada: 'numera.bienvenida.saltada',
   pasosOcultos: 'numera.primerosPasos.oculta',
-  yaCompartio: 'numera.yaCompartio'
+  yaCompartio: 'numera.yaCompartio',
+  planOfrecido: 'numera.plan.ofrecido'
 }
 
 export function marcar(clave) {

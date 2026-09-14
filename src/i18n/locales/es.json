@@ -706,5 +706,16 @@
     "acreditado": "Acreditado",
     "gestionar": "Gestionar o cancelar",
     "gestionarAyuda": "Se maneja desde Mercado Pago, que es quien te cobra. Ahí podés dar de baja cuando quieras: seguís usando todo hasta la fecha que ya pagaste."
+  },
+  "elegirPlan": {
+    "titulo": "Elegí tu plan",
+    "bajada": "Todas las funciones premium, sin límite de presupuestos.",
+    "mensual": "Mensual",
+    "anual": "Anual",
+    "anualDetalle": "Pagás 11 meses y usás 12",
+    "elegir": "Suscribirme",
+    "sinPago": "Próximamente",
+    "probarPrimero": "Prefiero probar primero · {{dias}} días gratis con todo incluido",
+    "cerrar": "Cerrar y probar gratis"
   }
 }

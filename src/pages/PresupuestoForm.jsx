@@ -359,7 +359,15 @@ export default function PresupuestoForm() {
           budget: { ...payload, id: budgetId, numero, subtotal: totals.subtotal, discount_amount: totals.discountAmount, tax_amount: totals.taxAmount, total: totals.total, deposit: totals.deposit, balance: totals.balance },
           items: itemsPayload,
           client: clients.find((c) => c.id === budget.client_id) || null,
-          profile
+          profile,
+          // El token lo escribe la base al crear el presupuesto, así que
+          // acá puede no estar todavía. Sin token no hay QR, y el PDF
+          // sale igual: se vuelve a bajar desde el detalle, que ya lo
+          // tiene. Y sin suscripción tampoco, porque el enlace no abre.
+          publicUrl:
+            isPremium && payload.public_token
+              ? `${window.location.origin}/p/${payload.public_token}`
+              : ''
         }
         // El presupuesto ya quedó guardado: si falla el PDF avisamos, pero
         // no lo reportamos como si no se hubiera guardado.

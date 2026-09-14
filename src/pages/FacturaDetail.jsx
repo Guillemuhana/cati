@@ -38,6 +38,10 @@ function FacturaDetailInner() {
   const [payOpen, setPayOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [pdfError, setPdfError] = useState('')
+  // La factura no tiene enlace propio: usa el del presupuesto del que
+  // salió, que es la misma operación mirada de otra manera. Si nació
+  // suelta, el comprobante sale sin QR y listo.
+  const [publicUrl, setPublicUrl] = useState('')
 
   const load = async () => {
     const { data: inv } = await supabase.from('invoices').select('*, clients(*)').eq('id', id).single()
@@ -45,6 +49,15 @@ function FacturaDetailInner() {
     setInvoice(inv)
     setReceipts(recs || [])
     setLoading(false)
+
+    if (inv?.budget_id) {
+      const { data: b } = await supabase
+        .from('budgets')
+        .select('public_token')
+        .eq('id', inv.budget_id)
+        .single()
+      if (b?.public_token) setPublicUrl(`${window.location.origin}/p/${b.public_token}`)
+    }
   }
 
   useEffect(() => {
@@ -74,7 +87,7 @@ function FacturaDetailInner() {
     setBusy(true)
     setPdfError('')
     try {
-      await downloadInvoicePdf({ invoice, client, profile })
+      await downloadInvoicePdf({ invoice, client, profile, publicUrl })
     } catch (err) {
       setPdfError(err?.message || t('factura.errorPdf'))
     } finally {

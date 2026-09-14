@@ -13,6 +13,7 @@ import {
   resumenDePagos
 } from './utils'
 import { plantillaDe } from './plantillas'
+import QRCode from 'qrcode'
 import { cleanDetails } from '../components/BudgetDetails'
 import { canalesDe } from './redes'
 
@@ -232,6 +233,28 @@ const styles = StyleSheet.create({
   payGrid: { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap' },
   payCol: { width: '50%', paddingRight: 12, marginBottom: 8 },
   signRow: { marginTop: 30, flexDirection: 'row', justifyContent: 'space-between' },
+
+  // El QR para abrirlo online. Va antes de las firmas y pegado al
+  // margen izquierdo: si fuera arriba pelearía con el número y el
+  // logo, que es donde el cliente busca de qué documento se trata.
+  qrBox: {
+    marginTop: 14,
+    alignSelf: 'flex-start',
+    maxWidth: 265,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: LINE,
+    paddingVertical: 6,
+    paddingHorizontal: 7
+  },
+  // 64 puntos son unos 22 mm impresos. Más chico entra en el terreno
+  // donde una cámara vieja o una impresora con poco tóner ya no lo
+  // levantan, y eso se descubre con el papel en la mano del cliente.
+  qrImg: { width: 64, height: 64 },
+  qrTextos: { marginLeft: 8, flex: 1 },
+  qrTitulo: { fontSize: 8, fontFamily: 'Helvetica-Bold' },
+  qrBajada: { fontSize: 7, color: SOFT, marginTop: 1.5, lineHeight: 1.3 },
   signBox: { width: '45%' },
   signLine: { borderTopWidth: 0.8, borderTopColor: '#999999', marginBottom: 3, marginTop: 22 },
   signLabel: { fontSize: 7.5, color: SOFT },
@@ -360,7 +383,7 @@ function PayCol({ title, text }) {
   )
 }
 
-function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuesto', numberPrefix, statusText }) {
+function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuesto', numberPrefix, statusText, qr }) {
   const statusLabel = statusText || i18n.t((STATUS[budget.status] || STATUS.enviado).label)
   const accent = profile?.brand_color || '#1B3B6F'
   const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)
@@ -601,6 +624,21 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
         )}
 
         {/* Las firmas no se parten entre páginas */}
+        {/* Se dibuja solo si quien generó el PDF pasó el enlace. Un QR
+            que lleva a una página caída es peor que no tener QR: queda
+            impreso en un papel que el cliente guarda. */}
+        {qr ? (
+          <View style={styles.qrBox} wrap={false}>
+            <Image src={qr} style={styles.qrImg} />
+            <View style={styles.qrTextos}>
+              <Text style={styles.qrTitulo}>Velo online</Text>
+              <Text style={styles.qrBajada}>
+                Escaneá el código con la cámara del celular para abrirlo, descargarlo en PDF y responder.
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
         <View style={styles.signRow} wrap={false}>
           <SignBox label="Firma y aclaración del cliente" />
           <SignBox
@@ -627,21 +665,47 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
   )
 }
 
-export async function generateBudgetPdfBlob({ budget, items, client, profile }) {
-  const doc = <PresupuestoPDF budget={budget} items={items} client={client} profile={profile} />
+/**
+ * El QR del enlace, como imagen para meter en el PDF.
+ *
+ * Negro y con un margen mínimo: un QR de color o sin borde blanco es
+ * el que después no lee la cámara de un teléfono viejo, y eso se
+ * descubre cuando el presupuesto ya está impreso.
+ *
+ * Si falla, devuelve vacío y el PDF sale sin el recuadro. Nunca tira:
+ * el presupuesto tiene que poder generarse igual.
+ */
+async function qrDelEnlace(publicUrl) {
+  if (!publicUrl) return ''
+  try {
+    return await QRCode.toDataURL(publicUrl, {
+      width: 240,
+      margin: 1,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#111111', light: '#ffffff' }
+    })
+  } catch {
+    return ''
+  }
+}
+
+export async function generateBudgetPdfBlob({ budget, items, client, profile, publicUrl }) {
+  const qr = await qrDelEnlace(publicUrl)
+  const doc = <PresupuestoPDF budget={budget} items={items} client={client} profile={profile} qr={qr} />
   const instance = pdf(doc)
   return instance.toBlob()
 }
 
-export async function downloadBudgetPdf({ budget, items, client, profile }) {
-  const blob = await generateBudgetPdfBlob({ budget, items, client, profile })
+export async function downloadBudgetPdf({ budget, items, client, profile, publicUrl }) {
+  const blob = await generateBudgetPdfBlob({ budget, items, client, profile, publicUrl })
   triggerDownload(blob, `${formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)}.pdf`)
 }
 
 // ── Factura / comprobante (no fiscal) ──────────────────────────
 const INVOICE_STATUS = { emitida: 'facturas.emitida', pagada: 'facturas.pagada', anulada: 'facturas.anulada' }
 
-export async function generateInvoicePdfBlob({ invoice, client, profile }) {
+export async function generateInvoicePdfBlob({ invoice, client, profile, publicUrl }) {
+  const qr = await qrDelEnlace(publicUrl)
   const doc = (
     <PresupuestoPDF
       budget={invoice}
@@ -651,13 +715,14 @@ export async function generateInvoicePdfBlob({ invoice, client, profile }) {
       docLabel="Comprobante"
       numberPrefix="FAC"
       statusText={i18n.t(INVOICE_STATUS[invoice.status] || 'facturas.emitida')}
+      qr={qr}
     />
   )
   return pdf(doc).toBlob()
 }
 
-export async function downloadInvoicePdf({ invoice, client, profile }) {
-  const blob = await generateInvoicePdfBlob({ invoice, client, profile })
+export async function downloadInvoicePdf({ invoice, client, profile, publicUrl }) {
+  const blob = await generateInvoicePdfBlob({ invoice, client, profile, publicUrl })
   triggerDownload(blob, `${formatNumero(invoice.numero, invoice.issue_date, 'FAC')}.pdf`)
 }
 

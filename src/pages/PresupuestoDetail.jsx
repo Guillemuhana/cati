@@ -112,6 +112,11 @@ export default function PresupuestoDetail() {
 
   const publicUrl = budget?.public_token ? `${window.location.origin}/p/${budget.public_token}` : ''
 
+  // El que va impreso en el PDF. Vacío si la suscripción no está
+  // activa: sin ella el enlace público deja de abrir, y ese papel se lo
+  // queda el cliente con el código muerto adentro.
+  const qrUrl = isPremium ? publicUrl : ''
+
   useEffect(() => {
     if (!publicUrl) return
     QRCode.toDataURL(publicUrl, { width: 220, margin: 1, color: { dark: '#1B3B6F', light: '#ffffff' } })
@@ -144,7 +149,7 @@ export default function PresupuestoDetail() {
     setBusy(true)
     setPdfError('')
     try {
-      await downloadBudgetPdf({ budget, items, client, profile })
+      await downloadBudgetPdf({ budget, items, client, profile, publicUrl: qrUrl })
     } catch (err) {
       setPdfError(err?.message || t('detalle.errorPdf'))
     } finally {
@@ -156,7 +161,7 @@ export default function PresupuestoDetail() {
     setBusy(true)
     setPdfError('')
     try {
-      const blob = await generateBudgetPdfBlob({ budget, items, client, profile })
+      const blob = await generateBudgetPdfBlob({ budget, items, client, profile, publicUrl: qrUrl })
       const file = new File([blob], `${formatNumero(budget.numero, budget.issue_date, profile?.number_prefix)}.pdf`, { type: 'application/pdf' })
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
@@ -170,13 +175,13 @@ export default function PresupuestoDetail() {
           })
         })
       } else {
-        await downloadBudgetPdf({ budget, items, client, profile })
+        await downloadBudgetPdf({ budget, items, client, profile, publicUrl: qrUrl })
       }
     } catch (err) {
       if (err?.name !== 'AbortError') {
         // Si compartir falla, al menos intentamos la descarga.
         try {
-          await downloadBudgetPdf({ budget, items, client, profile })
+          await downloadBudgetPdf({ budget, items, client, profile, publicUrl: qrUrl })
         } catch (err2) {
           setPdfError(err2?.message || t('detalle.errorPdf'))
         }

@@ -56,6 +56,8 @@ export const PREMIUM_PRICE_YEAR_FULL = `${PREMIUM_PRICE_YEAR}/año`
 //   precio de abajo → copiar el link de suscripción.
 //   Queda algo así:
 //     https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=XXXXXXXX
+//   o su versión corta, https://mpago.la/XXXXXXX, que es la que da el
+//   botón de compartir del panel. Las dos sirven igual.
 //   Ese link es PÚBLICO: puede vivir acá sin problema.
 //
 // ⚠ LO QUE NO VA ACÁ NI EN NINGÚN ARCHIVO DEL REPO
@@ -78,7 +80,7 @@ export const PREMIUM_PRICE_YEAR_FULL = `${PREMIUM_PRICE_YEAR}/año`
 //
 // Si queda vacío, el botón muestra «Próximamente».
 // ------------------------------------------------------------
-export const PAYMENT_URL = ''
+export const PAYMENT_URL = 'https://mpago.la/2z63eHt'
 
 // El mismo trámite que arriba pero con el plan ANUAL en Mercado Pago
 // (PREMIUM_PRICE_YEAR, once meses). Va aparte porque son dos planes distintos y cada uno

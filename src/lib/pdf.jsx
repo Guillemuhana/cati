@@ -12,6 +12,7 @@ import {
   sinTituloRepetido,
   resumenDePagos
 } from './utils'
+import { getRubro } from './rubros'
 import { cleanDetails } from '../components/BudgetDetails'
 import { canalesDe } from './redes'
 
@@ -27,10 +28,15 @@ import { canalesDe } from './redes'
 const LINE = '#111111'
 const SOFT = '#555555'
 
+// A4 en puntos, que es la unidad de react-pdf.
+const A4_ANCHO = 595.28
+const A4_ALTO = 841.89
+const MARGEN = 28
+
 const styles = StyleSheet.create({
   page: {
-    paddingHorizontal: 28,
-    paddingTop: 28,
+    paddingHorizontal: MARGEN,
+    paddingTop: MARGEN,
     paddingBottom: 56,
     fontSize: 8.5,
     fontFamily: 'Helvetica',
@@ -239,6 +245,24 @@ const styles = StyleSheet.create({
   signLineFirma: { borderTopWidth: 0.8, borderTopColor: '#999999', marginTop: 2, marginBottom: 3 },
   signName: { fontSize: 9.5, fontFamily: 'Helvetica-Bold', marginBottom: 1 },
   signRole: { fontSize: 8, color: SOFT, marginBottom: 1 },
+  // La hoja membretada del rubro, cuando lo tiene.
+  //
+  // Hijo directo de Page y absoluto: react-pdf lo mide desde el borde
+  // del papel, no desde adentro del padding, así que 0,0 más el tamaño
+  // completo de A4 la deja a sangre. (Descontarle el margen la corre
+  // fuera de la hoja: sale 28 puntos a la izquierda y 28 abajo.)
+  //
+  // Va como PRIMER hijo de la página y con `fixed`: primero para que el
+  // texto se dibuje encima, fixed para que se repita en la hoja 2 y 3
+  // de un presupuesto largo.
+  fondoRubro: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: A4_ANCHO,
+    height: A4_ALTO
+  },
+
   footer: {
     position: 'absolute',
     bottom: 26,
@@ -312,6 +336,19 @@ function SignBox({ firma, nombre, cargo, label }) {
   )
 }
 
+/**
+ * La hoja membretada del rubro, si el usuario eligió uno que la tenga.
+ *
+ * La imagen ya viene aguada del archivo (18% sobre blanco) en vez de
+ * bajarle la opacidad acá: así se ve igual en cualquier visor de PDF y
+ * pesa 31 KB en lugar del megabyte del original.
+ */
+function FondoDelRubro({ profile }) {
+  const fondo = getRubro(profile?.rubro)?.fondoPdf
+  if (!fondo) return null
+  return <Image src={fondo} style={styles.fondoRubro} fixed />
+}
+
 function PayCol({ title, text }) {
   const texto = sinTituloRepetido(text, title)
   if (!texto) return null
@@ -345,6 +382,7 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
   return (
     <Document title={`${numero} - ${budget.title || client?.name || ''}`}>
       <Page size="A4" style={styles.page}>
+        <FondoDelRubro profile={profile} />
         {/* Encabezado: logo | emisor | tipo | número y fecha */}
         <View style={styles.headerBox}>
           <View style={styles.headerLogoCell}>
@@ -630,6 +668,7 @@ function ReciboPDF({ receipt, client, profile }) {
   return (
     <Document title={numero}>
       <Page size="A4" style={styles.page}>
+        <FondoDelRubro profile={profile} />
         <View style={styles.headerBox}>
           <View style={styles.headerLogoCell}>
             {profile?.logo_url ? (

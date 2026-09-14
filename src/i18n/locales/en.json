@@ -308,7 +308,8 @@
     "verMiLink": "See my link →",
     "planAnual": "Yearly plan",
     "planAnualDetalle": "Pay for 11 months, use 12: one month on us.",
-    "suscribirmeAnual": "Subscribe for {{precio}} a year"
+    "suscribirmeAnual": "Subscribe for {{precio}} a year",
+    "pagaConTuMail": "For it to activate on its own, pay with the Mercado Pago account for {{email}}. If you use another address, write to us and we will activate it by hand."
   },
   "selector": {
     "delCatalogo": "From catalog",

@@ -308,7 +308,8 @@
     "verMiLink": "Ver mi link →",
     "planAnual": "Plan anual",
     "planAnualDetalle": "Pagás 11 meses y usás 12: un mes bonificado.",
-    "suscribirmeAnual": "Suscribirme por {{precio}} al año"
+    "suscribirmeAnual": "Suscribirme por {{precio}} al año",
+    "pagaConTuMail": "Para que se active solo, pagá con la cuenta de Mercado Pago de {{email}}. Si usás otro mail, escribinos y lo activamos a mano."
   },
   "selector": {
     "delCatalogo": "Del catálogo",

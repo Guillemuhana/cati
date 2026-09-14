@@ -17,6 +17,24 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { formatDate } from '../lib/utils'
 
+/**
+ * El link de pago con el id del usuario colgado.
+ *
+ * El plan de Mercado Pago es uno solo para todos: su link no dice quién
+ * lo abrió. Cuando después llega el aviso de que se pagó, hay que saber
+ * a quién activarle el premium, y para eso se manda el id acá.
+ *
+ * Es un intento, no una garantía: si Mercado Pago no lo propaga a la
+ * suscripción, el webhook cae en buscar por el mail del que pagó
+ * (migración 36). Colgarlo no rompe nada aunque lo ignore.
+ */
+function linkConReferencia(url, userId) {
+  if (!url) return url
+  if (!userId) return url
+  const sep = url.includes('?') ? '&' : '?'
+  return `${url}${sep}external_reference=${encodeURIComponent(userId)}`
+}
+
 export default function Premium() {
   const { t } = useTranslation()
   const { user } = useAuth()
@@ -124,7 +142,7 @@ export default function Premium() {
             <p className="mt-0.5 text-[11px] text-ink-soft">{t('premium.planAnualDetalle')}</p>
             {!FREE_FOR_ALL && !isPaid && PAYMENT_URL_YEAR && (
               <a
-                href={PAYMENT_URL_YEAR}
+                href={linkConReferencia(PAYMENT_URL_YEAR, user?.id)}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-2 block rounded-md border border-brand-500/50 py-1.5 text-center text-xs font-semibold text-brand-700 transition hover:bg-brand-500/[0.08]"
@@ -144,7 +162,7 @@ export default function Premium() {
             </div>
           ) : PAYMENT_URL ? (
             <a
-              href={PAYMENT_URL}
+              href={linkConReferencia(PAYMENT_URL, user?.id)}
               target="_blank"
               rel="noreferrer"
               className="btn-primary mt-6 rounded-md py-3 text-center text-sm font-semibold"
@@ -164,6 +182,15 @@ export default function Premium() {
                 ? t('premium.notaPago')
                 : t('premium.notaSinPago')}
           </p>
+
+          {/* Si Mercado Pago no nos devuelve quién pagó, lo reconocemos
+              por el mail. Pedirlo antes evita el ida y vuelta de
+              «pagué y no me anda». */}
+          {!FREE_FOR_ALL && !isPaid && PAYMENT_URL && user?.email && (
+            <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
+              {t('premium.pagaConTuMail', { email: user.email })}
+            </p>
+          )}
           {user?.email && (
             <p className="mt-2 break-all text-[11px] text-ink-faint">
               {t('premium.tuCuenta', { email: user.email })}

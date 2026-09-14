@@ -18,6 +18,10 @@ const NAV_ITEMS = [
   { to: '/clientes', label: 'nav.clientes', icon: IconUsers },
   { to: '/reportes', label: 'nav.reportes', icon: IconChart },
   { to: '/perfil', label: 'nav.miNegocio', icon: IconBuilding },
+  // Tiene que estar siempre, no solo cuando la app decide mostrar un
+  // cartel: el que cerró los planes el primer día y a la semana quiere
+  // pagar necesita un lugar donde tocar.
+  { to: '/premium', label: 'nav.suscripcion', icon: IconCard },
   // El premio va escrito en el menú: si no dice qué se gana, nadie entra.
   { to: '/invitar', label: 'nav.invitar', icon: IconGift, badge: 'nav.invitarBadge' },
   { to: '/ayuda', label: 'nav.ayuda', icon: IconHelp }
@@ -333,6 +337,15 @@ function IconShield(props) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
       <path d="M12 3l7.5 3v5.5c0 4.4-3.1 8.5-7.5 9.5-4.4-1-7.5-5.1-7.5-9.5V6z" />
       <path d="M9.2 12.2l2 2 3.6-3.9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+function IconCard(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <rect x="2.5" y="5.5" width="19" height="13" rx="2" />
+      <path d="M2.5 10h19" />
+      <path d="M6 14.5h3" strokeLinecap="round" />
     </svg>
   )
 }

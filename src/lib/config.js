@@ -26,12 +26,12 @@ export function freeDaysLeft() {
 
 // Prueba gratis para quien se registre DESPUÉS del 1/11/2026.
 // Tiene que coincidir con el interval de handle_new_user: el que manda
-// es el de la base de datos. Se fijó en 7 días por la migración 34;
+// es el de la base de datos. Se fijó en 3 días por la migración 35;
 // si lo movés acá, movelo allá o la app promete una cosa y la base da
 // otra.
-export const TRIAL_DAYS = 7
+export const TRIAL_DAYS = 3
 export const TRIAL_HOURS = TRIAL_DAYS * 24
-export const PROMO_LABEL = '1 semana'
+export const PROMO_LABEL = '3 días'
 export const TRIAL_LABEL = `${PROMO_LABEL} gratis`
 // ⚠ Si cobrás con Mercado Pago Argentina, el plan se crea en PESOS:
 // poné acá el mismo número que pusiste en el plan (ej: '$ 2.000') o el

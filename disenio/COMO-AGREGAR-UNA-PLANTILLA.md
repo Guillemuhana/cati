@@ -53,8 +53,9 @@ print('alpha:', round((255 - 224) / max(255 - p1, 1), 3))
 "
 ```
 
-Los que salieron hasta ahora: gasista 0.18, pintor 0.191, albañil 0.153,
-electricista 0.144, herrero 0.132.
+Los que salieron hasta ahora van de 0.125 a 0.191: las fotos con objetos
+negros (automotor, herrero, fotografía) piden menos, las claras
+(gastronomía, pintor) piden más.
 
 Si te pasás de 100 KB, revisá el `quality` antes de subirla.
 

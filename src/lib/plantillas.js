@@ -64,6 +64,62 @@ export const PLANTILLAS = [
     rubros: ['herreria', 'oficios'],
     fondo: '/plantillas/herrero.jpg',
     color: '#3F4650'
+  },
+  {
+    key: 'jardineria',
+    label: 'Jardinería',
+    descripcion: 'Planta, guantes, pala, tijera de podar y manguera.',
+    rubros: ['jardineria'],
+    fondo: '/plantillas/jardineria.jpg',
+    color: '#3F6B3A'
+  },
+  {
+    key: 'automotor',
+    label: 'Taller y automotor',
+    descripcion: 'Neumático, disco de freno, llaves y bujía.',
+    rubros: ['automotor'],
+    fondo: '/plantillas/automotor.jpg',
+    color: '#37414A'
+  },
+  {
+    key: 'fletes',
+    label: 'Fletes y mudanzas',
+    descripcion: 'Cajas, carretilla, camioneta y soga.',
+    rubros: ['mudanzas'],
+    fondo: '/plantillas/fletes.jpg',
+    color: '#2E5C8A'
+  },
+  {
+    key: 'gastronomia',
+    label: 'Gastronomía',
+    descripcion: 'Verduras, tabla, cuchillo, pan y batidor.',
+    rubros: ['gastronomia'],
+    fondo: '/plantillas/gastronomia.jpg',
+    color: '#8C2F2F'
+  },
+  {
+    key: 'imprenta',
+    label: 'Imprenta y gráfica',
+    descripcion: 'Impresora, pantonera, resma y cutter.',
+    rubros: ['imprenta'],
+    fondo: '/plantillas/imprenta.jpg',
+    color: '#1F6FB0'
+  },
+  {
+    key: 'costura',
+    label: 'Indumentaria y textil',
+    descripcion: 'Máquina de coser, hilos, telas y tijeras.',
+    rubros: ['textil'],
+    fondo: '/plantillas/costura.jpg',
+    color: '#6B4A3A'
+  },
+  {
+    key: 'fotografia',
+    label: 'Fotografía y video',
+    descripcion: 'Cámara, estabilizador, micrófono y tarjetas.',
+    rubros: ['audiovisual'],
+    fondo: '/plantillas/fotografia.jpg',
+    color: '#333B45'
   }
 ]
 

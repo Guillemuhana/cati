@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabaseClient'
 import { CURRENCIES, missingColumnError } from '../lib/utils'
 import { RUBRO_GROUPS, getRubro } from '../lib/rubros'
 import { HOJA_EN_BLANCO, plantillaDe, plantillasPara } from '../lib/plantillas'
-import { MotionConfig, motion } from 'motion/react'
+import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { CANALES } from '../lib/redes'
 import RedIcon from '../components/RedIcon'
 import MiFirma from '../components/MiFirma'
@@ -428,6 +428,11 @@ const aparecer = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 220, damping: 26 } }
 }
 
+const aparecerHoja = {
+  hidden: { opacity: 0, y: 14, scale: 0.94 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 22 } }
+}
+
 const encadenado = {
   hidden: {},
   show: { transition: { staggerChildren: 0.035, delayChildren: 0.04 } }
@@ -496,26 +501,60 @@ function TarjetaPlantilla({ plantilla, elegida, onClick }) {
       onClick={onClick}
       aria-pressed={elegida}
       title={plantilla.descripcion || plantilla.label}
-      variants={aparecer}
-      whileHover={{ y: -3 }}
-      whileTap={{ scale: 0.97 }}
+      variants={aparecerHoja}
+      whileHover={{ y: -4, scale: 1.03 }}
+      whileTap={{ scale: 0.96 }}
       transition={{ type: 'spring', stiffness: 320, damping: 24 }}
-      className={`overflow-hidden rounded-lg border-2 text-left transition-colors ${
-        elegida ? 'border-brand-500 shadow-soft' : 'border-line hover:border-ink-faint'
-      }`}
+      className="relative rounded-lg text-left"
     >
-      <div className="aspect-[1/1.414] w-full bg-white">
-        {plantilla.fondo && (
-          <img src={plantilla.fondo} alt="" className="h-full w-full object-cover" loading="lazy" />
-        )}
+      {/*
+        El marco de «esta es la elegida» es UN solo elemento que se
+        muda de tarjeta con layoutId: al tocar otra, se desliza hasta
+        ella en vez de apagarse acá y prenderse allá. Es lo que hace
+        que se vea como una cosa que se mueve y no como dos bordes
+        parpadeando.
+      */}
+      {elegida && (
+        <motion.span
+          layoutId="plantillaElegida"
+          transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+          className="pointer-events-none absolute -inset-0.5 z-10 rounded-xl border-2 border-brand-500 shadow-soft"
+        />
+      )}
+
+      <div className="overflow-hidden rounded-lg border border-line bg-white">
+        <div className="aspect-[1/1.414] w-full bg-white">
+          {plantilla.fondo && (
+            <img src={plantilla.fondo} alt="" className="h-full w-full object-cover" loading="lazy" />
+          )}
+        </div>
+        <p
+          className={`truncate border-t px-2 py-1.5 text-[11px] font-medium transition-colors ${
+            elegida ? 'border-brand-500/30 bg-brand-500/[0.07] text-brand-700' : 'border-line text-ink-soft'
+          }`}
+        >
+          {plantilla.label}
+        </p>
       </div>
-      <p
-        className={`truncate border-t px-2 py-1.5 text-[11px] font-medium ${
-          elegida ? 'border-brand-500/40 bg-brand-500/[0.06] text-brand-700' : 'border-line text-ink-soft'
-        }`}
-      >
-        {plantilla.label}
-      </p>
+
+      {/* El tilde entra rebotando desde cero: es la confirmación de que
+          el toque hizo algo, sin tener que leer nada. */}
+      <AnimatePresence>
+        {elegida && (
+          <motion.span
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 18 }}
+            className="absolute -right-1.5 -top-1.5 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white shadow-soft"
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" width="11" height="11">
+              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </motion.span>
+        )}
+      </AnimatePresence>
     </motion.button>
   )
 }

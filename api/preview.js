@@ -25,9 +25,30 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 // cualquiera: la miniatura del link que se pega en un grupo de WhatsApp
 // terminaba mostrando la imagen que quisiera el emisor, con nuestro
 // dominio en la tarjeta.
+// Las variables con prefijo VITE_ las inyecta el compilador en el
+// navegador. Esto, en cambio, corre en el servidor: si en Vercel están
+// cargadas nada más que para el build, acá llegan vacías y la previa
+// sale genérica SIN QUE NADIE SE ENTERE —el link igual abre bien, solo
+// pierde el nombre y el logo del negocio. Por eso se prueban los dos
+// nombres y, si no hay ninguno, queda dicho en los registros.
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || ''
+const SUPABASE_KEY =
+  process.env.VITE_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  ''
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.warn(
+    '[preview] Sin VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY en el servidor: ' +
+      'la vista previa de los links va a salir sin el nombre ni el logo del negocio. ' +
+      'Se cargan en Vercel → Settings → Environment Variables.'
+  )
+}
+
 const ORIGEN_STORAGE = (() => {
   try {
-    return new URL(process.env.VITE_SUPABASE_URL).origin
+    return new URL(SUPABASE_URL).origin
   } catch {
     return ''
   }
@@ -64,8 +85,8 @@ export default async function handler(req, res) {
 
   let meta = null
   try {
-    const url = process.env.VITE_SUPABASE_URL
-    const key = process.env.VITE_SUPABASE_ANON_KEY
+    const url = SUPABASE_URL
+    const key = SUPABASE_KEY
     if (UUID.test(token) && url && key) {
       const r = await fetch(`${url}/rest/v1/rpc/get_public_budget_meta`, {
         method: 'POST',
@@ -92,7 +113,15 @@ export default async function handler(req, res) {
   const bajada = meta
     ? `Presupuesto de ${negocio}. Abrí el enlace para verlo en detalle, descargarlo en PDF y responder.`
     : 'Abrí el enlace para ver el presupuesto, descargarlo en PDF y responder.'
-  const imagen = meta && logoOk(meta.logo_url) ? meta.logo_url : `${origen}/logo-numera.png`
+  const conLogoPropio = !!(meta && logoOk(meta.logo_url))
+  const imagen = conLogoPropio ? meta.logo_url : `${origen}/og-numera.png`
+
+  // Para poder contestar «comparto y no sale mi logo» mirando los
+  // registros en vez de adivinando.
+  console.log(
+    `[preview] ${token.slice(0, 8)} · negocio: ${meta ? 'sí' : 'NO (sin datos)'} · ` +
+      `logo propio: ${conLogoPropio ? 'sí' : 'no'}`
+  )
   const color = /^#[0-9a-f]{6}$/i.test((meta && meta.brand_color) || '') ? meta.brand_color : '#1B3B6F'
 
   const html = `<!doctype html>

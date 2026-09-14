@@ -15,6 +15,7 @@ import {
   freeDaysLeft
 } from '../lib/config'
 import { useAuth } from '../context/AuthContext'
+import MiSuscripcion from '../components/MiSuscripcion'
 import { formatDate } from '../lib/utils'
 
 /**
@@ -47,6 +48,10 @@ export default function Premium() {
         <h1 className="font-display text-3xl font-medium text-ink">{t('premium.titulo')}</h1>
         <p className="mt-1 text-sm text-ink-soft">{t('premium.bajada')}</p>
       </header>
+
+      <div className="mb-6">
+        <MiSuscripcion />
+      </div>
 
       {/* Estado del plan */}
       <div className="mb-6 rounded-xl2 border border-line bg-surface p-5 text-center shadow-soft">

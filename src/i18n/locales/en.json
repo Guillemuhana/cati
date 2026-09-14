@@ -690,5 +690,21 @@
       "detalle": "By WhatsApp, email or PDF, from the “Share” button.",
       "cta": "Share"
     }
+  },
+  "suscripcion": {
+    "titulo": "My subscription",
+    "bajada": "What you have and until when.",
+    "activa": "Active",
+    "enPrueba": "Trial · {{restante}} left",
+    "gratisPorAhora": "Everything unlocked",
+    "sinPlan": "No subscription",
+    "gratisHasta": "Free for everyone until",
+    "desde": "Premium since",
+    "proximaRenovacion": "Next renewal",
+    "pruebaHasta": "Trial ends on",
+    "historial": "Payments received",
+    "acreditado": "Received",
+    "gestionar": "Manage or cancel",
+    "gestionarAyuda": "Handled from Mercado Pago, who charges you. You can cancel there any time: you keep everything until the date you already paid for."
   }
 }

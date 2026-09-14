@@ -690,5 +690,21 @@
       "detalle": "Por WhatsApp, email o PDF, desde el botón «Compartir».",
       "cta": "Compartir"
     }
+  },
+  "suscripcion": {
+    "titulo": "Mi suscripción",
+    "bajada": "Qué tenés contratado y hasta cuándo.",
+    "activa": "Activa",
+    "enPrueba": "En prueba · quedan {{restante}}",
+    "gratisPorAhora": "Todo desbloqueado",
+    "sinPlan": "Sin suscripción",
+    "gratisHasta": "Gratis para todos hasta",
+    "desde": "Sos premium desde",
+    "proximaRenovacion": "Próxima renovación",
+    "pruebaHasta": "La prueba termina el",
+    "historial": "Pagos acreditados",
+    "acreditado": "Acreditado",
+    "gestionar": "Gestionar o cancelar",
+    "gestionarAyuda": "Se maneja desde Mercado Pago, que es quien te cobra. Ahí podés dar de baja cuando quieras: seguís usando todo hasta la fecha que ya pagaste."
   }
 }

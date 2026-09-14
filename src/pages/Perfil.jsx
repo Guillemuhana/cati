@@ -6,6 +6,7 @@ import { usePlan } from '../hooks/usePlan'
 import { supabase } from '../lib/supabaseClient'
 import { CURRENCIES, missingColumnError } from '../lib/utils'
 import { RUBRO_GROUPS, getRubro } from '../lib/rubros'
+import { HOJA_EN_BLANCO, plantillaDe, plantillasPara } from '../lib/plantillas'
 import { CANALES } from '../lib/redes'
 import RedIcon from '../components/RedIcon'
 import MiFirma from '../components/MiFirma'
@@ -37,6 +38,7 @@ export default function Perfil() {
     legal_terms: profile?.legal_terms || '',
     bank_alias: profile?.bank_alias || '',
     brand_color: profile?.brand_color || '#1B3B6F',
+    plantilla_pdf: profile?.plantilla_pdf ?? null,
     number_prefix: profile?.number_prefix || 'PRES',
     hide_branding: profile?.hide_branding || false
   })
@@ -74,7 +76,14 @@ export default function Perfil() {
         logo_url = `${data.publicUrl}?t=${Date.now()}`
       }
 
-      await updateProfile({ ...form, logo_url })
+      // Si nunca eligió plantilla, ese campo ni se manda. Así, mientras
+      // la migración 33 no esté corrida, Mi negocio se sigue guardando
+      // igual que siempre en vez de fallar entero por una columna que
+      // el usuario ni tocó. El que sí elige una recibe el aviso.
+      const { plantilla_pdf, ...resto } = form
+      const datos = plantilla_pdf === null ? resto : form
+
+      await updateProfile({ ...datos, logo_url })
       await refreshProfile()
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
@@ -313,6 +322,26 @@ export default function Perfil() {
 
         <div className={`rounded-xl2 border border-line bg-paper/50 p-4 ${isPremium ? '' : 'pointer-events-none opacity-50'}`}>
           <p className="mb-3 text-sm font-semibold text-ink">{t('perfil.marcaNumeracion')}</p>
+
+          <div className="mb-5">
+            <p className="mb-1 text-sm font-medium text-ink">{t('perfil.plantilla')}</p>
+            <p className="mb-3 text-xs text-ink-faint">{t('perfil.plantillaAyuda')}</p>
+            <SelectorPlantillas
+              rubro={form.rubro}
+              valor={form.plantilla_pdf}
+              onChange={(pl) =>
+                setForm({
+                  ...form,
+                  plantilla_pdf: pl.key,
+                  // El color de la plantilla es una propuesta: queda
+                  // escrito en el campo de abajo, a la vista, y el que
+                  // quiere el suyo lo pisa ahí mismo.
+                  brand_color: pl.color || form.brand_color
+                })
+              }
+            />
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label={t('perfil.colorMarca')}>
               <div className="flex items-center gap-2">
@@ -388,5 +417,78 @@ function Field({ label, children }) {
       <span className="mb-1.5 block text-sm font-medium text-ink">{label}</span>
       {children}
     </label>
+  )
+}
+
+/**
+ * Elegir la hoja en la que salen el presupuesto, la factura y el recibo.
+ *
+ * Se muestran TODAS, con las del rubro adelante. No se esconde ninguna
+ * a propósito: un gasista que prefiere la hoja limpia, o la de otro
+ * oficio, la tiene que poder encontrar.
+ *
+ * Mientras no se elija nada, la que manda es la que le corresponde al
+ * rubro (plantillaDe), así que la tarjeta marcada al entrar es esa y no
+ * una en blanco: lo que se ve acá es lo que va a salir impreso.
+ */
+function SelectorPlantillas({ rubro, valor, onChange }) {
+  const { t } = useTranslation()
+  const { propias, resto } = plantillasPara(rubro)
+  const elegida = plantillaDe({ rubro, plantilla_pdf: valor }).key
+
+  const grupos = [
+    { titulo: '', lista: [HOJA_EN_BLANCO] },
+    { titulo: t('perfil.plantillaTuRubro'), lista: propias },
+    { titulo: t('perfil.plantillaOtras'), lista: resto }
+  ].filter((g) => g.lista.length > 0)
+
+  return (
+    <div className="space-y-4">
+      {grupos.map((g, i) => (
+        <div key={g.titulo || i}>
+          {g.titulo && (
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">{g.titulo}</p>
+          )}
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+            {g.lista.map((pl) => (
+              <TarjetaPlantilla
+                key={pl.key || 'blanco'}
+                plantilla={pl}
+                elegida={elegida === pl.key}
+                onClick={() => onChange(pl)}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** Una hoja del selector, con su miniatura en proporción A4. */
+function TarjetaPlantilla({ plantilla, elegida, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={elegida}
+      title={plantilla.descripcion || plantilla.label}
+      className={`overflow-hidden rounded-lg border-2 text-left transition ${
+        elegida ? 'border-brand-500 shadow-soft' : 'border-line hover:border-ink-faint'
+      }`}
+    >
+      <div className="aspect-[1/1.414] w-full bg-white">
+        {plantilla.fondo && (
+          <img src={plantilla.fondo} alt="" className="h-full w-full object-cover" loading="lazy" />
+        )}
+      </div>
+      <p
+        className={`truncate border-t px-2 py-1.5 text-[11px] font-medium ${
+          elegida ? 'border-brand-500/40 bg-brand-500/[0.06] text-brand-700' : 'border-line text-ink-soft'
+        }`}
+      >
+        {plantilla.label}
+      </p>
+    </button>
   )
 }

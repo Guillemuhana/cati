@@ -61,10 +61,9 @@ export const RUBROS = [
     key: 'gasista',
     group: 'Obra y oficios',
     label: 'Gas y plomería',
-    // `fondoPdf` es la hoja membretada del rubro: una marca de agua que
-    // sale detrás del presupuesto, la factura y el recibo. Es el único
-    // rubro que hoy tiene una; los demás siguen saliendo en blanco.
-    fondoPdf: '/fondo-gasista.jpg',
+    // La hoja membretada de este rubro no se define acá: está en
+    // src/lib/plantillas.js, que es un catálogo aparte porque una
+    // plantilla la puede elegir cualquiera, sea cual sea su rubro.
     fields: ['Dirección del trabajo', 'Fecha de visita', 'Artefacto', 'Matrícula'],
     terms:
       'Presupuesto válido por 7 días. No incluye materiales, salvo los que estén detallados. Los trabajos adicionales que aparezcan se presupuestan aparte. Los trámites y la habilitación ante la distribuidora corren por cuenta del cliente.',

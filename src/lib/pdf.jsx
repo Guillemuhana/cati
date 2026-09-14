@@ -12,7 +12,7 @@ import {
   sinTituloRepetido,
   resumenDePagos
 } from './utils'
-import { getRubro } from './rubros'
+import { plantillaDe } from './plantillas'
 import { cleanDetails } from '../components/BudgetDetails'
 import { canalesDe } from './redes'
 
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   signLineFirma: { borderTopWidth: 0.8, borderTopColor: '#999999', marginTop: 2, marginBottom: 3 },
   signName: { fontSize: 9.5, fontFamily: 'Helvetica-Bold', marginBottom: 1 },
   signRole: { fontSize: 8, color: SOFT, marginBottom: 1 },
-  // La hoja membretada del rubro, cuando lo tiene.
+  // La hoja membretada de la plantilla, cuando hay una.
   //
   // Hijo directo de Page y absoluto: react-pdf lo mide desde el borde
   // del papel, no desde adentro del padding, así que 0,0 más el tamaño
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   // Va como PRIMER hijo de la página y con `fixed`: primero para que el
   // texto se dibuje encima, fixed para que se repita en la hoja 2 y 3
   // de un presupuesto largo.
-  fondoRubro: {
+  fondoPlantilla: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -337,16 +337,16 @@ function SignBox({ firma, nombre, cargo, label }) {
 }
 
 /**
- * La hoja membretada del rubro, si el usuario eligió uno que la tenga.
+ * La hoja membretada, si el perfil tiene una plantilla.
  *
- * La imagen ya viene aguada del archivo (18% sobre blanco) en vez de
- * bajarle la opacidad acá: así se ve igual en cualquier visor de PDF y
- * pesa 31 KB en lugar del megabyte del original.
+ * Las imágenes ya vienen aguadas del archivo (18% sobre blanco) en vez
+ * de bajarles la opacidad acá: así se ven igual en cualquier visor de
+ * PDF y pesan unos 30 KB en lugar del megabyte del original.
  */
-function FondoDelRubro({ profile }) {
-  const fondo = getRubro(profile?.rubro)?.fondoPdf
+function FondoDePlantilla({ profile }) {
+  const { fondo } = plantillaDe(profile)
   if (!fondo) return null
-  return <Image src={fondo} style={styles.fondoRubro} fixed />
+  return <Image src={fondo} style={styles.fondoPlantilla} fixed />
 }
 
 function PayCol({ title, text }) {
@@ -382,7 +382,7 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
   return (
     <Document title={`${numero} - ${budget.title || client?.name || ''}`}>
       <Page size="A4" style={styles.page}>
-        <FondoDelRubro profile={profile} />
+        <FondoDePlantilla profile={profile} />
         {/* Encabezado: logo | emisor | tipo | número y fecha */}
         <View style={styles.headerBox}>
           <View style={styles.headerLogoCell}>
@@ -668,7 +668,7 @@ function ReciboPDF({ receipt, client, profile }) {
   return (
     <Document title={numero}>
       <Page size="A4" style={styles.page}>
-        <FondoDelRubro profile={profile} />
+        <FondoDePlantilla profile={profile} />
         <View style={styles.headerBox}>
           <View style={styles.headerLogoCell}>
             {profile?.logo_url ? (

@@ -573,7 +573,12 @@ export default function PresupuestoForm() {
             {errors.client_id && <FieldError>{errors.client_id}</FieldError>}
           </Card>
 
-          <Card title={t('form.datosTrabajo')} desc={t('form.datosTrabajoDesc')}>
+          <Card
+            title={t('form.datosTrabajo')}
+            desc={t('form.datosTrabajoDesc')}
+            plegable
+            abierta={cleanDetails(budget.details).length > 0}
+          >
             <BudgetDetails
               sugeridos={getRubro(profile?.rubro).fields}
               value={budget.details}
@@ -594,12 +599,18 @@ export default function PresupuestoForm() {
             {errors.items && <FieldError>{errors.items}</FieldError>}
           </Card>
 
+          {/* En los rubros donde subir el PDF propio es lo habitual —un
+              fotógrafo con su propuesta ya diseñada— esta sección
+              arranca abierta aunque esté vacía: ahí no es lo opcional,
+              es el camino principal. */}
           <Card
             title={t('form.pdfPropio')}
             desc={
               getRubro(profile?.rubro).pdfPropio ||
               t('form.pdfPropioDesc')
             }
+            plegable
+            abierta={!!budget.pdf_url || !!getRubro(profile?.rubro).pdfPropio}
           >
             <BudgetPdfPropio
               userId={user.id}
@@ -608,7 +619,12 @@ export default function PresupuestoForm() {
             />
           </Card>
 
-          <Card title={t('form.imagenes')} desc={t('form.imagenesDesc')}>
+          <Card
+            title={t('form.imagenes')}
+            desc={t('form.imagenesDesc')}
+            plegable
+            abierta={safeImages(budget.images).length > 0}
+          >
             <BudgetImages
               userId={user.id}
               value={budget.images}
@@ -616,7 +632,15 @@ export default function PresupuestoForm() {
             />
           </Card>
 
-          <Card title={t('form.descuentosImpuestos')}>
+          <Card
+            title={t('form.descuentosImpuestos')}
+            plegable
+            abierta={
+              budget.discount_type !== 'none' ||
+              Number(budget.tax_rate) > 0 ||
+              Number(budget.deposit) > 0
+            }
+          >
             <div className="grid gap-4 sm:grid-cols-2">
               <Labeled label={t('form.tipoDescuento')}>
                 <select
@@ -685,7 +709,16 @@ export default function PresupuestoForm() {
             </div>
           </Card>
 
-          <Card title={t('form.notasCondiciones')}>
+          <Card
+            title={t('form.notasCondiciones')}
+            plegable
+            abierta={
+              !!budget.notes ||
+              !!budget.payment_terms ||
+              !!budget.payment_methods ||
+              !!budget.delivery_time
+            }
+          >
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Labeled label={t('form.notasCliente')}>

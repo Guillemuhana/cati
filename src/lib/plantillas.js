@@ -128,6 +128,70 @@ export const PLANTILLAS = [
     rubros: ['software', 'tecnologia'],
     fondo: '/plantillas/programacion.jpg',
     color: '#3D4EA8'
+  },
+  {
+    key: 'carpinteria',
+    label: 'Carpintería y muebles',
+    descripcion: 'Cepillo, formón, martillo y madera.',
+    rubros: ['carpinteria'],
+    fondo: '/plantillas/carpinteria.jpg',
+    color: '#7A5230'
+  },
+  {
+    key: 'arquitectura',
+    label: 'Arquitectura e ingeniería',
+    descripcion: 'Planos, maqueta, escuadra y compás.',
+    rubros: ['arquitectura', 'construccion'],
+    fondo: '/plantillas/arquitectura.jpg',
+    color: '#46525E'
+  },
+  {
+    key: 'seguridad',
+    label: 'Seguridad electrónica',
+    descripcion: 'Cámaras, alarma, sensores y cable de red.',
+    rubros: ['seguridad'],
+    fondo: '/plantillas/seguridad.jpg',
+    color: '#1F4E79'
+  },
+  {
+    key: 'agro',
+    label: 'Agro y maquinaria',
+    descripcion: 'Tractor, trigo, engranaje y herramientas.',
+    rubros: ['agro'],
+    fondo: '/plantillas/agro.jpg',
+    color: '#3F6B2A'
+  },
+  {
+    key: 'peluqueria',
+    label: 'Peluquería',
+    descripcion: 'Secador, cepillo, tijeras y productos.',
+    rubros: ['belleza'],
+    fondo: '/plantillas/peluqueria.jpg',
+    color: '#6B4750'
+  },
+  {
+    key: 'barberia',
+    label: 'Barbería',
+    descripcion: 'Máquina, navaja, brocha y tijeras.',
+    rubros: ['belleza'],
+    fondo: '/plantillas/barberia.jpg',
+    color: '#3A2E2A'
+  },
+  {
+    key: 'eventos',
+    label: 'Eventos y sonido',
+    descripcion: 'Parlante, luz, globos y cables.',
+    rubros: ['eventos'],
+    fondo: '/plantillas/eventos.jpg',
+    color: '#1F3A6E'
+  },
+  {
+    key: 'marketing',
+    label: 'Marketing y redes',
+    descripcion: 'Megáfono, tablet, cámara y métricas.',
+    rubros: ['marketing', 'diseno'],
+    fondo: '/plantillas/marketing.jpg',
+    color: '#2563C9'
   }
 ]
 

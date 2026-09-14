@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabaseClient'
 import { CURRENCIES, missingColumnError } from '../lib/utils'
 import { RUBRO_GROUPS, getRubro } from '../lib/rubros'
 import { HOJA_EN_BLANCO, plantillaDe, plantillasPara } from '../lib/plantillas'
+import { MotionConfig, motion } from 'motion/react'
 import { CANALES } from '../lib/redes'
 import RedIcon from '../components/RedIcon'
 import MiFirma from '../components/MiFirma'
@@ -420,6 +421,18 @@ function Field({ label, children }) {
   )
 }
 
+// Las mismas que usan las páginas públicas: que toda la app se mueva
+// igual importa más que cada pantalla tenga su gracia.
+const aparecer = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 220, damping: 26 } }
+}
+
+const encadenado = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.035, delayChildren: 0.04 } }
+}
+
 /**
  * Elegir la hoja en la que salen el presupuesto, la factura y el recibo.
  *
@@ -443,37 +456,51 @@ function SelectorPlantillas({ rubro, valor, onChange }) {
   ].filter((g) => g.lista.length > 0)
 
   return (
-    <div className="space-y-4">
-      {grupos.map((g, i) => (
-        <div key={g.titulo || i}>
-          {g.titulo && (
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">{g.titulo}</p>
-          )}
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-            {g.lista.map((pl) => (
-              <TarjetaPlantilla
-                key={pl.key || 'blanco'}
-                plantilla={pl}
-                elegida={elegida === pl.key}
-                onClick={() => onChange(pl)}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
+    // reducedMotion="user": el que pidió en su sistema que las cosas no
+    // se muevan, no las ve moverse. Son veintiuna miniaturas entrando a
+    // la vez; para alguien sensible al movimiento eso marea de verdad.
+    <MotionConfig reducedMotion="user">
+      <motion.div className="space-y-4" variants={encadenado} initial="hidden" animate="show">
+        {grupos.map((g, i) => (
+          <motion.div key={g.titulo || i} variants={encadenado}>
+            {g.titulo && (
+              <motion.p
+                variants={aparecer}
+                className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint"
+              >
+                {g.titulo}
+              </motion.p>
+            )}
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+              {g.lista.map((pl) => (
+                <TarjetaPlantilla
+                  key={pl.key || 'blanco'}
+                  plantilla={pl}
+                  elegida={elegida === pl.key}
+                  onClick={() => onChange(pl)}
+                />
+              ))}
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+    </MotionConfig>
   )
 }
 
 /** Una hoja del selector, con su miniatura en proporción A4. */
 function TarjetaPlantilla({ plantilla, elegida, onClick }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
       aria-pressed={elegida}
       title={plantilla.descripcion || plantilla.label}
-      className={`overflow-hidden rounded-lg border-2 text-left transition ${
+      variants={aparecer}
+      whileHover={{ y: -3 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+      className={`overflow-hidden rounded-lg border-2 text-left transition-colors ${
         elegida ? 'border-brand-500 shadow-soft' : 'border-line hover:border-ink-faint'
       }`}
     >
@@ -489,6 +516,6 @@ function TarjetaPlantilla({ plantilla, elegida, onClick }) {
       >
         {plantilla.label}
       </p>
-    </button>
+    </motion.button>
   )
 }

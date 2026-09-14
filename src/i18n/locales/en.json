@@ -235,7 +235,7 @@
     "aprovecha": ". Make the most of it!",
     "quedanDias_one": " · {{count}} day left.",
     "quedanDias_other": " · {{count}} days left.",
-    "pruebaActiva": "✨ {{promo}} free · you have <1>{{restante}}</1> left with everything unlocked",
+    "pruebaActiva": "✨ Everything unlocked · <1>{{restante}}</1> of trial left",
     "verPlanes": "See plans →",
     "terminado": "🔒 Your free period ended · unlock the premium features",
     "suscribirme": "Subscribe for USD 2/month →"
@@ -288,7 +288,7 @@
     "todoGratis": "🎉 Every feature is <1>free and unlocked</1>, no card needed, until <3>{{fecha}}</3>. After that it continues at {{precio}}. {{dias}} days to go.",
     "activaHasta": "✓ Subscription active until {{fecha}}. Thank you!",
     "activa": "✓ Subscription active. Thank you!",
-    "enPrueba": "You're in your <1>{{promo}} free</1>. You have <3>{{restante}}</3> left with everything unlocked.",
+    "enPrueba": "You're in your <1>free trial</1>. You have <3>{{restante}}</3> left with everything unlocked.",
     "termino": "Your free period ended. Keep everything unlocked for {{precio}}.",
     "queIncluye": "What's included",
     "precioLanzamiento": "Launch price",

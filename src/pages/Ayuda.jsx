@@ -158,9 +158,9 @@ const FAQS = [
     keywords: 'precio costo pagar gratis premium suscripcion suscripción plan prueba trial semana anual año mensual dolares vence termina cuanto sale'
   },
   {
-    q: '¿Qué pasa el 1 de noviembre de 2026 con lo que ya cargué?',
-    a: 'Nada se borra. Tus presupuestos, clientes, catálogo y comprobantes siguen ahí: los vas a poder ver, buscar y descargar en PDF igual que siempre. Lo que pide suscripción a partir de esa fecha es crear y editar funciones premium (catálogo, plantillas de presupuesto, enlace público, comprobantes y reportes). Es a propósito: si un mes no podés pagar, no perdés tu trabajo.',
-    keywords: 'noviembre 2026 termina vence gratis pierdo datos borra que pasa despues'
+    q: 'Si no pago, ¿pierdo lo que ya cargué?',
+    a: 'Nada se borra. Tus presupuestos, clientes, catálogo y comprobantes siguen ahí: los vas a poder ver, buscar y descargar en PDF igual que siempre. Lo que pide suscripción es crear y editar las funciones premium (catálogo, plantillas de presupuesto, enlace público, comprobantes y reportes). Es a propósito: si un mes no podés pagar, no perdés tu trabajo.',
+    keywords: 'pierdo datos borra no pago vence corta baja que pasa despues guardado'
   },
   {
     q: '¿Cómo consigo los 3 meses gratis invitando gente?',

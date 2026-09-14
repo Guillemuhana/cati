@@ -235,7 +235,7 @@
     "aprovecha": ". ¡Aprovechá!",
     "quedanDias_one": " · queda {{count}} día.",
     "quedanDias_other": " · quedan {{count}} días.",
-    "pruebaActiva": "✨ {{promo}} gratis · te quedan <1>{{restante}}</1> con todo desbloqueado",
+    "pruebaActiva": "✨ Tenés todo desbloqueado · te quedan <1>{{restante}}</1> de prueba",
     "verPlanes": "Ver planes →",
     "terminado": "🔒 Tu período gratis terminó · desbloqueá las funciones premium",
     "suscribirme": "Suscribirme por USD 2/mes →"
@@ -288,7 +288,7 @@
     "todoGratis": "🎉 Todas las funciones están <1>gratis y desbloqueadas</1>, sin tarjeta, hasta el <3>{{fecha}}</3>. Después sigue por {{precio}}. Faltan {{dias}} días.",
     "activaHasta": "✓ Suscripción activa hasta el {{fecha}}. ¡Gracias!",
     "activa": "✓ Suscripción activa. ¡Gracias!",
-    "enPrueba": "Estás en tus <1>{{promo}} gratis</1>. Te quedan <3>{{restante}}</3> con todo desbloqueado.",
+    "enPrueba": "Estás en tu <1>prueba gratis</1>. Te quedan <3>{{restante}}</3> con todo desbloqueado.",
     "termino": "Tu período gratis terminó. Seguí con todo desbloqueado por {{precio}}.",
     "queIncluye": "Qué incluye",
     "precioLanzamiento": "Precio de lanzamiento",

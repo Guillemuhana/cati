@@ -2,19 +2,22 @@
 // Todas las funciones premium son gratis durante la prueba (3 días,
 // migración 35) y luego se desbloquean con la suscripción.
 
-// ⚠ FIN DE LA ETAPA GRATIS · 1 de NOVIEMBRE de 2026 (hora de Argentina)
+// ⚠ FIN DE LA ETAPA GRATIS · 14 de SEPTIEMBRE de 2026 (hora de Argentina)
 //
-// Hasta esa fecha la app no cobra ni bloquea nada: todas las funciones
-// premium quedan abiertas para cualquiera. A partir de ese día vuelve a
-// regir el plan pago.
+// Hasta esa fecha la app no cobraba ni bloqueaba nada. Terminó: ahora
+// rige el plan pago, con 3 días de prueba para el que se registra.
+//
+// Los que ya estaban registrados NO se quedaron afuera ese día: tienen
+// su trial_ends_at en el 1/11/2026, que es la fecha con la que se
+// anotaron, y is_premium() lo respeta.
 //
 // Esta fecha está ESCRITA DOS VECES a propósito: acá para el navegador y
-// en public.free_until() (migración 11) para el servidor. Si algún día la
+// en public.free_until() (migración 38) para el servidor. Si algún día la
 // movés, cambiá LAS DOS. El servidor es el que manda: si solo cambiaras
 // esta constante, la app se vería cerrada pero la API seguiría regalando
 // todo a quien sepa abrir la pestaña Network.
-export const FREE_UNTIL = '2026-11-01T00:00:00-03:00'
-export const FREE_UNTIL_LABEL = '1 de noviembre de 2026'
+export const FREE_UNTIL = '2026-09-14T00:00:00-03:00'
+export const FREE_UNTIL_LABEL = '14 de septiembre de 2026'
 
 export const FREE_FOR_ALL = Date.now() < new Date(FREE_UNTIL).getTime()
 

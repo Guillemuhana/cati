@@ -10,7 +10,11 @@ import { formatDate } from '../lib/utils'
  * grande la primera vez, para que no pase desapercibido.
  */
 // Avisos que además se muestran en grande la primera vez.
-const DESTACABLES = ['regalo', 'presupuesto', 'confidencialidad']
+// Los que no pueden pasar desapercibidos. 'regalo' y 'suscripcion'
+// además cambian lo que la persona puede hacer en la app, así que
+// cuando llega uno hay que volver a leer el perfil.
+const DESTACABLES = ['regalo', 'suscripcion', 'presupuesto', 'confidencialidad']
+const CAMBIAN_EL_PLAN = ['regalo', 'suscripcion']
 
 // El canal necesita un nombre distinto en cada suscripción: supabase
 // reutiliza el canal si el nombre ya existe, y agregarle un listener a uno
@@ -46,8 +50,9 @@ export default function Notificaciones() {
         const fuerte = (data || []).find((n) => !n.read_at && DESTACABLES.includes(n.tipo))
         if (fuerte) {
           setDestacado(fuerte)
-          // El premium recién otorgado tiene que reflejarse en el plan.
-          if (fuerte.tipo === 'regalo') refreshProfile()
+          // El premium recién otorgado tiene que reflejarse en el plan
+          // sin que la persona tenga que recargar.
+          if (CAMBIAN_EL_PLAN.includes(fuerte.tipo)) refreshProfile()
         }
       })
     return () => {

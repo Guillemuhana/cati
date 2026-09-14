@@ -120,6 +120,14 @@ export const PLANTILLAS = [
     rubros: ['audiovisual'],
     fondo: '/plantillas/fotografia.jpg',
     color: '#333B45'
+  },
+  {
+    key: 'programacion',
+    label: 'Software y sistemas',
+    descripcion: 'Notebook con código, teclado, mouse y placa.',
+    rubros: ['software', 'tecnologia'],
+    fondo: '/plantillas/programacion.jpg',
+    color: '#3D4EA8'
   }
 ]
 

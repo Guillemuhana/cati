@@ -15,8 +15,7 @@ import {
   formatMoney,
   formatNumero,
   hayDescripcionLarga,
-  partirDescripcion
-} from '../lib/utils'
+  partirDescripcion, cuentaDeFactura } from '../lib/utils'
 
 export default function FacturaDetail() {
   const { t } = useTranslation()
@@ -78,7 +77,10 @@ function FacturaDetailInner() {
 
   const client = invoice.clients || null
   const items = invoice.items || []
-  const saldo = (Number(invoice.total) || 0) - (Number(invoice.paid_amount) || 0)
+  // La misma cuenta que imprime el PDF, para que la pantalla y el papel
+  // no puedan decir cosas distintas.
+  const cuenta = cuentaDeFactura(invoice)
+  const saldo = cuenta.saldo
   const anulada = invoice.status === 'anulada'
   // Con una memoria descriptiva larga la tabla de columnas no sirve.
   const textoLargo = hayDescripcionLarga(items)
@@ -130,7 +132,13 @@ function FacturaDetailInner() {
     if (error) return
 
     const newPaid = (Number(invoice.paid_amount) || 0) + value
-    const newStatus = newPaid >= Number(invoice.total) ? 'pagada' : invoice.status === 'anulada' ? 'anulada' : 'emitida'
+
+    // Saldada es cuando no queda nada por cobrar, y para eso cuenta
+    // también la seña. Mirando solo los pagos, una factura con anticipo
+    // no llegaba nunca a marcarse pagada: siempre le faltaba el importe
+    // de la seña para alcanzar el total.
+    const restante = cuentaDeFactura({ ...invoice, paid_amount: newPaid }).saldo
+    const newStatus = restante <= 0 ? 'pagada' : invoice.status === 'anulada' ? 'anulada' : 'emitida'
     await supabase.from('invoices').update({ paid_amount: newPaid, status: newStatus }).eq('id', invoice.id)
 
     setPayOpen(false)
@@ -323,7 +331,13 @@ function FacturaDetailInner() {
                   {formatMoney(invoice.total, invoice.currency)}
                 </span>
               </div>
-              <Row label={t('factura.pagado')} value={formatMoney(invoice.paid_amount, invoice.currency)} />
+              {cuenta.sena > 0 && (
+                <Row label={t('factura.senaAnticipo')} value={`-${formatMoney(cuenta.sena, invoice.currency)}`} />
+              )}
+              <Row
+                label={t('factura.pagado')}
+                value={`-${formatMoney(cuenta.pagos, invoice.currency)}`}
+              />
               <div className="flex items-center justify-between border-t border-line pt-2">
                 <span className="font-sans text-sm font-semibold text-ink">{t('factura.saldo')}</span>
                 <span className={`font-semibold ${saldo > 0 ? 'text-ink' : 'text-teal-600'}`}>

@@ -616,7 +616,8 @@
     "itemsBloqueados": "The items and amounts are locked because this document already has payments recorded: changing them would leave the receipts saying something else. If the amount is wrong, void it and issue a new one.",
     "errorGuardar": "The document couldn't be saved.",
     "anuladoNoEdita": "A voided document cannot be edited.",
-    "reciboAutomatico": "A PDF receipt is generated automatically."
+    "reciboAutomatico": "A PDF receipt is generated automatically.",
+    "senaAnticipo": "Deposit"
   },
   "pagos": {
     "titulo": "Payments",

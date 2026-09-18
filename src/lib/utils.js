@@ -484,6 +484,42 @@ export function resumenDePagos(pagos, total) {
 }
 
 /** El monto que le toca a un porcentaje del total. */
+// ------------------------------------------------------------
+// Lo cobrado y lo que falta de una factura.
+//
+// Esta cuenta estuvo escrita en dos lados —la pantalla y el PDF— y
+// cada uno descontaba cosas distintas: uno los pagos, el otro la seña.
+// Con un total de 1.840.000, una seña de 183.998 y un pago de 400.000,
+// la pantalla decía 1.440.000 y el papel 1.256.002. El cliente ve el
+// papel; el que factura mira la pantalla. Así se discute por plata.
+//
+// Ahora hay una sola función y la usan los dos.
+//
+// SE DESCUENTAN LAS DOS COSAS
+//   La seña (deposit) es el anticipo que el cliente entregó para que
+//   el trabajo arrancara: cuando se factura, ya está cobrada.
+//   Los pagos (paid_amount) son lo que fue entregando después.
+//
+// ⚠ Por eso la seña NO se carga además como recibo: se descontaría dos
+//   veces y el saldo quedaría de menos.
+// ------------------------------------------------------------
+export function cuentaDeFactura(factura) {
+  const total = Number(factura?.total) || 0
+  const sena = Number(factura?.deposit) || 0
+  const pagos = Number(factura?.paid_amount) || 0
+  const cobrado = sena + pagos
+  return {
+    total,
+    sena,
+    pagos,
+    cobrado,
+    // Nunca negativo: si pagaron de más, el saldo es cero y la
+    // diferencia se arregla hablando, no mostrando un número en rojo
+    // que nadie sabe leer.
+    saldo: Math.max(0, round2(total - cobrado))
+  }
+}
+
 export function montoDePorcentaje(total, percent) {
   return round2((Math.max(0, Number(total) || 0) * (Math.max(0, Number(percent) || 0))) / 100)
 }

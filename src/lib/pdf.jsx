@@ -10,7 +10,8 @@ import {
   safeImages,
   isSafeImageUrl,
   sinTituloRepetido,
-  resumenDePagos
+  resumenDePagos,
+  cuentaDeFactura
 } from './utils'
 import { plantillaDe } from './plantillas'
 import QRCode from 'qrcode'
@@ -443,11 +444,18 @@ function PresupuestoPDF({
   // ⚠ La seña NO se registra además como recibo. Si se carga en los
   //   dos lados se descuenta dos veces y el saldo queda de menos.
   const esFactura = pagado != null
+
+  // La cuenta la hace cuentaDeFactura (utils), la MISMA que usa la
+  // pantalla. Antes cada lado tenía la suya y daban distinto.
+  const cuenta = esFactura
+    ? cuentaDeFactura({ total: budget.total, deposit: budget.deposit, paid_amount: pagado })
+    : null
+
   const sena = Number(budget.deposit) || 0
-  const cobrado = esFactura ? Number(pagado) || 0 : sumaRecibos
+  const cobrado = esFactura ? cuenta.pagos : sumaRecibos
   const hayCobros = cobrado > 0
-  const aDescontar = esFactura ? sena + cobrado : sena
-  const saldo = Math.max(0, (Number(budget.total) || 0) - aDescontar)
+  const aDescontar = esFactura ? cuenta.cobrado : sena
+  const saldo = esFactura ? cuenta.saldo : Math.max(0, (Number(budget.total) || 0) - sena)
   const statusLabel = statusText || i18n.t((STATUS[budget.status] || STATUS.enviado).label)
   const accent = profile?.brand_color || '#1B3B6F'
   const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)

@@ -616,7 +616,8 @@
     "itemsBloqueados": "Los ítems y los importes no se tocan porque este comprobante ya tiene pagos registrados: cambiarlos dejaría los recibos diciendo otra cosa. Si el monto está mal, anulá el comprobante y hacé uno nuevo.",
     "errorGuardar": "No se pudo guardar el comprobante.",
     "anuladoNoEdita": "Un comprobante anulado no se edita.",
-    "reciboAutomatico": "Se genera un recibo en PDF automáticamente."
+    "reciboAutomatico": "Se genera un recibo en PDF automáticamente.",
+    "senaAnticipo": "Seña / anticipo"
   },
   "pagos": {
     "titulo": "Pagos",

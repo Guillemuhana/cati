@@ -125,14 +125,21 @@ const styles = StyleSheet.create({
   // nuestro (134x62): la hoja la manda el que presupuesta, no el que la
   // recibe.
   clientLogoCell: {
-    width: 78,
+    width: 210,
     paddingLeft: 6,
     borderLeftWidth: 1,
     borderLeftColor: LINE,
     alignItems: 'center',
     justifyContent: 'center'
   },
-  clientLogo: { width: 66, height: 30, objectFit: 'contain' },
+  // Tres veces lo que medía (era 66x30), a pedido: en una factura de
+  // empresa el logo del cliente tiene que leerse.
+  //
+  // Queda más grande que el nuestro (134x62) y la celda le saca ancho a
+  // los datos del cliente, que es lo que se aprieta a cambio. Con
+  // objectFit 'contain' no se deforma: el que sea más cuadrado va a
+  // ocupar menos de los 198 de ancho, nunca estirarse.
+  clientLogo: { width: 198, height: 90, objectFit: 'contain' },
   fieldRow: { flexDirection: 'row', marginBottom: 2 },
   fieldLabel: { fontSize: 8, fontFamily: 'Helvetica-Bold' },
   fieldValue: { fontSize: 8, flex: 1 },

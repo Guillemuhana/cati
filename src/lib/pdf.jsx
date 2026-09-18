@@ -408,8 +408,41 @@ function PresupuestoPDF({
   // Los cobros que YA entraron, con su fecha y su número de recibo.
   // Los manda la factura; el presupuesto no tiene, porque ahí los pagos
   // son etapas previstas y no plata recibida.
-  cobros = []
+  cobros = [],
+  // Lo cobrado según la factura (paid_amount). Manda sobre la suma de
+  // los recibos: si la lista no llegó a cargar, el saldo del papel
+  // tiene que seguir estando bien igual.
+  pagado = null
 }) {
+  // ── De dónde sale el saldo ────────────────────────────────────────
+  //
+  // Había dos cuentas distintas para lo mismo y no daban igual. La
+  // pantalla de la factura restaba lo COBRADO (paid_amount) y el PDF
+  // restaba el ANTICIPO que la factura había heredado del presupuesto.
+  // Con un total de 1.840.000, una seña de 184.000 y un pago de
+  // 400.000, la pantalla decía 1.256.000 y el papel 1.656.002.
+  //
+  // El que manda es la plata que entró. El anticipo del presupuesto es
+  // una condición acordada —«la seña es el 10%»—, no un cobro: sigue
+  // saliendo en el presupuesto, que es donde significa algo, y deja de
+  // restarse en cuanto hay cobros de verdad.
+  const sumaRecibos = cobros.reduce((acc, c) => acc + (Number(c.monto) || 0), 0)
+
+  // Que venga `pagado` es lo que distingue una factura de un
+  // presupuesto, y cambia qué se descuenta:
+  //
+  //   Factura     → se descuenta lo COBRADO, aunque sea cero. El
+  //                 anticipo que heredó del presupuesto es una
+  //                 condición pactada, no plata que entró: restarlo
+  //                 acá le mostraría al cliente un saldo menor al que
+  //                 debe de verdad.
+  //   Presupuesto → se descuenta la seña acordada, que es lo que ese
+  //                 documento viene a decir.
+  const esFactura = pagado != null
+  const cobrado = esFactura ? Number(pagado) || 0 : sumaRecibos
+  const hayCobros = cobrado > 0
+  const aDescontar = esFactura ? cobrado : Number(budget.deposit) || 0
+  const saldo = Math.max(0, (Number(budget.total) || 0) - aDescontar)
   const statusLabel = statusText || i18n.t((STATUS[budget.status] || STATUS.enviado).label)
   const accent = profile?.brand_color || '#1B3B6F'
   const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)
@@ -557,23 +590,25 @@ function PresupuestoPDF({
             <Text style={styles.grandTotalLabel}>TOTAL:</Text>
             <Text style={[styles.grandTotalValue, { color: accent }]}>{formatMoney(budget.total, budget.currency)}</Text>
           </View>
-          {Number(budget.deposit) > 0 && (
+          {aDescontar > 0 && (
             <>
               <View style={[styles.totalsRow, { marginTop: 3 }]}>
-                <Text style={styles.totalsLabel}>ANTICIPO / SEÑA:</Text>
-                <Text style={styles.totalsValue}>-{formatMoney(budget.deposit, budget.currency)}</Text>
+                <Text style={styles.totalsLabel}>{hayCobros ? 'PAGADO:' : 'ANTICIPO / SEÑA:'}</Text>
+                <Text style={styles.totalsValue}>-{formatMoney(aDescontar, budget.currency)}</Text>
               </View>
               <View style={styles.totalsRow}>
                 <Text style={[styles.totalsLabel, { fontFamily: 'Helvetica-Bold' }]}>SALDO PENDIENTE:</Text>
                 <Text style={[styles.totalsValue, { fontFamily: 'Helvetica-Bold' }]}>
-                  {formatMoney((Number(budget.total) || 0) - (Number(budget.deposit) || 0), budget.currency)}
+                  {formatMoney(saldo, budget.currency)}
                 </Text>
               </View>
             </>
           )}
         </View>
 
-        {Number(budget.deposit) > 0 && (
+        {/* «El trabajo comienza una vez recibida la seña» no tiene
+            sentido en un papel donde ya figura la seña cobrada. */}
+        {!hayCobros && Number(budget.deposit) > 0 && (
           <Text style={styles.depositNote}>
             El trabajo comienza una vez recibida la seña.
           </Text>
@@ -599,27 +634,13 @@ function PresupuestoPDF({
                 <Text style={styles.pagosValue}>{formatMoney(c.monto, budget.currency)}</Text>
               </View>
             ))}
-            <View style={styles.pagosRow}>
-              <Text style={styles.pagosLabel}>Total pagado</Text>
-              <Text style={styles.pagosValue}>
-                {formatMoney(
-                  cobros.reduce((acc, c) => acc + (Number(c.monto) || 0), 0),
-                  budget.currency
-                )}
-              </Text>
-            </View>
+            {/* El saldo NO se repite acá: va una sola vez, en la caja
+                de totales. Dos saldos en la misma hoja es como se
+                termina discutiendo con un cliente cuál de los dos
+                vale. */}
             <View style={styles.pagosFaltaRow}>
-              <Text style={styles.pagosFaltaLabel}>SALDO PENDIENTE:</Text>
-              <Text style={styles.pagosFaltaLabel}>
-                {formatMoney(
-                  Math.max(
-                    0,
-                    (Number(budget.total) || 0) -
-                      cobros.reduce((acc, c) => acc + (Number(c.monto) || 0), 0)
-                  ),
-                  budget.currency
-                )}
-              </Text>
+              <Text style={styles.pagosFaltaLabel}>TOTAL PAGADO:</Text>
+              <Text style={styles.pagosFaltaLabel}>{formatMoney(cobrado, budget.currency)}</Text>
             </View>
           </View>
         )}
@@ -805,6 +826,7 @@ export async function generateInvoicePdfBlob({ invoice, client, profile, publicU
       statusText={i18n.t(INVOICE_STATUS[invoice.status] || 'facturas.emitida')}
       qr={qr}
       cobros={cobros}
+      pagado={Number(invoice.paid_amount) || 0}
     />
   )
   return pdf(doc).toBlob()

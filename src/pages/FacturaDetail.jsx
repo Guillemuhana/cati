@@ -87,7 +87,7 @@ function FacturaDetailInner() {
     setBusy(true)
     setPdfError('')
     try {
-      await downloadInvoicePdf({ invoice, client, profile, publicUrl })
+      await downloadInvoicePdf({ invoice, client, profile, publicUrl, receipts })
     } catch (err) {
       setPdfError(err?.message || t('factura.errorPdf'))
     } finally {

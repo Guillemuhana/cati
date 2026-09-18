@@ -237,10 +237,15 @@ const styles = StyleSheet.create({
   // El QR para abrirlo online. Va antes de las firmas y pegado al
   // margen izquierdo: si fuera arriba pelearía con el número y el
   // logo, que es donde el cliente busca de qué documento se trata.
+  //
+  // El ancho va FIJO y no con alignSelf + maxWidth. Con eso la caja se
+  // encogía al contenido, el flex:1 del texto no tenía ancho que
+  // repartir, y la explicación salía en una columna de una palabra,
+  // cortada con guiones letra por letra. Se ve feo y encima deja el
+  // documento con pinta de roto.
   qrBox: {
     marginTop: 14,
-    alignSelf: 'flex-start',
-    maxWidth: 265,
+    width: 272,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -252,7 +257,9 @@ const styles = StyleSheet.create({
   // donde una cámara vieja o una impresora con poco tóner ya no lo
   // levantan, y eso se descubre con el papel en la mano del cliente.
   qrImg: { width: 64, height: 64 },
-  qrTextos: { marginLeft: 8, flex: 1 },
+  // 272 menos el borde (2), el relleno (14), el QR (64) y su margen (8).
+  // Escrito y no calculado con flex, por lo mismo de arriba.
+  qrTextos: { marginLeft: 8, width: 184 },
   qrTitulo: { fontSize: 8, fontFamily: 'Helvetica-Bold' },
   qrBajada: { fontSize: 7, color: SOFT, marginTop: 1.5, lineHeight: 1.3 },
   signBox: { width: '45%' },
@@ -383,7 +390,20 @@ function PayCol({ title, text }) {
   )
 }
 
-function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuesto', numberPrefix, statusText, qr }) {
+function PresupuestoPDF({
+  budget,
+  items,
+  client,
+  profile,
+  docLabel = 'Presupuesto',
+  numberPrefix,
+  statusText,
+  qr,
+  // Los cobros que YA entraron, con su fecha y su número de recibo.
+  // Los manda la factura; el presupuesto no tiene, porque ahí los pagos
+  // son etapas previstas y no plata recibida.
+  cobros = []
+}) {
   const statusLabel = statusText || i18n.t((STATUS[budget.status] || STATUS.enviado).label)
   const accent = profile?.brand_color || '#1B3B6F'
   const numero = formatNumero(budget.numero, budget.issue_date, numberPrefix || profile?.number_prefix)
@@ -553,6 +573,51 @@ function PresupuestoPDF({ budget, items, client, profile, docLabel = 'Presupuest
           </Text>
         )}
 
+        {/*
+          Lo que el cliente ya pagó, con la fecha de cada entrega.
+          Va en la factura: ahí «pagos» es plata que entró, no etapas
+          previstas. Es la respuesta a «cuánto llevo pagado» sin tener
+          que buscar los recibos sueltos.
+        */}
+        {cobros.length > 0 && (
+          <View style={styles.pagosBox} wrap={false}>
+            <Text style={styles.pagosTitulo}>PAGOS RECIBIDOS</Text>
+            {cobros.map((c, i) => (
+              <View key={i} style={styles.pagosRow}>
+                <Text style={styles.pagosLabelCobrado}>
+                  {'✓ '}
+                  {c.fecha ? formatDate(c.fecha) : ''}
+                  {c.numero ? `  ·  Recibo N° ${c.numero}` : ''}
+                  {c.metodo ? `  ·  ${c.metodo}` : ''}
+                </Text>
+                <Text style={styles.pagosValue}>{formatMoney(c.monto, budget.currency)}</Text>
+              </View>
+            ))}
+            <View style={styles.pagosRow}>
+              <Text style={styles.pagosLabel}>Total pagado</Text>
+              <Text style={styles.pagosValue}>
+                {formatMoney(
+                  cobros.reduce((acc, c) => acc + (Number(c.monto) || 0), 0),
+                  budget.currency
+                )}
+              </Text>
+            </View>
+            <View style={styles.pagosFaltaRow}>
+              <Text style={styles.pagosFaltaLabel}>SALDO PENDIENTE:</Text>
+              <Text style={styles.pagosFaltaLabel}>
+                {formatMoney(
+                  Math.max(
+                    0,
+                    (Number(budget.total) || 0) -
+                      cobros.reduce((acc, c) => acc + (Number(c.monto) || 0), 0)
+                  ),
+                  budget.currency
+                )}
+              </Text>
+            </View>
+          </View>
+        )}
+
         {pagos.etapas.length > 0 && (
           <View style={styles.pagosBox} wrap={false}>
             <Text style={styles.pagosTitulo}>PAGOS</Text>
@@ -704,8 +769,22 @@ export async function downloadBudgetPdf({ budget, items, client, profile, public
 // ── Factura / comprobante (no fiscal) ──────────────────────────
 const INVOICE_STATUS = { emitida: 'facturas.emitida', pagada: 'facturas.pagada', anulada: 'facturas.anulada' }
 
-export async function generateInvoicePdfBlob({ invoice, client, profile, publicUrl }) {
+export async function generateInvoicePdfBlob({ invoice, client, profile, publicUrl, receipts = [] }) {
   const qr = await qrDelEnlace(publicUrl)
+
+  // Los recibos, ordenados por fecha de cobro.
+  //
+  // No hay filtro por estado porque los recibos no se anulan: se
+  // borran (tabla receipts, migración 06). El que está, entró.
+  const cobros = (receipts || [])
+    .filter((r) => r && Number(r.amount) > 0)
+    .sort((a, b) => String(a.receipt_date || a.created_at).localeCompare(String(b.receipt_date || b.created_at)))
+    .map((r) => ({
+      fecha: r.receipt_date || r.created_at,
+      numero: r.numero,
+      metodo: r.method || '',
+      monto: Number(r.amount) || 0
+    }))
   const doc = (
     <PresupuestoPDF
       budget={invoice}
@@ -716,13 +795,14 @@ export async function generateInvoicePdfBlob({ invoice, client, profile, publicU
       numberPrefix="FAC"
       statusText={i18n.t(INVOICE_STATUS[invoice.status] || 'facturas.emitida')}
       qr={qr}
+      cobros={cobros}
     />
   )
   return pdf(doc).toBlob()
 }
 
-export async function downloadInvoicePdf({ invoice, client, profile, publicUrl }) {
-  const blob = await generateInvoicePdfBlob({ invoice, client, profile, publicUrl })
+export async function downloadInvoicePdf({ invoice, client, profile, publicUrl, receipts }) {
+  const blob = await generateInvoicePdfBlob({ invoice, client, profile, publicUrl, receipts })
   triggerDownload(blob, `${formatNumero(invoice.numero, invoice.issue_date, 'FAC')}.pdf`)
 }
 

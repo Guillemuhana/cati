@@ -634,13 +634,19 @@ function PresupuestoPDF({
                 <Text style={styles.pagosValue}>{formatMoney(c.monto, budget.currency)}</Text>
               </View>
             ))}
-            {/* El saldo NO se repite acá: va una sola vez, en la caja
-                de totales. Dos saldos en la misma hoja es como se
-                termina discutiendo con un cliente cuál de los dos
-                vale. */}
+            <View style={styles.pagosRow}>
+              <Text style={styles.pagosLabel}>Total pagado</Text>
+              <Text style={styles.pagosValue}>{formatMoney(cobrado, budget.currency)}</Text>
+            </View>
+
+            {/* El saldo se repite acá a propósito: es donde uno mira
+                cuando busca «cuánto falta». Sale del MISMO cálculo que
+                el de la caja de totales —la variable `saldo`, una
+                sola—, así que los dos números no pueden discrepar
+                aunque estén escritos dos veces. */}
             <View style={styles.pagosFaltaRow}>
-              <Text style={styles.pagosFaltaLabel}>TOTAL PAGADO:</Text>
-              <Text style={styles.pagosFaltaLabel}>{formatMoney(cobrado, budget.currency)}</Text>
+              <Text style={styles.pagosFaltaLabel}>SALDO PENDIENTE:</Text>
+              <Text style={styles.pagosFaltaLabel}>{formatMoney(saldo, budget.currency)}</Text>
             </View>
           </View>
         )}

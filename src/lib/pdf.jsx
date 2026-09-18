@@ -428,20 +428,25 @@ function PresupuestoPDF({
   // restarse en cuanto hay cobros de verdad.
   const sumaRecibos = cobros.reduce((acc, c) => acc + (Number(c.monto) || 0), 0)
 
-  // Que venga `pagado` es lo que distingue una factura de un
-  // presupuesto, y cambia qué se descuenta:
+  // Qué se descuenta del total.
   //
-  //   Factura     → se descuenta lo COBRADO, aunque sea cero. El
-  //                 anticipo que heredó del presupuesto es una
-  //                 condición pactada, no plata que entró: restarlo
-  //                 acá le mostraría al cliente un saldo menor al que
-  //                 debe de verdad.
-  //   Presupuesto → se descuenta la seña acordada, que es lo que ese
-  //                 documento viene a decir.
+  //   Presupuesto → la seña acordada. Todavía no cobró nada; el
+  //                 documento dice cuánto va a pedir por adelantado.
+  //
+  //   Factura     → la seña MÁS los pagos registrados. Cuando se
+  //                 factura, esa seña ya se cobró: es el anticipo que
+  //                 el cliente entregó para que arrancara el trabajo.
+  //                 Por eso van los dos, y cada uno en su renglón: el
+  //                 cliente tiene que poder reconocer de dónde sale
+  //                 cada descuento sin preguntar.
+  //
+  // ⚠ La seña NO se registra además como recibo. Si se carga en los
+  //   dos lados se descuenta dos veces y el saldo queda de menos.
   const esFactura = pagado != null
+  const sena = Number(budget.deposit) || 0
   const cobrado = esFactura ? Number(pagado) || 0 : sumaRecibos
   const hayCobros = cobrado > 0
-  const aDescontar = esFactura ? cobrado : Number(budget.deposit) || 0
+  const aDescontar = esFactura ? sena + cobrado : sena
   const saldo = Math.max(0, (Number(budget.total) || 0) - aDescontar)
   const statusLabel = statusText || i18n.t((STATUS[budget.status] || STATUS.enviado).label)
   const accent = profile?.brand_color || '#1B3B6F'
@@ -592,10 +597,18 @@ function PresupuestoPDF({
           </View>
           {aDescontar > 0 && (
             <>
-              <View style={[styles.totalsRow, { marginTop: 3 }]}>
-                <Text style={styles.totalsLabel}>{hayCobros ? 'PAGADO:' : 'ANTICIPO / SEÑA:'}</Text>
-                <Text style={styles.totalsValue}>-{formatMoney(aDescontar, budget.currency)}</Text>
-              </View>
+              {sena > 0 && (
+                <View style={[styles.totalsRow, { marginTop: 3 }]}>
+                  <Text style={styles.totalsLabel}>ANTICIPO / SEÑA:</Text>
+                  <Text style={styles.totalsValue}>-{formatMoney(sena, budget.currency)}</Text>
+                </View>
+              )}
+              {hayCobros && (
+                <View style={[styles.totalsRow, sena > 0 ? null : { marginTop: 3 }]}>
+                  <Text style={styles.totalsLabel}>PAGOS RECIBIDOS:</Text>
+                  <Text style={styles.totalsValue}>-{formatMoney(cobrado, budget.currency)}</Text>
+                </View>
+              )}
               <View style={styles.totalsRow}>
                 <Text style={[styles.totalsLabel, { fontFamily: 'Helvetica-Bold' }]}>SALDO PENDIENTE:</Text>
                 <Text style={[styles.totalsValue, { fontFamily: 'Helvetica-Bold' }]}>

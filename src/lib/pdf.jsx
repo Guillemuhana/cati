@@ -260,7 +260,6 @@ const styles = StyleSheet.create({
   // 272 menos el borde (2), el relleno (14), el QR (64) y su margen (8).
   // Escrito y no calculado con flex, por lo mismo de arriba.
   qrTextos: { marginLeft: 8, width: 184 },
-  qrTitulo: { fontSize: 8, fontFamily: 'Helvetica-Bold' },
   qrBajada: { fontSize: 7, color: SOFT, marginTop: 1.5, lineHeight: 1.3 },
   signBox: { width: '45%' },
   signLine: { borderTopWidth: 0.8, borderTopColor: '#999999', marginBottom: 3, marginTop: 22 },
@@ -696,9 +695,12 @@ function PresupuestoPDF({
           <View style={styles.qrBox} wrap={false}>
             <Image src={qr} style={styles.qrImg} />
             <View style={styles.qrTextos}>
-              <Text style={styles.qrTitulo}>Velo online</Text>
+              {/* Sin título: «Velo online» arriba de una frase que ya
+                  dice lo mismo era decirlo dos veces en un recuadro de
+                  dos centímetros. */}
               <Text style={styles.qrBajada}>
-                Escaneá el código con la cámara del celular para abrirlo, descargarlo en PDF y responder.
+                Escaneá el código con la cámara del celular para abrir este documento, descargarlo
+                en PDF y responder.
               </Text>
             </View>
           </View>
